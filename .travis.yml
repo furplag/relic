@@ -1,15 +1,10 @@
 branches:
   only:
     - master
-addons:
-  apt:
-    packages:
-      - openjdk-9-jdk
 language: java
 
 jdk:
   - oraclejdk9
-  - openjdk9
 
 before_install:
   - mvn license:format --quiet -B
