@@ -1,0 +1,14 @@
+branches:
+  only:
+    - master
+
+language: java
+
+jdk:
+  - openjdk9
+
+before_install:
+  - mvn license:format --quiet -B
+
+after_success:
+  - mvn clean test coveralls:report
