@@ -129,7 +129,7 @@ public interface Streamr {
    * @param tweaker {@link UnaryOperator}
    * @return unclosed (actually, duplicated) stream of T which modified each elements
    */
-  static <T> Stream<T> tweak(final Stream<T> stream, UnaryOperator<T> tweaker) {
+  static <T> Stream<T> tweak(final Stream<T> stream, final UnaryOperator<T> tweaker) {
     return Optional.ofNullable(stream).orElseGet(Stream::empty).map(Optional.ofNullable(tweaker).orElse((t) -> t)).collect(Collectors.toList()).stream();
   }
 
