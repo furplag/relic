@@ -47,6 +47,8 @@ public class ReflectionsTest {
   public void test() {
     assertTrue(new Reflections() {} instanceof Reflections);
     assertTrue(Reflections.class.isAssignableFrom(new Reflections() {}.getClass()));
+
+    assertNull(Reflections.conciliation((Field) null));
   }
 
   @Test

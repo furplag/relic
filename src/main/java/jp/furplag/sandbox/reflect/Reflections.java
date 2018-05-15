@@ -18,7 +18,6 @@ package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,20 +45,7 @@ public interface Reflections {
    * @return {@code accessibleObject}
    */
   static <T extends AccessibleObject> T conciliation(final T accessibleObject) {
-    return Stream.of(accessibleObject).peek(AccessibleObject::trySetAccessible).findAny().orElse(accessibleObject);
-  }
-
-  /**
-   * execute {@link AccessibleObject#setAccessible(boolean)} stealithly .
-   *
-   * @param <T> any of {@link AccessibleObject}
-   * @param accessibleObjects {@link AccessibleObject}
-   * @return {@code accessibleObjects}
-   */
-  @SuppressWarnings("unchecked")
-  @SafeVarargs
-  static <T extends AccessibleObject> T[] conciliation(final T... accessibleObjects) {
-    return (T[]) Streamr.stream(accessibleObjects).map(Reflections::conciliation).toArray();
+    return Streamr.stream(accessibleObject).peek(AccessibleObject::trySetAccessible).findAny().orElse(accessibleObject);
   }
 
   /**
@@ -114,24 +100,6 @@ public interface Reflections {
    */
   static Field[] getFields(final Object mysterio) {
     return familyze(mysterio).map(Class::getDeclaredFields).flatMap(Arrays::stream).map(Reflections::conciliation).toArray(Field[]::new);
-  }
-
-  /**
-   * {@link Class#getDeclaredMethod(String, Class...)} with deep finder .
-   *
-   * @param mysterio {@link Class} or the instance.
-   * @param methodName the name of the method
-   * @param parameterTypes the parameter array
-   * @return {@link Method}, or null if the field not found
-   */
-  static Method getMethod(final Object mysterio, final String methodName, final Class<?>... parameterTypes) {
-    // @formatter:off
-    return familyze(mysterio)
-      .map(Trebuchet.orElse((Class<?> x) -> {return x.getDeclaredMethod(methodName, parameterTypes);}, (ex, x) -> null))
-      .map(Reflections::conciliation)
-      .findFirst()
-      .orElse(null);
-    // @formatter:on
   }
 
   /**
