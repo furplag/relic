@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import jp.furplag.function.Trebuchet;
+import jp.furplag.sandbox.function.Trebuchet;
 import jp.furplag.sandbox.stream.Streamr;
 
 /**
@@ -35,17 +35,17 @@ import jp.furplag.sandbox.stream.Streamr;
  * @author furplag
  *
  */
-public interface Reflections {
+public final class Reflections {
 
   /**
-   * execute {@link AccessibleObject#trySetAccessible()} stealithly .
+   * execute {@link AccessibleObject#setAccessible(boolean)} stealithly .
    *
    * @param <T> any of {@link AccessibleObject}
    * @param accessibleObject {@link AccessibleObject}
    * @return {@code accessibleObject}
    */
-  static <T extends AccessibleObject> T conciliation(final T accessibleObject) {
-    return Streamr.stream(accessibleObject).peek(AccessibleObject::trySetAccessible).findAny().orElse(accessibleObject);
+  public static <T extends AccessibleObject> T conciliation(final T accessibleObject) {
+    return Streamr.stream(accessibleObject).peek((o) -> o.setAccessible(true)).findAny().orElse(accessibleObject);
   }
 
   /**
@@ -54,7 +54,7 @@ public interface Reflections {
    * @param mysterio {@link Class} or an instance of any {@link Object}. maybe null
    * @return the stream contains {@link Class} which ordering in like "[me, father, grandfather ...]" .
    */
-  static Stream<Class<?>> familyze(final Object mysterio) {
+  public static Stream<Class<?>> familyze(final Object mysterio) {
     List<Class<?>> classes = new ArrayList<>();
     Class<?> clazz = getClass(mysterio);
     while (clazz != null) {
@@ -71,7 +71,7 @@ public interface Reflections {
    * @param mysterio {@link Class} or an instance of any {@link Object}. maybe null
    * @return {@link java.lang.Class}, or null if {@code mysterio} is null
    */
-  static Class<?> getClass(final Object mysterio) {
+  public static Class<?> getClass(final Object mysterio) {
     // @formatter:off
     return mysterio == null ? null :
       (mysterio instanceof Class) ? ((Class<?>) mysterio) :
@@ -86,7 +86,7 @@ public interface Reflections {
    * @param fieldName the name of field
    * @return {@link Field}, or null if the field not found
    */
-  static Field getField(final Object mysterio, final String fieldName) {
+  public static Field getField(final Object mysterio, final String fieldName) {
     // @formatter:off
     return Streamr.firstOf(Streamr.stream(getFields(mysterio)), (f) -> StringUtils.equals(fieldName, f.getName()));
     // @formatter:on
@@ -98,7 +98,7 @@ public interface Reflections {
    * @param mysterio {@link Class} or an instance of any {@link Object}. maybe null
    * @return all fields declared in class of the object or super class
    */
-  static Field[] getFields(final Object mysterio) {
+  public static Field[] getFields(final Object mysterio) {
     return familyze(mysterio).map(Class::getDeclaredFields).flatMap(Arrays::stream).map(Reflections::conciliation).toArray(Field[]::new);
   }
 
@@ -109,7 +109,7 @@ public interface Reflections {
    * @param typeOfValue type of the value
    * @return true if the value is able to set the field, or returns false if that is not able to
    */
-  static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
+  public static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
     // @formatter:off
     return
       typeOfFiled != null &&
@@ -130,7 +130,7 @@ public interface Reflections {
    * @param value the value
    * @return true if the value is able to set the field, or returns false if that is not able to
    */
-  static boolean isAssignable(final Field field, final Object value) {
+  public static boolean isAssignable(final Field field, final Object value) {
     // @formatter:off
     return field != null && isAssignable(field.getType(), getClass(value));
     // @formatter:on
@@ -143,7 +143,7 @@ public interface Reflections {
    * @param field {@link Field}
    * @return true if the field is declared in class of the object or super class, or returns false if that is not
    */
-  static boolean isAssignable(final Object mysterio, final Field field) {
+  public static boolean isAssignable(final Object mysterio, final Field field) {
     // @formatter:off
     return Trebuchet.orElse((Object _mysterio, Field _field) -> {return _field.getDeclaringClass().isAssignableFrom(getClass(_mysterio));}, (ex, x) -> false).apply(mysterio, field);
     // @formatter:on
@@ -157,7 +157,7 @@ public interface Reflections {
    * @param value the value
    * @return true if the value is able to set the field of the object, or returns false if that is not able to
    */
-  static boolean isAssignable(final Object mysterio, final Field field, final Object value) {
+  public static boolean isAssignable(final Object mysterio, final Field field, final Object value) {
     return isAssignable(mysterio, field) && isAssignable(field, value);
   }
 }

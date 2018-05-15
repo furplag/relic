@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  * @author furplag
  *
  */
-public interface Streamr {
+public final class Streamr {
 
   /**
    * do less coding in case of {@link Stream#filter(java.util.function.Predicate) Stream#filter}({@link Objects#nonNull(Object) Objects::nonNull}) .
@@ -52,7 +52,7 @@ public interface Streamr {
    * @param collection {@link Collection}, maybe null
    * @return the stream which excluded null
    */
-  static <T> Stream<T> stream(final Collection<T> collection) {
+  public static <T> Stream<T> stream(final Collection<T> collection) {
     return collection == null ? Stream.empty() : excludeNull(collection.stream());
   }
 
@@ -63,7 +63,7 @@ public interface Streamr {
    * @param stream {@link Stream}, maybe null
    * @return the stream which excluded empty element
    */
-  static <T> Stream<T> stream(final Stream<T> stream) {
+  public static <T> Stream<T> stream(final Stream<T> stream) {
     return excludeNull(stream);
   }
 
@@ -79,7 +79,7 @@ public interface Streamr {
    * @return the stream which excluded null
    */
   @SafeVarargs
-  static <T> Stream<T> stream(final T... elements) {
+  public static <T> Stream<T> stream(final T... elements) {
     return elements == null ? Stream.empty() : excludeNull(Arrays.stream(elements));
   }
 
@@ -91,7 +91,7 @@ public interface Streamr {
    * @param condition {@link Predicate}
    * @return the first of element in the stream that match the given predicate
    */
-  static <T> T firstOf(final Stream<T> stream, final Predicate<? super T> condition) {
+  public static <T> T firstOf(final Stream<T> stream, final Predicate<? super T> condition) {
     return filtering(stream, condition).findFirst().orElse(null);
   }
 
@@ -104,7 +104,7 @@ public interface Streamr {
    * @return elements in the stream that match the given predicate
    */
   private static <T> Stream<T> filtering(final Stream<T> stream, final Predicate<? super T> condition) {
-    return stream.dropWhile(condition == null ?  ((e) -> false) : condition.negate()).filter(condition == null ?  ((e) -> true) : condition);
+    return stream.filter(condition == null ?  ((e) -> true) : condition);
   }
 
   /**
@@ -115,7 +115,7 @@ public interface Streamr {
    * @param condition {@link Predicate}
    * @return the last of element in the stream that match the given predicate
    */
-  static <T> T lastOf(final Stream<T> stream, final Predicate<? super T> condition) {
+  public static <T> T lastOf(final Stream<T> stream, final Predicate<? super T> condition) {
     final List<T> list = toList(filtering(stream, condition));
 
     return list.isEmpty() ? null : list.get(list.size() - 1);
@@ -129,7 +129,7 @@ public interface Streamr {
    * @param tweaker {@link UnaryOperator}
    * @return unclosed (actually, duplicated) stream of T which modified each elements
    */
-  static <T> Stream<T> tweak(final Stream<T> stream, final UnaryOperator<T> tweaker) {
+  public static <T> Stream<T> tweak(final Stream<T> stream, final UnaryOperator<T> tweaker) {
     return Optional.ofNullable(stream).orElseGet(Stream::empty).map(Optional.ofNullable(tweaker).orElse((t) -> t)).collect(Collectors.toList()).stream();
   }
 
@@ -140,7 +140,12 @@ public interface Streamr {
    * @param stream {@link Stream}, maybe null
    * @return {@link List} of T
    */
-  static <T> List<T> toList(final Stream<T> stream) {
+  public static <T> List<T> toList(final Stream<T> stream) {
     return stream(stream).collect(Collectors.toList());
   }
+
+  /**
+   * Streamr instances should NOT be constructed in standard programming.
+   */
+  private Streamr() {}
 }

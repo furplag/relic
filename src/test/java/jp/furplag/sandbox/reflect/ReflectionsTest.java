@@ -18,6 +18,7 @@ package jp.furplag.sandbox.reflect;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,9 +45,10 @@ import jp.furplag.sandbox.outerworld.nested.Overriden;
 public class ReflectionsTest {
 
   @Test
-  public void test() {
-    assertTrue(new Reflections() {} instanceof Reflections);
-    assertTrue(Reflections.class.isAssignableFrom(new Reflections() {}.getClass()));
+  public void test() throws ReflectiveOperationException {
+    Constructor<?> c = Reflections.class.getDeclaredConstructor();
+    c.setAccessible(true);
+    assertTrue(c.newInstance() instanceof Reflections);
 
     assertNull(Reflections.conciliation((Field) null));
   }

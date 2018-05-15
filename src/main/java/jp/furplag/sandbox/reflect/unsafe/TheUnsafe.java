@@ -36,9 +36,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import jp.furplag.function.Trebuchet;
-import jp.furplag.function.Trebuchet.ThrowableBiFunction;
-import jp.furplag.function.Trebuchet.ThrowableOperator;
+import jp.furplag.sandbox.function.Trebuchet;
+import jp.furplag.sandbox.function.Trebuchet.ThrowableBiFunction;
+import jp.furplag.sandbox.function.Trebuchet.ThrowableOperator;
 import jp.furplag.sandbox.reflect.Reflections;
 
 /**
@@ -46,9 +46,11 @@ import jp.furplag.sandbox.reflect.Reflections;
  *
  * @author furplag
  */
+@SuppressWarnings({"restriction"})
 public final class TheUnsafe {
-  /** {@link AccessibleObject#trySetAccessible()} implicitly . */
-  private static final ThrowableOperator<Field> conciliation = (field) -> Stream.ofNullable(field).peek(AccessibleObject::trySetAccessible).findAny().orElse(null);
+
+  /** {@link AccessibleObject#setAccessible(boolean)} implicitly . */
+  private static final ThrowableOperator<Field> conciliation = (field) -> field == null ? null : Stream.of(field).peek((f) -> f.setAccessible(true)).findAny().orElse(null);
   /** prettifying method name . */
   private static final BiFunction<Class<?>, Prefix, String> methodName = (type, prefix) -> String.join("", Objects.toString(prefix, ""), StringUtils.capitalize(Objects.toString(type, "").replaceAll("^.*\\.", "").toLowerCase(Locale.ROOT)));
   /** {@link MethodType} for getter . */
@@ -80,7 +82,7 @@ public final class TheUnsafe {
   private TheUnsafe() {
     final Class<?> sunMiscUnsafe = Trebuchet.orElse((Class<?> x) -> Class.forName("sun.misc.Unsafe"), (ex, x) -> null).apply(null);
     theUnsafe = Trebuchet.orElse((Class<?> x) -> conciliation.apply(x.getDeclaredField("theUnsafe")).get(null), (ex, x) -> null).apply(sunMiscUnsafe);
-    final ThrowableBiFunction<String, MethodType, MethodHandle> finder = (name, methodType) -> MethodHandles.privateLookupIn(sunMiscUnsafe, MethodHandles.lookup()).findVirtual(sunMiscUnsafe, name, methodType);
+    final ThrowableBiFunction<String, MethodType, MethodHandle> finder = (name, methodType) -> MethodHandles.lookup().findVirtual(sunMiscUnsafe, name, methodType);
     final BiFunction<Class<?>, Prefix, Pair<Class<?>, MethodHandle>> pair = (x, y) -> ImmutablePair.of(x, Trebuchet.orElse(finder, (ex, e) -> null).apply(methodName.apply(x, y), (Prefix.get.equals(y) ? getMethodType : putMethodType).apply(x)));
 
     staticFieldBase = Trebuchet.orElse(finder, (ex, x) -> null).apply("staticFieldBase", MethodType.methodType(Object.class, Field.class));

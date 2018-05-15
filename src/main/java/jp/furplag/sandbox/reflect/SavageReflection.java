@@ -28,7 +28,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import jp.furplag.function.Trebuchet;
+import jp.furplag.sandbox.function.Trebuchet;
 import jp.furplag.sandbox.reflect.unsafe.TheUnsafe;
 import jp.furplag.sandbox.stream.Streamr;
 
@@ -38,12 +38,12 @@ import jp.furplag.sandbox.stream.Streamr;
  * @author furplag
  *
  */
-public interface SavageReflection {
+public final class SavageReflection {
 
   /** shorthand for {@link Modifier#isStatic(int)} . */
-  static final Predicate<Field> isStatic = (f) -> Modifier.isStatic(f.getModifiers());
+  public static final Predicate<Field> isStatic = (f) -> Modifier.isStatic(f.getModifiers());
   /** shorthand for {@link Set#contains(Object)} . */
-  static final BiPredicate<Set<String>, Field> exclusions = (set, f) -> set != null && set.contains(f.getName());
+  public static final BiPredicate<Set<String>, Field> exclusions = (set, f) -> set != null && set.contains(f.getName());
 
   /**
    * read field value whether protected ( or invisible ) .
@@ -63,7 +63,7 @@ public interface SavageReflection {
    * @param field {@link Field}
    * @return value of field
    */
-  static Object get(final Object mysterio, final Field field) {
+  public static Object get(final Object mysterio, final Field field) {
     return !Reflections.isAssignable(mysterio, field) ? null : Trebuchet.orElse(((Trebuchet.ThrowableBiFunction<Object, Field, Object>) (o, f) -> readField(o, f)), (x, e) -> null).apply(mysterio, field);
   }
 
@@ -74,7 +74,7 @@ public interface SavageReflection {
    * @param fieldName the name of field
    * @return value of field
    */
-  static Object get(final Object mysterio, final String fieldName) {
+  public static Object get(final Object mysterio, final String fieldName) {
     return get(mysterio, Reflections.getField(mysterio, fieldName));
   }
 
@@ -86,7 +86,7 @@ public interface SavageReflection {
    * @param value the value for update
    * @return true if the field update successfully
    */
-  static boolean set(final Object mysterio, final Field field, final Object value) {
+  public static boolean set(final Object mysterio, final Field field, final Object value) {
     // @formatter:off
     return
       Reflections.isAssignable(mysterio, field, value) &&
@@ -106,7 +106,7 @@ public interface SavageReflection {
    * @param value the value for update
    * @return true if the field update successfully
    */
-  static boolean set(final Object mysterio, final String fieldName, final Object value) {
+  public static boolean set(final Object mysterio, final String fieldName, final Object value) {
     return set(mysterio, Reflections.getField(mysterio, fieldName), value);
   }
 
@@ -128,7 +128,7 @@ public interface SavageReflection {
    * @param excludes the name of field which you want to except from result.
    * @return {@link LinkedHashMap} &lt;{@link String}, {@link Object}&gt;
    */
-  static Map<String, Object> read(final Object instance, final String... excludes) {
+  public static Map<String, Object> read(final Object instance, final String... excludes) {
     final Set<String> _excludes = Streamr.stream(excludes).collect(Collectors.toCollection(HashSet::new));
     // @formatter:off
     return Collections.unmodifiableMap(Streamr.stream(Reflections.getFields(instance instanceof Class ? null : instance)).filter(isStatic.negate()).filter((f) -> !exclusions.test(_excludes, f))

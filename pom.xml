@@ -22,7 +22,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.furplag.sandbox</groupId>
   <artifactId>relic</artifactId>
-  <version>1.0.0</version>
+  <version>0.9.0-Java8</version>
   <packaging>jar</packaging>
   <inceptionYear>2018</inceptionYear>
   <name>${project.artifactId}</name>
@@ -64,7 +64,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>9</java.version>
+    <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
   </properties>
@@ -83,12 +83,6 @@
   </repositories>
 
   <dependencies>
-
-    <dependency>
-      <groupId>jp.furplag.sandbox</groupId>
-      <artifactId>trebuchet</artifactId>
-      <version>1.0.1</version>
-    </dependency>
 
     <dependency>
       <groupId>junit</groupId>
