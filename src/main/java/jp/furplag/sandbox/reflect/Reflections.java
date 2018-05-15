@@ -16,7 +16,9 @@
 
 package jp.furplag.sandbox.reflect;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import jp.furplag.function.Trebuchet;
 import jp.furplag.sandbox.stream.Streamr;
 
 /**
@@ -36,21 +39,27 @@ import jp.furplag.sandbox.stream.Streamr;
 public interface Reflections {
 
   /**
-   * {@link #isAssignable(Field, Object)} using this method if the value type is standard object .
+   * execute {@link AccessibleObject#trySetAccessible()} stealithly .
    *
-   * @param typeOfFiled type of the field
-   * @param typeOfValue type of the value
-   * @return true if the value is able to set the field, or returns false if that is not able to
+   * @param <T> any of {@link AccessibleObject}
+   * @param accessibleObject {@link AccessibleObject}
+   * @return {@code accessibleObject}
    */
-  private static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
-    // @formatter:off
-    return typeOfFiled == null ? false :
-      typeOfFiled.isPrimitive() && typeOfValue == null ? false :
-      (
-        ClassUtils.isAssignable(typeOfValue, typeOfFiled) ||
-        Arrays.stream(ClassUtils.primitivesToWrappers(typeOfFiled, typeOfValue)).allMatch(Number.class::isAssignableFrom)
-      );
-    // @formatter:on
+  static <T extends AccessibleObject> T conciliation(final T accessibleObject) {
+    return Stream.of(accessibleObject).peek(AccessibleObject::trySetAccessible).findAny().orElse(accessibleObject);
+  }
+
+  /**
+   * execute {@link AccessibleObject#setAccessible(boolean)} stealithly .
+   *
+   * @param <T> any of {@link AccessibleObject}
+   * @param accessibleObjects {@link AccessibleObject}
+   * @return {@code accessibleObjects}
+   */
+  @SuppressWarnings("unchecked")
+  @SafeVarargs
+  static <T extends AccessibleObject> T[] conciliation(final T... accessibleObjects) {
+    return (T[]) Streamr.stream(accessibleObjects).map(Reflections::conciliation).toArray();
   }
 
   /**
@@ -104,7 +113,46 @@ public interface Reflections {
    * @return all fields declared in class of the object or super class
    */
   static Field[] getFields(final Object mysterio) {
-    return familyze(mysterio).map(Class::getDeclaredFields).flatMap(Arrays::stream).toArray(Field[]::new);
+    return familyze(mysterio).map(Class::getDeclaredFields).flatMap(Arrays::stream).map(Reflections::conciliation).toArray(Field[]::new);
+  }
+
+  /**
+   * {@link Class#getDeclaredMethod(String, Class...)} with deep finder .
+   *
+   * @param mysterio {@link Class} or the instance.
+   * @param methodName the name of the method
+   * @param parameterTypes the parameter array
+   * @return {@link Method}, or null if the field not found
+   */
+  static Method getMethod(final Object mysterio, final String methodName, final Class<?>... parameterTypes) {
+    // @formatter:off
+    return familyze(mysterio)
+      .map(Trebuchet.orElse((Class<?> x) -> {return x.getDeclaredMethod(methodName, parameterTypes);}, (ex, x) -> null))
+      .map(Reflections::conciliation)
+      .findFirst()
+      .orElse(null);
+    // @formatter:on
+  }
+
+  /**
+   * {@link #isAssignable(Field, Object)} using this method if the value type is standard object .
+   *
+   * @param typeOfFiled type of the field
+   * @param typeOfValue type of the value
+   * @return true if the value is able to set the field, or returns false if that is not able to
+   */
+  static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
+    // @formatter:off
+    return
+      typeOfFiled != null &&
+      !(typeOfFiled.isPrimitive() && typeOfValue == null) &&
+      !(Character.class.equals(ClassUtils.primitiveToWrapper(getClass(typeOfValue))) && Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled))) &&
+      (
+        String.class.equals(typeOfFiled) ||
+        (ClassUtils.isAssignable(typeOfValue, typeOfFiled)) ||
+        Arrays.stream(ClassUtils.primitivesToWrappers(typeOfFiled, typeOfValue)).allMatch(Number.class::isAssignableFrom)
+      );
+    // @formatter:on
   }
 
   /**
@@ -116,11 +164,8 @@ public interface Reflections {
    */
   static boolean isAssignable(final Field field, final Object value) {
     // @formatter:off
-    return field == null ? false :
-      field.getType().isPrimitive() && value == null ? false :
-      isAssignable(field.getType(), getClass(value))
+    return field != null && isAssignable(field.getType(), getClass(value));
     // @formatter:on
-    ;
   }
 
   /**
@@ -131,9 +176,20 @@ public interface Reflections {
    * @return true if the field is declared in class of the object or super class, or returns false if that is not
    */
   static boolean isAssignable(final Object mysterio, final Field field) {
-    final Class<?> theClass = getClass(mysterio);
     // @formatter:off
-    return field != null && theClass != null && field.getDeclaringClass().isAssignableFrom(theClass);
+    return Trebuchet.orElse((Object _mysterio, Field _field) -> {return _field.getDeclaringClass().isAssignableFrom(getClass(_mysterio));}, (ex, x) -> false).apply(mysterio, field);
     // @formatter:on
+  }
+
+  /**
+   * test if the value is able to set the field of the object .
+   *
+   * @param mysterio {@link Class} or the Instance
+   * @param field {@link Field}
+   * @param value the value
+   * @return true if the value is able to set the field of the object, or returns false if that is not able to
+   */
+  static boolean isAssignable(final Object mysterio, final Field field, final Object value) {
+    return isAssignable(mysterio, field) && isAssignable(field, value);
   }
 }

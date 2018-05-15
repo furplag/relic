@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.sandbox.outerworld.nested;
 
-import jp.furplag.sandbox.outerworld.TheEntity;
+import jp.furplag.sandbox.outerworld.TheObject;
 
-public class Wrappered extends TheEntity {
+public class Wrappered extends TheObject {
 
   private final Boolean theBoolean;
   private final Byte theByte;
@@ -30,7 +31,7 @@ public class Wrappered extends TheEntity {
 
   public Wrappered() {
     super();
-    theBoolean = true;
+    theBoolean = !super.isTheBoolean();
     theByte = 1;
     theChar = '呪';
     theDouble = 12.3d;

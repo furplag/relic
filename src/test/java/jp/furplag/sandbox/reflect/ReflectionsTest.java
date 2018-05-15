@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.sandbox.reflect;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,23 +34,23 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.Nothing;
 import jp.furplag.sandbox.outerworld.TheEntity;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 
-class ReflectionsTest {
+public class ReflectionsTest {
 
   @Test
-  void test() {
+  public void test() {
     assertTrue(new Reflections() {} instanceof Reflections);
     assertTrue(Reflections.class.isAssignableFrom(new Reflections() {}.getClass()));
   }
 
   @Test
-  void testGetClass() {
+  public void testGetClass() {
     assertNull(Reflections.getClass(null));
     assertEquals(Class.class, Reflections.getClass(Class.class));
     assertEquals(String.class, Reflections.getClass(String.class));
@@ -57,7 +58,7 @@ class ReflectionsTest {
   }
 
   @Test
-  void testFamilyze() {
+  public void testFamilyze() {
     assertArrayEquals(new Object[] {}, Reflections.familyze(null).toArray());
     assertArrayEquals(new Object[] {Object.class}, Reflections.familyze(Object.class).toArray());
     assertArrayEquals(new Object[] {Class.class, Object.class}, Reflections.familyze(Class.class).toArray());
@@ -69,7 +70,7 @@ class ReflectionsTest {
   }
 
   @Test
-  void testGetFields() {
+  public void testGetFields() {
     assertArrayEquals(new Field[] {}, Reflections.getFields(null));
     assertArrayEquals(new Field[] {}, Reflections.getFields(Object.class));
     assertArrayEquals(Nothing.class.getDeclaredFields(), Reflections.getFields(new Nothing()));
@@ -93,18 +94,18 @@ class ReflectionsTest {
   }
 
   @Test
-  void testgetField() {
+  public void testgetField() {
     assertEquals((Field) null, Reflections.getField(null, null));
     assertEquals((Field) null, Reflections.getField(null, Objects.toString(null)));
     assertEquals((Field) null, Reflections.getField(null, Objects.toString(null, "")));
     assertEquals((Field) null, Reflections.getField(int.class, "MAX_VALUE"));
-    assertEquals(FieldUtils.getDeclaredField(Integer.class, "MAX_VALUE"), Reflections.getField(123, "MAX_VALUE"));
-    assertEquals(FieldUtils.getDeclaredField(Integer.class, "MAX_VALUE"), Reflections.getField(Integer.class, "MAX_VALUE"));
-    assertEquals(FieldUtils.getDeclaredField(Integer.class, "MAX_VALUE"), Reflections.getField(Integer.valueOf("-123"), "MAX_VALUE"));
+    assertEquals(FieldUtils.getDeclaredField(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING", true), Reflections.getField(new TheEntity(), "PRIVATE_STATIC_FINAL_STRING"));
+    assertEquals(FieldUtils.getDeclaredField(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING", true), Reflections.getField(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING"));
+    assertEquals(FieldUtils.getDeclaredField(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING", true), Reflections.getField(new Duplicate(), "PRIVATE_STATIC_FINAL_STRING"));
   }
 
   @Test
-  void testIsAssignableOfClass() throws ReflectiveOperationException, SecurityException {
+  public void testIsAssignableOfClass() throws ReflectiveOperationException, SecurityException {
     assertFalse(Reflections.isAssignable((Object) null, (Field) null));
     assertFalse(Reflections.isAssignable((Object) null, TheEntity.class.getDeclaredField("thePrimitive")));
     assertFalse(Reflections.isAssignable(TheEntity.class, (Field) null));
@@ -121,7 +122,7 @@ class ReflectionsTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void testIsAssignableOfField() throws ReflectiveOperationException, SecurityException {
+  public void testIsAssignableOfField() throws ReflectiveOperationException, SecurityException {
     assertFalse(Reflections.isAssignable((Field) null, (Object) null));
     assertFalse(Reflections.isAssignable((Field) null, "text"));
     assertFalse(Reflections.isAssignable(TheEntity.class.getDeclaredField("thePrimitiveOfPackage"), (Object) null));
@@ -133,7 +134,7 @@ class ReflectionsTest {
     assertFalse(Reflections.isAssignable(TheEntity.class.getDeclaredField("thePrimitiveOfPackage"), undefined));
     assertTrue(Reflections.isAssignable(TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING"), (Object) null));
     assertTrue(Reflections.isAssignable(TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING"), "enable"));
-    assertFalse(Reflections.isAssignable(TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING"), true));
+    assertTrue(Reflections.isAssignable(TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING"), true));
 
     Method test = Reflections.class.getDeclaredMethod("isAssignable", Class.class, Class.class);
     test.setAccessible(true);
@@ -158,7 +159,7 @@ class ReflectionsTest {
             assertEquals(true, test.invoke(null, c, BigDecimal.class));
             assertEquals(true, test.invoke(null, c, BigInteger.class));
           } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            fail(e);
+            fail(e.getMessage());
           }
         });
       } else {

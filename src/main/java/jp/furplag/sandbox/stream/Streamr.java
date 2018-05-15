@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * do less coding when using {@link Stream} .
+ * do less coding when using Stream API .
  *
  * @author furplag
  *
@@ -116,7 +116,7 @@ public interface Streamr {
    * @return the last of element in the stream that match the given predicate
    */
   static <T> T lastOf(final Stream<T> stream, final Predicate<? super T> condition) {
-    List<T> list = toList(filtering(stream, condition));
+    final List<T> list = toList(filtering(stream, condition));
 
     return list.isEmpty() ? null : list.get(list.size() - 1);
   }

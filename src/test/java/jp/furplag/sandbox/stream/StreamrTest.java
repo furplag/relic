@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.furplag.sandbox.stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -31,91 +32,91 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-class StreamrTest {
+public class StreamrTest {
 
   @Test
-  void test() {
-    assertArrayEquals(new Object[]{}, Streamr.stream((Stream<Object>) null).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream((List<Object>) null).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream((Set<Object>) null).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream((Queue<Object>) null).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream((Deque<Object>) null).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream((Object) null).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream((Object[]) null).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream((Integer[]) null).toArray());
+  public void test() {
+    assertArrayEquals(new Object[] {}, Streamr.stream((Stream<Object>) null).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((List<Object>) null).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((Set<Object>) null).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((Queue<Object>) null).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((Deque<Object>) null).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((Object) null).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((Object[]) null).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((Integer[]) null).toArray());
 
-    assertArrayEquals(new Object[]{}, Streamr.stream(Stream.empty()).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(Collections.emptyList()).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(Collections.emptySet()).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(new DelayQueue<>()).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(new ArrayDeque<>()).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(new Object[] {}).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(new Integer[] {}).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(Stream.empty()).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(Collections.emptyList()).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(Collections.emptySet()).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(new DelayQueue<>()).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(new ArrayDeque<>()).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(new Object[] {}).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(new Integer[] {}).toArray());
 
-    assertArrayEquals(new Object[]{}, Streamr.stream(Stream.of((Object) null)).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(Arrays.asList((Object) null)).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(new HashSet<>(Arrays.asList((Object) null))).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(new Object[] {null}).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.stream(new Integer[] {null}).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(Stream.of((Object) null)).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(Arrays.asList((Object) null)).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(new HashSet<>(Arrays.asList((Object) null))).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(new Object[] { null }).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream(new Integer[] { null }).toArray());
 
-    assertArrayEquals(new Integer[] {1, 2, 3}, Streamr.stream(Stream.of(new Integer[] {1, 2, 3})).toArray(Integer[]::new));
-    assertArrayEquals(new Integer[] {1, 2, 3}, Streamr.stream(Stream.of(new Integer[] {1, null, 2, null, 3})).toArray(Integer[]::new));
-    assertArrayEquals(new Integer[] {1, 2, 3}, Streamr.stream(Arrays.asList(new Integer[] {1, 2, 3})).toArray(Integer[]::new));
-    assertArrayEquals(new Integer[] {1, 2, 3}, Streamr.stream(new HashSet<>(Arrays.asList(new Integer[] {1, null, 2, null, 3}))).toArray(Integer[]::new));
-    assertArrayEquals(new Integer[] {1, 2, 3}, Streamr.stream(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)).toArray(Integer[]::new));
-    assertArrayEquals(new Integer[] {1, 2, 3}, Streamr.stream(new Integer[] {1, null, 2, null, 3}).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Stream.of(new Integer[] { 1, 2, 3 })).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Stream.of(new Integer[] { 1, null, 2, null, 3 })).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Arrays.asList(new Integer[] { 1, 2, 3 })).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(new HashSet<>(Arrays.asList(new Integer[] { 1, null, 2, null, 3 }))).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(new Integer[] { 1, null, 2, null, 3 }).toArray(Integer[]::new));
   }
 
   @Test
-  void testToList() {
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((Stream<Object>) null)));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((List<Object>) null)));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((Set<Object>) null)));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((Queue<Object>) null)));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((Deque<Object>) null)));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((Object) null)));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((Object[]) null)));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream((Integer[]) null)));
+  public void testToList() {
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((Stream<Object>) null)));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((List<Object>) null)));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((Set<Object>) null)));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((Queue<Object>) null)));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((Deque<Object>) null)));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((Object) null)));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((Object[]) null)));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream((Integer[]) null)));
 
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(Stream.empty())));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(Collections.emptyList())));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(Collections.emptySet())));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(new DelayQueue<>())));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(new ArrayDeque<>())));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(new Object[] {})));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(new Integer[] {})));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(Stream.empty())));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(Collections.emptyList())));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(Collections.emptySet())));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(new DelayQueue<>())));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(new ArrayDeque<>())));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(new Object[] {})));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(new Integer[] {})));
 
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(Stream.of((Object) null))));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(Arrays.asList((Object) null))));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(new HashSet<>(Arrays.asList((Object) null)))));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(new Object[] {null})));
-    assertEquals(Arrays.asList(new Object[]{}), Streamr.toList(Streamr.stream(new Integer[] {null})));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(Stream.of((Object) null))));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(Arrays.asList((Object) null))));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(new HashSet<>(Arrays.asList((Object) null)))));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(new Object[] { null })));
+    assertEquals(Arrays.asList(new Object[] {}), Streamr.toList(Streamr.stream(new Integer[] { null })));
 
-    assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), Streamr.toList(Streamr.stream(Stream.of(new Integer[] {1, 2, 3}))));
-    assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), Streamr.toList(Streamr.stream(Stream.of(new Integer[] {1, null, 2, null, 3}))));
-    assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), Streamr.toList(Streamr.stream(Arrays.asList(new Integer[] {1, 2, 3}))));
-    assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), Streamr.toList(Streamr.stream(new HashSet<>(Arrays.asList(new Integer[] {1, null, 2, null, 3})))));
-    assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), Streamr.toList(Streamr.stream(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3))));
-    assertEquals(Arrays.asList(new Integer[] {1, 2, 3}), Streamr.toList(Streamr.stream(new Integer[] {1, null, 2, null, 3})));
+    assertEquals(Arrays.asList(new Integer[] { 1, 2, 3 }), Streamr.toList(Streamr.stream(Stream.of(new Integer[] { 1, 2, 3 }))));
+    assertEquals(Arrays.asList(new Integer[] { 1, 2, 3 }), Streamr.toList(Streamr.stream(Stream.of(new Integer[] { 1, null, 2, null, 3 }))));
+    assertEquals(Arrays.asList(new Integer[] { 1, 2, 3 }), Streamr.toList(Streamr.stream(Arrays.asList(new Integer[] { 1, 2, 3 }))));
+    assertEquals(Arrays.asList(new Integer[] { 1, 2, 3 }), Streamr.toList(Streamr.stream(new HashSet<>(Arrays.asList(new Integer[] { 1, null, 2, null, 3 })))));
+    assertEquals(Arrays.asList(new Integer[] { 1, 2, 3 }), Streamr.toList(Streamr.stream(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3))));
+    assertEquals(Arrays.asList(new Integer[] { 1, 2, 3 }), Streamr.toList(Streamr.stream(new Integer[] { 1, null, 2, null, 3 })));
   }
 
   @Test
-  void testTweak() {
-    assertArrayEquals(new Object[]{}, Streamr.tweak(Streamr.stream((Stream<Object>) null), o -> o).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.tweak(Streamr.stream((Stream<Object>) null), Objects::toString).toArray());
-    assertArrayEquals(new String[] {"null", "null", "null"}, Streamr.tweak(Stream.of(null, null, null), Objects::toString).toArray());
-    assertArrayEquals(new Object[]{}, Streamr.tweak(Streamr.stream(null, null, null), Objects::toString).toArray());
-    assertArrayEquals(new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), null).toArray());
-    assertArrayEquals(new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o).toArray());
-    assertArrayEquals(new Object[]{null, null, null, null, null, null, null, null, null, null}, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> null).toArray());
-    assertArrayEquals(new Integer[] {0, 1, 0, 1, 0, 1, 0, 1, 0, 1}, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).toArray());
+  public void testTweak() {
+    assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream((Stream<Object>) null), o -> o).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream((Stream<Object>) null), Objects::toString).toArray());
+    assertArrayEquals(new String[] { "null", "null", "null" }, Streamr.tweak(Stream.of(null, null, null), Objects::toString).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream(null, null, null), Objects::toString).toArray());
+    assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), null).toArray());
+    assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o).toArray());
+    assertArrayEquals(new Object[] { null, null, null, null, null, null, null, null, null, null }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> null).toArray());
+    assertArrayEquals(new Integer[] { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).toArray());
     assertEquals(5, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).mapToInt(Integer::intValue).sum());
   }
 
   @Test
-  void testFirstOf() {
+  public void testFirstOf() {
     assertEquals(null, Streamr.firstOf(Streamr.stream((Stream<Long>) null), o -> o.intValue() % 2 == 0));
     assertEquals(null, Streamr.firstOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 10));
     assertEquals((Long) 6L, Streamr.firstOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 5));
@@ -128,7 +129,7 @@ class StreamrTest {
   }
 
   @Test
-  void testLastOf() {
+  public void testLastOf() {
     assertEquals(null, Streamr.lastOf(Streamr.stream((Stream<Long>) null), o -> o.intValue() % 2 == 0));
     assertEquals(null, Streamr.lastOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 10));
     assertEquals((Long) 9L, Streamr.lastOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 5));
