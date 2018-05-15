@@ -47,16 +47,6 @@ import jp.furplag.sandbox.reflect.Reflections;
  * @author furplag
  */
 public final class TheUnsafe {
-
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
-  };
-
-  /** prefix of handler . */
-  private static enum Prefix {
-    get, put
-  }
   /** {@link AccessibleObject#trySetAccessible()} implicitly . */
   private static final ThrowableOperator<Field> conciliation = (field) -> Stream.ofNullable(field).peek(AccessibleObject::trySetAccessible).findAny().orElse(null);
   /** prettifying method name . */
@@ -65,6 +55,11 @@ public final class TheUnsafe {
   private static final Function<Class<?>, MethodType> getMethodType = (type) -> MethodType.methodType(type, Object.class, long.class);
   /** {@link MethodType} for setter . */
   private static final Function<Class<?>, MethodType> putMethodType = (type) -> MethodType.methodType(void.class, Object.class, long.class, type);
+
+  /** prefix of handler . */
+  private static enum Prefix {
+    get, put
+  }
 
   /** {@link sun.misc.Unsafe#getUnsafe()}. */
   private final Object theUnsafe;
@@ -183,4 +178,9 @@ public final class TheUnsafe {
   public static final TheUnsafe getInstance() {
     return Origin.theUnsafe;
   }
+
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {
+    private static final TheUnsafe theUnsafe = new TheUnsafe();
+  };
 }
