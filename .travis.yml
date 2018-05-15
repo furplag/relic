@@ -1,6 +1,8 @@
 branches:
   only:
     - master
+    - jdk-8
+
 language: java
 
 jdk:

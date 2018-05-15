@@ -18,6 +18,7 @@ package jp.furplag.sandbox.stream;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +38,14 @@ import org.junit.Test;
 public class StreamrTest {
 
   @Test
-  public void test() {
+  public void test() throws ReflectiveOperationException {
+    Constructor<?> c = Streamr.class.getDeclaredConstructor();
+    c.setAccessible(true);
+    assertTrue(c.newInstance() instanceof Streamr);
+  }
+
+  @Test
+  public void testStream() {
     assertArrayEquals(new Object[] {}, Streamr.stream((Stream<Object>) null).toArray());
     assertArrayEquals(new Object[] {}, Streamr.stream((List<Object>) null).toArray());
     assertArrayEquals(new Object[] {}, Streamr.stream((Set<Object>) null).toArray());

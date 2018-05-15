@@ -18,6 +18,7 @@ package jp.furplag.sandbox.reflect;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
@@ -35,7 +36,11 @@ import jp.furplag.sandbox.stream.Streamr;
 public class SavageReflectionTest {
 
   @Test
-  public void test() {
+  public void test() throws ReflectiveOperationException {
+    Constructor<?> c = SavageReflection.class.getDeclaredConstructor();
+    c.setAccessible(true);
+    assertTrue(c.newInstance() instanceof SavageReflection);
+
     assertFalse(SavageReflection.exclusions.test(null, Reflections.getField(TheEntity.class, "thePrimitive")));
     assertTrue(SavageReflection.exclusions.test(Streamr.stream(Reflections.getFields(TheEntity.class)).map(Field::getName).collect(Collectors.toSet()), Reflections.getField(TheEntity.class, "thePrimitive")));
   }
