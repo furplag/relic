@@ -81,6 +81,7 @@ public final class TheUnsafe {
     final Class<?> sunMiscUnsafe = Trebuchet.orElse((Class<?> x) -> Class.forName("sun.misc.Unsafe"), (ex, x) -> null).apply(null);
     theUnsafe = Trebuchet.orElse((Class<?> x) -> conciliation.apply(x.getDeclaredField("theUnsafe")).get(null), (ex, x) -> null).apply(sunMiscUnsafe);
     final ThrowableBiFunction<String, MethodType, MethodHandle> finder = (name, methodType) -> MethodHandles.privateLookupIn(sunMiscUnsafe, MethodHandles.lookup()).findVirtual(sunMiscUnsafe, name, methodType);
+    final BiFunction<Class<?>, Prefix, Pair<Class<?>, MethodHandle>> pair = (x, y) -> ImmutablePair.of(x, Trebuchet.orElse(finder, (ex, e) -> null).apply(methodName.apply(x, y), (Prefix.get.equals(y) ? getMethodType : putMethodType).apply(x)));
 
     staticFieldBase = Trebuchet.orElse(finder, (ex, x) -> null).apply("staticFieldBase", MethodType.methodType(Object.class, Field.class));
     staticFieldOffset = Trebuchet.orElse(finder, (ex, x) -> null).apply("staticFieldOffset", MethodType.methodType(long.class, Field.class));
@@ -88,13 +89,13 @@ public final class TheUnsafe {
     // @formatter:off
     gettings = Collections.unmodifiableMap(
       Stream.of(boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class)
-        .map(x -> ImmutablePair.of(x, Trebuchet.orElse(finder, (ex, e) -> null).apply(methodName.apply(x, Prefix.get), getMethodType.apply(x))))
+        .map((x) -> pair.apply(x, Prefix.get))
         .filter(x -> Objects.nonNull(x.getValue()))
         .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first))
     );
     settings = Collections.unmodifiableMap(
       gettings.keySet().stream()
-        .map(x -> ImmutablePair.of(x, Trebuchet.orElse(finder, (ex, e) -> null).apply(methodName.apply(x, Prefix.put), putMethodType.apply(x))))
+        .map((x) -> pair.apply(x, Prefix.put))
         .filter(x -> Objects.nonNull(x.getValue()))
         .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first))
     );
