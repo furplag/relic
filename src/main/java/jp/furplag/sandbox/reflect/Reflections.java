@@ -18,15 +18,18 @@ package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import jp.furplag.function.Trebuchet;
+import jp.furplag.function.suppress.SuppressPredicate;
 import jp.furplag.sandbox.stream.Streamr;
 
 /**
@@ -36,6 +39,9 @@ import jp.furplag.sandbox.stream.Streamr;
  *
  */
 public interface Reflections {
+
+  /** shorthand for {@link Modifier#isStatic(int)} . */
+  static final Predicate<Field> isStatic = (f) -> f != null && Modifier.isStatic(f.getModifiers());
 
   /**
    * execute {@link AccessibleObject#trySetAccessible()} stealithly .
@@ -145,7 +151,7 @@ public interface Reflections {
    */
   static boolean isAssignable(final Object mysterio, final Field field) {
     // @formatter:off
-    return Trebuchet.orElse((Object _mysterio, Field _field) -> {return _field.getDeclaringClass().isAssignableFrom(getClass(_mysterio));}, (ex, x) -> false).apply(mysterio, field);
+    return SuppressPredicate.isCorrect(mysterio, field, (Trebuchet.ThrowableBiPredicate<Object, Field>) ((o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o))));
     // @formatter:on
   }
 

@@ -17,31 +17,28 @@
 package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import jp.furplag.function.Trebuchet;
+import jp.furplag.function.suppress.SuppressFunction;
+import jp.furplag.function.suppress.SuppressPredicate;
 import jp.furplag.sandbox.reflect.unsafe.TheUnsafe;
 import jp.furplag.sandbox.stream.Streamr;
 
 /**
- * handle class member whether protected ( or invisible ) WITHOUT using sun.misc.Unsafe .
+ * handles class member whether protected ( or invisible ) .
  *
  * @author furplag
  *
  */
 public interface SavageReflection {
 
-  /** shorthand for {@link Modifier#isStatic(int)} . */
-  static final Predicate<Field> isStatic = (f) -> Modifier.isStatic(f.getModifiers());
   /** shorthand for {@link Set#contains(Object)} . */
   static final BiPredicate<Set<String>, Field> exclusions = (set, f) -> set != null && set.contains(f.getName());
 
@@ -53,7 +50,7 @@ public interface SavageReflection {
    * @return value of field
    */
   private static Object readField(final Object mysterio, final Field field) {
-    return Trebuchet.orElse((Trebuchet.ThrowableBiFunction<Object, Field, Object>) (o, f) -> TheUnsafe.getInstance().get(o, f), (x, e) -> null).apply(mysterio, field);
+    return SuppressFunction.orNull(mysterio, field, (Object o, Field f) -> TheUnsafe.get(o, f));
   }
 
   /**
@@ -64,7 +61,10 @@ public interface SavageReflection {
    * @return value of field
    */
   static Object get(final Object mysterio, final Field field) {
-    return !Reflections.isAssignable(mysterio, field) ? null : Trebuchet.orElse(((Trebuchet.ThrowableBiFunction<Object, Field, Object>) (o, f) -> readField(o, f)), (x, e) -> null).apply(mysterio, field);
+    // @formatter:off
+    return !Reflections.isAssignable(mysterio, field) ? null :
+      SuppressFunction.orNull(mysterio, field, (Object o, Field f) -> readField(o, f));
+    // @formatter:on
   }
 
   /**
@@ -88,13 +88,8 @@ public interface SavageReflection {
    */
   static boolean set(final Object mysterio, final Field field, final Object value) {
     // @formatter:off
-    return
-      Reflections.isAssignable(mysterio, field, value) &&
-      Trebuchet.orElse(((Trebuchet.ThrowableBiFunction<Field, Object, Boolean>) (f, v) -> {
-        writeField(mysterio, f, v);
-
-        return Objects.equals(String.class.equals(f.getType()) ? Objects.toString(value) : value, get(mysterio, f));
-      }), (x, v) -> false).apply(Reflections.conciliation(field), value);
+    return Reflections.isAssignable(mysterio, field, value) &&
+        SuppressPredicate.isCorrect(mysterio, field, (Trebuchet.ThrowableBiPredicate<Object, Field>) (o, f) -> TheUnsafe.set(o, f, value));
     // @formatter:on
   }
 
@@ -111,30 +106,20 @@ public interface SavageReflection {
   }
 
   /**
-   * update field value whether finalized ( or invisible, and static ) .
-   *
-   * @param mysterio {@link Class} or the instance
-   * @param field {@link Field}
-   * @param value the value for update
-   */
-  private static void writeField(final Object mysterio, final Field field, final Object value) {
-    Trebuchet.orElse((Field f, Object v) -> TheUnsafe.getInstance().set(mysterio, f, v), (x, v) -> x.printStackTrace()).accept(field, value);
-  }
-
-  /**
    * read field(s) value of the instance whether protected ( or invisible ) .
    *
-   * @param instance the instance
+   * @param object the instance
    * @param excludes the name of field which you want to except from result.
    * @return {@link LinkedHashMap} &lt;{@link String}, {@link Object}&gt;
    */
-  static Map<String, Object> read(final Object instance, final String... excludes) {
+  static Map<String, Object> read(final Object object, final String... excludes) {
     final Set<String> _excludes = Streamr.stream(excludes).collect(Collectors.toCollection(HashSet::new));
     // @formatter:off
-    return Collections.unmodifiableMap(Streamr.stream(Reflections.getFields(instance instanceof Class ? null : instance)).filter(isStatic.negate()).filter((f) -> !exclusions.test(_excludes, f))
+    return Collections.unmodifiableMap(Streamr.stream(Reflections.getFields(object instanceof Class ? null : object))
+      .filter(Reflections.isStatic.negate().and((f) -> exclusions.negate().test(_excludes, f)))
       .collect(
         LinkedHashMap::new
-      , (map, field) -> map.putIfAbsent(field.getName(), Trebuchet.orElse((x) ->SavageReflection.get(instance, field), (e, x) -> null).apply(field))
+      , (map, field) -> map.putIfAbsent(field.getName(), SuppressFunction.orNull(object, field, (Object o, Field f) -> SavageReflection.get(o, f)))
       , LinkedHashMap::putAll)
     // @formatter:on
     );
