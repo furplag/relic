@@ -18,6 +18,9 @@ package jp.furplag.sandbox.reflect.unsafe;
 
 import static org.junit.Assert.*;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.security.Permission;
 import java.util.Arrays;
@@ -57,17 +60,19 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void test() {
+  public void test() throws Throwable {
+    MethodHandle theUnsafe = null;
+    theUnsafe = MethodHandles.privateLookupIn(TheUnsafe.class, MethodHandles.lookup()).findStatic(TheUnsafe.class, "theUnsafe", MethodType.methodType(TheUnsafe.class));
     try {
       secure();
-      assertTrue(TheUnsafe.theUnsafe() instanceof TheUnsafe);
+      assertTrue(theUnsafe.invoke() instanceof TheUnsafe);
     } catch (ExceptionInInitializerError e) {
       fail(e.getMessage());
     } finally {
       insecure();
     }
-    assertTrue(TheUnsafe.theUnsafe() instanceof TheUnsafe);
-    assertEquals(TheUnsafe.theUnsafe(), TheUnsafe.theUnsafe());
+    assertTrue(theUnsafe.invoke() instanceof TheUnsafe);
+    assertEquals(theUnsafe.invoke(), theUnsafe.invoke());
   }
 
   @Test

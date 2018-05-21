@@ -49,10 +49,6 @@ import jp.furplag.sandbox.reflect.Reflections;
  * @author furplag
  */
 public final class TheUnsafe {
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
-  }
 
   /** prefix of handler . */
   private static enum Prefix /* @formatter:off */ { get, put }/* @formatter:on */
@@ -68,7 +64,6 @@ public final class TheUnsafe {
   private static final Function<Class<?>, MethodType> putMethodType = (type) -> MethodType.methodType(void.class, Object.class, long.class, type);
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
-
   static {
     invalidOffset = -1L;
   }
@@ -112,6 +107,11 @@ public final class TheUnsafe {
         .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first))
     );
     // @formatter:on
+  }
+
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {
+    private static final TheUnsafe theUnsafe = new TheUnsafe();
   }
 
   /**
@@ -181,7 +181,7 @@ public final class TheUnsafe {
    *
    * @return {@link TheUnsafe}
    */
-  static TheUnsafe theUnsafe() {
+  private static TheUnsafe theUnsafe() {
     return Origin.theUnsafe;
   };
 
