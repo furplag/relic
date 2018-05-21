@@ -25,9 +25,7 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-import jp.furplag.function.Trebuchet;
-import jp.furplag.function.suppress.SuppressFunction;
-import jp.furplag.function.suppress.SuppressPredicate;
+import jp.furplag.function.Suppressor;
 import jp.furplag.sandbox.reflect.unsafe.TheUnsafe;
 import jp.furplag.sandbox.stream.Streamr;
 
@@ -50,7 +48,7 @@ public interface SavageReflection {
    * @return value of field
    */
   private static Object readField(final Object mysterio, final Field field) {
-    return SuppressFunction.orNull(mysterio, field, (Object o, Field f) -> TheUnsafe.get(o, f));
+    return Suppressor.orNull(mysterio, field, TheUnsafe::get);
   }
 
   /**
@@ -63,7 +61,7 @@ public interface SavageReflection {
   static Object get(final Object mysterio, final Field field) {
     // @formatter:off
     return !Reflections.isAssignable(mysterio, field) ? null :
-      SuppressFunction.orNull(mysterio, field, (Object o, Field f) -> readField(o, f));
+      Suppressor.orNull(mysterio, field, SavageReflection::readField);
     // @formatter:on
   }
 
@@ -89,7 +87,7 @@ public interface SavageReflection {
   static boolean set(final Object mysterio, final Field field, final Object value) {
     // @formatter:off
     return Reflections.isAssignable(mysterio, field, value) &&
-        SuppressPredicate.isCorrect(mysterio, field, (Trebuchet.ThrowableBiPredicate<Object, Field>) (o, f) -> TheUnsafe.set(o, f, value));
+        Suppressor.isCorrect(mysterio, field, (o, f) -> TheUnsafe.set(o, f, value));
     // @formatter:on
   }
 
@@ -119,9 +117,9 @@ public interface SavageReflection {
       .filter(Reflections.isStatic.negate().and((f) -> exclusions.negate().test(_excludes, f)))
       .collect(
         LinkedHashMap::new
-      , (map, field) -> map.putIfAbsent(field.getName(), SuppressFunction.orNull(object, field, (Object o, Field f) -> SavageReflection.get(o, f)))
+      , (map, field) -> map.putIfAbsent(field.getName(), Suppressor.orNull(object, field, SavageReflection::get))
       , LinkedHashMap::putAll)
-    // @formatter:on
     );
+    // @formatter:on
   }
 }

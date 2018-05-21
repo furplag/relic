@@ -28,8 +28,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import jp.furplag.function.Trebuchet;
-import jp.furplag.function.suppress.SuppressPredicate;
+import jp.furplag.function.Suppressor;
 import jp.furplag.sandbox.stream.Streamr;
 
 /**
@@ -151,7 +150,7 @@ public interface Reflections {
    */
   static boolean isAssignable(final Object mysterio, final Field field) {
     // @formatter:off
-    return SuppressPredicate.isCorrect(mysterio, field, (Trebuchet.ThrowableBiPredicate<Object, Field>) ((o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o))));
+    return Suppressor.isCorrect(mysterio, field, (o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o)));
     // @formatter:on
   }
 

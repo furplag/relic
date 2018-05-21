@@ -21,12 +21,10 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -38,9 +36,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import jp.furplag.function.Suppressor;
 import jp.furplag.function.Trebuchet;
-import jp.furplag.function.suppress.SuppressConsumer;
-import jp.furplag.function.suppress.SuppressFunction;
-import jp.furplag.function.suppress.SuppressPredicate;
 import jp.furplag.sandbox.reflect.Reflections;
 
 /**
@@ -85,27 +80,24 @@ public final class TheUnsafe {
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
    */
   private TheUnsafe() {
-    final Class<?> unsafeClass = SuppressFunction.orNull("sun.misc.Unsafe", (Trebuchet.ThrowableFunction<String, Class<?>>) ((x) -> Class.forName(x)));
-    theUnsafe = SuppressFunction.orNull(unsafeClass, (Trebuchet.ThrowableFunction<Class<?>, Object>) ((x) -> conciliation.apply(x.getDeclaredField("theUnsafe")).get(null)));
+    final Class<?> unsafeClass = Suppressor.orNull("sun.misc.Unsafe", (x) -> Class.forName(x));
+    theUnsafe = Suppressor.orNull(unsafeClass, (x) -> conciliation.apply(x.getDeclaredField("theUnsafe")).get(null));
     final Trebuchet.ThrowableBiFunction<String, MethodType, MethodHandle> finder = (name, methodType) -> MethodHandles.privateLookupIn(unsafeClass, MethodHandles.lookup()).findVirtual(unsafeClass, name, methodType);
-    final Trebuchet.ThrowableBiFunction<Class<?>, Prefix, Pair<Class<?>, MethodHandle>> pair = (x, y) -> ImmutablePair.of(x, SuppressFunction.orNull(methodName.apply(x, y), (Prefix.get.equals(y) ? getMethodType : putMethodType).apply(x), finder));
+    final Trebuchet.ThrowableBiFunction<Class<?>, Prefix, Pair<Class<?>, MethodHandle>> pair = (x, y) -> ImmutablePair.of(x, Suppressor.orNull(methodName.apply(x, y), (Prefix.get.equals(y) ? getMethodType : putMethodType).apply(x), finder));
 
-    staticFieldBase = SuppressFunction.orNull("staticFieldBase", MethodType.methodType(Object.class, Field.class), finder);
-    staticFieldOffset = SuppressFunction.orNull("staticFieldOffset", MethodType.methodType(long.class, Field.class), finder);
-    objectFieldOffset = SuppressFunction.orNull("objectFieldOffset", MethodType.methodType(long.class, Field.class), finder);
+    staticFieldBase = Suppressor.orNull("staticFieldBase", MethodType.methodType(Object.class, Field.class), finder);
+    staticFieldOffset = Suppressor.orNull("staticFieldOffset", MethodType.methodType(long.class, Field.class), finder);
+    objectFieldOffset = Suppressor.orNull("objectFieldOffset", MethodType.methodType(long.class, Field.class), finder);
     // @formatter:off
-    gettings = Collections.unmodifiableMap(
-      Stream.of(boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class)
-        .map((x) -> pair.apply(x, Prefix.get))
-        .filter((x) -> Objects.nonNull(x.getValue()))
-        .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first))
+    gettings = Stream.of(boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class)
+      .map((x) -> pair.apply(x, Prefix.get))
+      .filter((x) -> Objects.nonNull(x.getValue()))
+      .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first)
     );
-    settings = Collections.unmodifiableMap(
-      gettings.keySet().stream()
-        .map((x) -> pair.apply(x, Prefix.put))
-        .filter(x -> Objects.nonNull(x.getValue()))
-        .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first))
-    );
+    settings = gettings.keySet().stream()
+      .map((x) -> pair.apply(x, Prefix.put))
+      .filter(x -> Objects.nonNull(x.getValue()))
+      .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first));
     // @formatter:on
   }
 
@@ -123,7 +115,7 @@ public final class TheUnsafe {
    * @throws ReflectiveOperationException an access error
    */
   private Object fieldBase(Object mysterio, Field field) {
-    return SuppressFunction.orNull(mysterio, field, (Trebuchet.ThrowableBiFunction<Object, Field, Object>) ((o, f) -> Reflections.isStatic.test(f) ? staticFieldBase.invoke(theUnsafe, f) : o));
+    return Suppressor.orNull(mysterio, field, (o, f) -> Reflections.isStatic.test(f) ? staticFieldBase.invoke(theUnsafe, f) : o);
   }
 
   /**
@@ -133,7 +125,7 @@ public final class TheUnsafe {
    * @return offset of the field, or returns {@link invalidOffset} if the field is null
    */
   private long fieldOffset(Field field) {
-    return (long) Suppressor.orElse(field, (Trebuchet.ThrowableFunction<Field, Object>) ((f) -> (Reflections.isStatic.test(f) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, f)), invalidOffset);
+    return (long) Suppressor.orElse(field, (f) -> (Reflections.isStatic.test(f) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, f), invalidOffset);
   }
 
   /**
@@ -146,7 +138,7 @@ public final class TheUnsafe {
   private Object getInternal(Object mysterio, Field field) {
     // @formatter:off
     return !(Reflections.isAssignable(mysterio, field) && (Reflections.isStatic.test(field) || !(mysterio instanceof Class))) ? null :
-      SuppressFunction.orNull(mysterio, field, (Trebuchet.ThrowableBiFunction<Object, Field, Object>) ((o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f))));
+      Suppressor.orNull(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
     // @formatter:on
   }
 
@@ -158,7 +150,7 @@ public final class TheUnsafe {
    * @param value the value for update
    */
   private void setInternal(Object mysterio, Field field, Object value) {
-    SuppressConsumer.acceptWith(mysterio, field, (Trebuchet.ThrowableBiConsumer<Object, Field>) ((o, f) -> settings.getOrDefault(f.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f), primivatior(f.getType(), value))));
+    Suppressor.orNot(mysterio, field, (o, f) -> settings.getOrDefault(f.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f), primivatior(f.getType(), value)));
   }
 
   /**
@@ -172,7 +164,7 @@ public final class TheUnsafe {
     // @formatter:off
     return String.class.equals(fieldType) ? Objects.toString(value, null) :
       !fieldType.isPrimitive() ? value :
-      SuppressFunction.orNull(fieldType, value, (Trebuchet.ThrowableBiFunction<Class<?>, Object, Object>) ((t, v) -> MethodHandles.lookup().findVirtual(Reflections.getClass(v), methodName.apply(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v)));
+      Suppressor.orNull(fieldType, value, (t, v) -> MethodHandles.lookup().findVirtual(Reflections.getClass(v), methodName.apply(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v));
     // @formatter:on
   }
 
@@ -206,11 +198,10 @@ public final class TheUnsafe {
    */
   public static boolean set(final Object mysterio, final Field field, final Object value) {
     // @formatter:off
-    return
-      SuppressPredicate.isCorrect(mysterio, field, (BiPredicate<Object, Field>) ((o, f) ->
-        Reflections.isAssignable(o, f, value) &&
-        SuppressPredicate.isCorrect(value, (Trebuchet.ThrowablePredicate<Object>) ((v) -> {theUnsafe().setInternal(o,f, v); return Objects.equals(primivatior(f.getType(), v), get(o, f));}))
-      ));
+    return Suppressor.isCorrect(mysterio, field, (o, f) ->
+      Reflections.isAssignable(o, f, value) &&
+      Suppressor.isCorrect(value, (v) -> {theUnsafe().setInternal(o,f, v); return Objects.equals(primivatior(f.getType(), v), get(o, f));})
+    );
     // @formatter:on
   }
 }
