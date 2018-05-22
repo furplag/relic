@@ -116,15 +116,15 @@ public interface Reflections {
    */
   static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
     // @formatter:off
-    return
-      typeOfFiled != null &&
-      !(typeOfFiled.isPrimitive() && typeOfValue == null) &&
-      !(Character.class.equals(ClassUtils.primitiveToWrapper(getClass(typeOfValue))) && Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled))) &&
+    return Suppressor.isCorrect(typeOfFiled, typeOfValue, (f, v) ->
+      f != null && !(f.isPrimitive() && v == null) &&
+      !(Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(f)) && Character.class.equals(ClassUtils.primitiveToWrapper(v))) &&
       (
-        String.class.equals(typeOfFiled) ||
-        (ClassUtils.isAssignable(typeOfValue, typeOfFiled)) ||
-        Arrays.stream(ClassUtils.primitivesToWrappers(typeOfFiled, typeOfValue)).allMatch(Number.class::isAssignableFrom)
-      );
+        String.class.equals(f) ||
+        (ClassUtils.isAssignable(v, f)) ||
+        Arrays.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom)
+      )
+    );
     // @formatter:on
   }
 
