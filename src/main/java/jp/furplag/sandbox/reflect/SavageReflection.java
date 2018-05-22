@@ -18,12 +18,12 @@ package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import jp.furplag.function.Suppressor;
 import jp.furplag.sandbox.reflect.unsafe.TheUnsafe;
@@ -111,10 +111,9 @@ public interface SavageReflection {
    * @return {@link LinkedHashMap} &lt;{@link String}, {@link Object}&gt;
    */
   static Map<String, Object> read(final Object object, final String... excludes) {
-    final Set<String> _excludes = Streamr.stream(excludes).collect(Collectors.toCollection(HashSet::new));
     // @formatter:off
     return Collections.unmodifiableMap(Streamr.stream(Reflections.getFields(object instanceof Class ? null : object))
-      .filter(Reflections.isStatic.negate().and((f) -> exclusions.negate().test(_excludes, f)))
+      .filter(Reflections.isNotStatic.and((f) -> !ArrayUtils.contains(excludes, f.getName())))
       .collect(
         LinkedHashMap::new
       , (map, field) -> map.putIfAbsent(field.getName(), Suppressor.orNull(object, field, SavageReflection::get))

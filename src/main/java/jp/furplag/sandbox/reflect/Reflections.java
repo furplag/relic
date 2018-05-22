@@ -42,6 +42,9 @@ public interface Reflections {
   /** shorthand for {@link Modifier#isStatic(int)} . */
   static final Predicate<Field> isStatic = (f) -> f != null && Modifier.isStatic(f.getModifiers());
 
+  /** shorthand for {@link Modifier#isStatic(int)} . */
+  static final Predicate<Field> isNotStatic = isStatic.negate();
+
   /**
    * execute {@link AccessibleObject#trySetAccessible()} stealithly .
    *

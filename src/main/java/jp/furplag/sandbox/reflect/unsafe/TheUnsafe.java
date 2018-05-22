@@ -37,6 +37,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import jp.furplag.function.Suppressor;
 import jp.furplag.function.Trebuchet;
 import jp.furplag.sandbox.reflect.Reflections;
+import jp.furplag.sandbox.stream.Streamr;
 
 /**
  * handle class member whether protected ( or invisible ) using sun.misc.Unsafe .
@@ -89,16 +90,21 @@ public final class TheUnsafe {
     staticFieldOffset = Suppressor.orNull("staticFieldOffset", MethodType.methodType(long.class, Field.class), finder);
     objectFieldOffset = Suppressor.orNull("objectFieldOffset", MethodType.methodType(long.class, Field.class), finder);
     // @formatter:off
-    gettings = Stream.of(boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class)
-      .map((x) -> pair.apply(x, Prefix.get))
-      .filter((x) -> Objects.nonNull(x.getValue()))
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first)
-    );
-    settings = gettings.keySet().stream()
-      .map((x) -> pair.apply(x, Prefix.put))
-      .filter(x -> Objects.nonNull(x.getValue()))
-      .collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first));
+    gettings = fieldAccessors(pair, Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
+    settings = fieldAccessors(pair, Prefix.put, gettings.keySet().toArray(new Class<?>[] {}));
     // @formatter:on
+  }
+
+  /**
+   * construct a container of methods to field access .
+   *
+   * @param pair {@link Pair}
+   * @param prefix {@link Prefix}
+   * @param classes primitives and {@link Object}
+   * @return a container of methods to field access
+   */
+  private static Map<Class<?>, MethodHandle> fieldAccessors(final BiFunction<Class<?>, Prefix, Pair<Class<?>, MethodHandle>> pair, final Prefix prefix, final Class<?>... classes) {
+    return Streamr.stream(classes).map((x) -> pair.apply(x, prefix)).filter((x) -> Objects.nonNull(x.getValue())).collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first));
   }
 
   /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
@@ -162,9 +168,10 @@ public final class TheUnsafe {
    */
   private static Object primivatior(final Class<?> fieldType, final Object value) {
     // @formatter:off
-    return String.class.equals(fieldType) ? Objects.toString(value, null) :
-      !fieldType.isPrimitive() ? value :
-      Suppressor.orNull(fieldType, value, (t, v) -> MethodHandles.lookup().findVirtual(Reflections.getClass(v), methodName.apply(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v));
+    return Suppressor.orNull(fieldType, value, (t, v) ->
+      String.class.equals(t) ? Objects.toString(v, null) :
+        !t.isPrimitive() ? v :
+        MethodHandles.lookup().findVirtual(Reflections.getClass(v), methodName.apply(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v));
     // @formatter:on
   }
 
