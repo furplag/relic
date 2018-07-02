@@ -60,9 +60,8 @@ public final class TheUnsafe {
   private static final Function<Class<?>, MethodType> putMethodType = (type) -> MethodType.methodType(void.class, Object.class, long.class, type);
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
-  static {
-    invalidOffset = -1L;
-  }
+  /* @formatter:off */ static {invalidOffset = -1L;}/* @formatter:on */
+
   /** {@link sun.misc.Unsafe#getUnsafe()}. */
   private final Object theUnsafe;
   /** {@link sun.misc.Unsafe#getObject(Object, long)}. */
