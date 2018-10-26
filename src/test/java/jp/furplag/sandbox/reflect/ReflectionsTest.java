@@ -39,6 +39,7 @@ import org.junit.Test;
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.Nothing;
 import jp.furplag.sandbox.outerworld.TheEntity;
+import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 
 public class ReflectionsTest {
@@ -49,6 +50,13 @@ public class ReflectionsTest {
     assertTrue(Reflections.class.isAssignableFrom(new Reflections() {}.getClass()));
 
     assertNull(Reflections.conciliation((Field) null));
+  }
+
+  @Test
+  public void testIsStatic() throws ReflectiveOperationException, SecurityException {
+    assertFalse(Reflections.isStatic.test(null));
+    assertFalse(Reflections.isStatic.test(FieldUtils.getDeclaredField(TheObject.class, "thePrimitive", true)));
+    assertTrue(Reflections.isStatic.test(FieldUtils.getDeclaredField(Reflections.class, "isStatic", true)));
   }
 
   @Test

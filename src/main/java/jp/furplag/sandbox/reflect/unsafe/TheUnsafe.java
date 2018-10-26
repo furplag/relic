@@ -206,7 +206,7 @@ public final class TheUnsafe {
     // @formatter:off
     return Suppressor.isCorrect(mysterio, field, (o, f) ->
       Reflections.isAssignable(o, f, value) &&
-      Suppressor.isCorrect(value, (v) -> {theUnsafe().setInternal(o,f, v); return Objects.equals(primivatior(f.getType(), v), get(o, f));})
+      Suppressor.isCorrect(value, (v) -> {theUnsafe().setInternal(o, f, v); return Objects.equals(primivatior(f.getType(), v), get(o, f));})
     );
     // @formatter:on
   }
