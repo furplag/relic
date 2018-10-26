@@ -187,14 +187,6 @@
         <configuration>
           <argLine>${jacocoArgs} -Dfile.encoding=UTF-8</argLine>
         </configuration>
-        <dependencies>
-
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-junit47</artifactId>
-            <version>2.22.1</version>
-          </dependency>
-        </dependencies>
       </plugin>
 
       <plugin>
