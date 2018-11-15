@@ -16,13 +16,19 @@
 
 package jp.furplag.sandbox.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ClassUtils;
@@ -167,5 +173,46 @@ public interface Reflections {
    */
   static boolean isAssignable(final Object mysterio, final Field field, final Object value) {
     return isAssignable(mysterio, field) && isAssignable(field, value);
+  }
+
+  /**
+   * test if the element is annotated with any of specified {@link Annotation annotation (s) } .
+   *
+   * @param <E> {@link AnnotatedElement}
+   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
+   * @param annotations {@link Annotation}, maybe empty
+   * @return true if the element is annotated with any of specified {@link Annotation annotation (s) }
+   */
+  @SafeVarargs
+  static <E extends AnnotatedElement> boolean isAnnotatedWith(final E annotatedElement, final Class<? extends Annotation>... annotations) {
+    return Suppressor.orElse(
+      getAnnotations(annotatedElement)
+    , Streamr.stream(annotations).collect(Collectors.toSet())
+    , (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains), false);
+  }
+
+  /**
+   * test if the element is annotated with all of specified {@link Annotation annotation (s) } .
+   *
+   * @param <E> {@link AnnotatedElement}
+   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
+   * @param annotations {@link Annotation}, maybe empty
+   * @return true if the element is annotated with all of specified {@link Annotation annotation (s) }
+   */
+  @SafeVarargs
+  static <E extends AnnotatedElement> boolean isAnnotatedWithAllOf(final E annotatedElement, final Class<? extends Annotation>... annotations) {
+    return Suppressor.orElse(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e), false);
+  }
+
+  /**
+   * Returns annotations that are present on this element .
+   * <p>If there are no annotations <em>present</em> on this element, the return value is {@link Collections#emptySet()} .</p>
+   *
+   * @param <E> {@link AnnotatedElement}
+   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
+   * @return annotations that are present on this element
+   */
+  private static <E extends AnnotatedElement> Set<Class<?>> getAnnotations(final E annotatedElement) {
+    return Suppressor.orElse(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections.emptySet());
   }
 }

@@ -18,10 +18,10 @@ package jp.furplag.sandbox.stream;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -103,8 +103,8 @@ public interface Streamr {
    * @param condition {@link Predicate}
    * @return elements in the stream that match the given predicate
    */
-  private static <T> Stream<T> filtering(final Stream<T> stream, final Predicate<? super T> condition) {
-    return stream.dropWhile(condition == null ?  ((e) -> false) : condition.negate()).filter(condition == null ?  ((e) -> true) : condition);
+  static <T> Stream<T> filtering(final Stream<T> stream, final Predicate<? super T> condition) {
+    return condition == null ? stream : stream.dropWhile(condition.negate()).filter(condition);
   }
 
   /**
@@ -116,9 +116,7 @@ public interface Streamr {
    * @return the last of element in the stream that match the given predicate
    */
   static <T> T lastOf(final Stream<T> stream, final Predicate<? super T> condition) {
-    final List<T> list = toList(filtering(stream, condition));
-
-    return list.isEmpty() ? null : list.get(list.size() - 1);
+    return filtering(stream, condition).reduce((current, next) -> next).orElse(null);
   }
 
   /**
@@ -138,9 +136,9 @@ public interface Streamr {
    *
    * @param <T> the type of the stream elements
    * @param stream {@link Stream}, maybe null
-   * @return {@link List} of T
+   * @return {@link Collection} of T
    */
-  static <T> List<T> toList(final Stream<T> stream) {
-    return stream(stream).collect(Collectors.toList());
+  static <C extends Collection<T>, T> C collect(final Stream<T> stream, final Supplier<C> supplier) {
+    return stream(stream).collect(Collectors.toCollection(supplier));
   }
 }

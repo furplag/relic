@@ -16,8 +16,15 @@
 
 package jp.furplag.sandbox.reflect;
 
+import static java.lang.annotation.ElementType.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,6 +43,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Test;
 
+import jdk.jfr.Experimental;
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.Nothing;
 import jp.furplag.sandbox.outerworld.TheEntity;
@@ -43,6 +51,11 @@ import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 
 public class ReflectionsTest {
+
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(value={CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, MODULE, PARAMETER, TYPE})
+  public @interface ReflectionsTestAnnotation {}
 
   @Test
   public void test() {
@@ -179,5 +192,68 @@ public class ReflectionsTest {
         }
       }
     }
+  }
+
+  @Deprecated
+  @ReflectionsTestAnnotation
+  public static class Origin {
+
+    public int intField;
+
+    @Experimental
+    public String textField;
+
+    @Deprecated
+    @SuppressWarnings("unchecked")
+    protected <T> T test(T t) {
+      return (T) textField;
+    }
+  }
+
+  @ReflectionsTestAnnotation
+  public static final class Any extends Origin {
+
+    @ReflectionsTestAnnotation
+    public int intField;
+
+    @Experimental
+    @ReflectionsTestAnnotation
+    public String textField;
+
+    @Override
+    public <T> T test(T t) {
+      return super.test(t);
+    }
+  }
+
+  @Test
+  public void testAnnotatedWith() throws ReflectiveOperationException {
+
+    assertThat(Reflections.isAnnotatedWith(null, (Class<Annotation>[]) null), is(true));
+    assertThat(Reflections.isAnnotatedWith(Origin.class), is(true));
+    assertThat(Reflections.isAnnotatedWith(Origin.class, (Class<Annotation>[]) null), is(true));
+    assertThat(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("intField"), (Class<Annotation>[]) null), is(true));
+    assertThat(Reflections.isAnnotatedWith(Any.class, Deprecated.class), is(false));
+    assertThat(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("intField"), Experimental.class), is(false));
+
+    assertThat(Reflections.isAnnotatedWith(Origin.class, Deprecated.class), is(true));
+    assertThat(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("textField"), Experimental.class), is(true));
+
+    assertTrue(Reflections.isAnnotatedWith(Origin.class, ReflectionsTestAnnotation.class));
+    assertTrue(Reflections.isAnnotatedWith(Any.class, ReflectionsTestAnnotation.class));
+    assertTrue(Reflections.isAnnotatedWith(Any.class, ReflectionsTestAnnotation.class, Override.class));
+
+    assertThat(Any.class.isAnnotationPresent(ReflectionsTestAnnotation.class), is(Reflections.isAnnotatedWith(Any.class, ReflectionsTestAnnotation.class)));
+
+    assertThat(Reflections.isAnnotatedWithAllOf(null, (Class<Annotation>[]) null), is(true));
+    assertThat(Reflections.isAnnotatedWithAllOf(String.class), is(true));
+    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class), is(false));
+    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class, (Class<Annotation>[]) null), is(false));
+    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class.getDeclaredField("intField"), (Class<Annotation>[]) null), is(true));
+    assertThat(Reflections.isAnnotatedWithAllOf(Any.class, Deprecated.class), is(false));
+    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class.getDeclaredField("intField"), Experimental.class), is(false));
+
+    assertFalse(Reflections.isAnnotatedWithAllOf(Origin.class, Deprecated.class));
+    assertTrue(Reflections.isAnnotatedWithAllOf(Origin.class, Deprecated.class, ReflectionsTestAnnotation.class));
   }
 }
