@@ -70,11 +70,6 @@ public final class TheUnsafe {
   /** {@link sun.misc.Unsafe#objectFieldOffset(Field)}. */
   private final MethodHandle objectFieldOffset;
 
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
-  }
-
   /**
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
    */
@@ -90,6 +85,11 @@ public final class TheUnsafe {
     gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
     settings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(Class<?>[]::new));
     // @formatter:on
+  }
+
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {
+    private static final TheUnsafe theUnsafe = new TheUnsafe();
   }
 
   /**
