@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,16 +45,6 @@ import jp.furplag.sandbox.stream.Streamr;
  *
  */
 public interface Reflections {
-
-  /**
-   * shorthand for {@link Modifier#isStatic(int)} .
-   *
-   * @param field {@link Field}
-   * @return the result of {@link Modifier#isStatic(int) Modifier#isStatic}({@link Field#getModifiers() modifier}) .
-   */
-  static boolean isStatic(final Field field) {
-    return field != null && Modifier.isStatic(field.getModifiers());
-  }
 
   /**
    * execute {@link AccessibleObject#trySetAccessible()} stealithly .
@@ -81,6 +72,18 @@ public interface Reflections {
     }
 
     return classes.stream();
+  }
+
+  /**
+   * Returns annotations that are present on this element .
+   * <p>If there are no annotations <em>present</em> on this element, the return value is {@link Collections#emptySet()} .</p>
+   *
+   * @param <E> {@link AnnotatedElement}
+   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
+   * @return annotations that are present on this element
+   */
+  private static <E extends AnnotatedElement> Set<Class<?>> getAnnotations(final E annotatedElement) {
+    return ThrowableFunction.orElseGet(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections::emptySet);
   }
 
   /**
@@ -119,6 +122,36 @@ public interface Reflections {
   }
 
   /**
+   * test if the element is annotated with any of specified {@link Annotation annotation (s) } .
+   *
+   * @param <E> {@link AnnotatedElement}
+   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
+   * @param annotations {@link Annotation}, maybe empty
+   * @return true if the element is annotated with any of specified {@link Annotation annotation (s) }
+   */
+  @SafeVarargs
+  static <E extends AnnotatedElement> boolean isAnnotatedWith(final E annotatedElement, final Class<? extends Annotation>... annotations) {
+    return ThrowableBiPredicate.orNot(
+      getAnnotations(annotatedElement)
+    , Streamr.stream(annotations).collect(Collectors.toSet())
+    , (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains)
+    );
+  }
+
+  /**
+   * test if the element is annotated with all of specified {@link Annotation annotation (s) } .
+   *
+   * @param <E> {@link AnnotatedElement}
+   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
+   * @param annotations {@link Annotation}, maybe empty
+   * @return true if the element is annotated with all of specified {@link Annotation annotation (s) }
+   */
+  @SafeVarargs
+  static <E extends AnnotatedElement> boolean isAnnotatedWithAllOf(final E annotatedElement, final Class<? extends Annotation>... annotations) {
+    return ThrowableBiPredicate.orNot(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e));
+  }
+
+  /**
    * {@link #isAssignable(Field, Object)} using this method if the value type is standard object .
    *
    * @param typeOfFiled type of the field
@@ -126,30 +159,9 @@ public interface Reflections {
    * @return true if the value is able to set the field, or returns false if that is not able to
    */
   static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
-    return ThrowableBiPredicate.orNot(typeOfFiled, typeOfValue, ((ThrowableBiPredicate<Class<?>, Class<?>>)Reflections::notAssignable).negate().and(Reflections::convertible));
-  }
+    final BiPredicate<Class<?>, Class<?>> isConvertible = (f, v) -> String.class.equals(f) || (ClassUtils.isAssignable(v, f)) || Streamr.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom);
 
-  /**
-   * a part of {@link #isAssignable(Class, Class)} .
-   *
-   * @param typeOfFiled type of the field
-   * @param typeOfValue type of the value
-   * @return true if the value is not able to set the field, or returns false if that is able to
-   */
-  private static boolean notAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
-    return typeOfFiled == null || (typeOfFiled.isPrimitive() && typeOfValue == null) ||
-      (Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled)) && Character.class.equals(ClassUtils.primitiveToWrapper(typeOfValue)));
-  }
-
-  /**
-   * a part of {@link #isAssignable(Class, Class)} .
-   *
-   * @param typeOfFiled type of the field
-   * @param typeOfValue type of the value
-   * @return true if the value is able to set the field, or returns false if that is not able to
-   */
-  private static boolean convertible(final Class<?> f, final Class<?> v) {
-    return String.class.equals(f) || (ClassUtils.isAssignable(v, f)) || Streamr.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom);
+    return ThrowableBiPredicate.orNot(typeOfFiled, typeOfValue, ((ThrowableBiPredicate<Class<?>, Class<?>>)Reflections::notAssignable).negate().and(isConvertible));
   }
 
   /**
@@ -187,44 +199,24 @@ public interface Reflections {
   }
 
   /**
-   * test if the element is annotated with any of specified {@link Annotation annotation (s) } .
+   * shorthand for {@link Modifier#isStatic(int)} .
    *
-   * @param <E> {@link AnnotatedElement}
-   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
-   * @param annotations {@link Annotation}, maybe empty
-   * @return true if the element is annotated with any of specified {@link Annotation annotation (s) }
+   * @param field {@link Field}
+   * @return the result of {@link Modifier#isStatic(int) Modifier#isStatic}({@link Field#getModifiers() modifier}) .
    */
-  @SafeVarargs
-  static <E extends AnnotatedElement> boolean isAnnotatedWith(final E annotatedElement, final Class<? extends Annotation>... annotations) {
-    return ThrowableBiPredicate.orNot(
-      getAnnotations(annotatedElement)
-    , Streamr.stream(annotations).collect(Collectors.toSet())
-    , (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains)
-    );
+  static boolean isStatic(final Field field) {
+    return field != null && Modifier.isStatic(field.getModifiers());
   }
 
   /**
-   * test if the element is annotated with all of specified {@link Annotation annotation (s) } .
+   * a part of {@link #isAssignable(Class, Class)} .
    *
-   * @param <E> {@link AnnotatedElement}
-   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
-   * @param annotations {@link Annotation}, maybe empty
-   * @return true if the element is annotated with all of specified {@link Annotation annotation (s) }
+   * @param typeOfFiled type of the field
+   * @param typeOfValue type of the value
+   * @return true if the value is not able to set the field, or returns false if that is able to
    */
-  @SafeVarargs
-  static <E extends AnnotatedElement> boolean isAnnotatedWithAllOf(final E annotatedElement, final Class<? extends Annotation>... annotations) {
-    return ThrowableBiPredicate.orNot(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e));
-  }
-
-  /**
-   * Returns annotations that are present on this element .
-   * <p>If there are no annotations <em>present</em> on this element, the return value is {@link Collections#emptySet()} .</p>
-   *
-   * @param <E> {@link AnnotatedElement}
-   * @param annotatedElement any of {@link AnnotatedElement}, maybe null
-   * @return annotations that are present on this element
-   */
-  private static <E extends AnnotatedElement> Set<Class<?>> getAnnotations(final E annotatedElement) {
-    return ThrowableFunction.orElseGet(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections::emptySet);
+  private static boolean notAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
+    return typeOfFiled == null || (typeOfFiled.isPrimitive() && typeOfValue == null) ||
+      (Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled)) && Character.class.equals(ClassUtils.primitiveToWrapper(typeOfValue)));
   }
 }
