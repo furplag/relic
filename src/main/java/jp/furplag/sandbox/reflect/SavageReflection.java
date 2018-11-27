@@ -20,12 +20,12 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import jp.furplag.function.Suppressor;
+import jp.furplag.function.ThrowableBiFunction;
+import jp.furplag.function.ThrowableTriPredicate;
 import jp.furplag.sandbox.reflect.unsafe.TheUnsafe;
 import jp.furplag.sandbox.stream.Streamr;
 
@@ -37,9 +37,6 @@ import jp.furplag.sandbox.stream.Streamr;
  */
 public interface SavageReflection {
 
-  /** shorthand for {@link Set#contains(Object)} . */
-  static final BiPredicate<Set<String>, Field> exclusions = (set, f) -> set != null && set.contains(f.getName());
-
   /**
    * read field value whether protected ( or invisible ) .
    *
@@ -48,7 +45,7 @@ public interface SavageReflection {
    * @return value of field
    */
   private static Object readField(final Object mysterio, final Field field) {
-    return Suppressor.orNull(mysterio, field, TheUnsafe::get);
+    return ThrowableBiFunction.orNull(mysterio, field, TheUnsafe::get);
   }
 
   /**
@@ -59,10 +56,7 @@ public interface SavageReflection {
    * @return value of field
    */
   static Object get(final Object mysterio, final Field field) {
-    // @formatter:off
-    return !Reflections.isAssignable(mysterio, field) ? null :
-      Suppressor.orNull(mysterio, field, SavageReflection::readField);
-    // @formatter:on
+    return !Reflections.isAssignable(mysterio, field) ? null : ThrowableBiFunction.orNull(mysterio, field, SavageReflection::readField);
   }
 
   /**
@@ -85,10 +79,7 @@ public interface SavageReflection {
    * @return true if the field update successfully
    */
   static boolean set(final Object mysterio, final Field field, final Object value) {
-    // @formatter:off
-    return Reflections.isAssignable(mysterio, field, value) &&
-        Suppressor.isCorrect(mysterio, field, (o, f) -> TheUnsafe.set(o, f, value));
-    // @formatter:on
+    return Reflections.isAssignable(mysterio, field, value) && ThrowableTriPredicate.orNot(mysterio, field, value, TheUnsafe::set);
   }
 
   /**
@@ -113,10 +104,10 @@ public interface SavageReflection {
   static Map<String, Object> read(final Object object, final String... excludes) {
     // @formatter:off
     return Collections.unmodifiableMap(Streamr.stream(Reflections.getFields(object instanceof Class ? null : object))
-      .filter(Reflections.isNotStatic.and((f) -> !ArrayUtils.contains(excludes, f.getName())))
+      .filter(((Predicate<Field>)Reflections::isStatic).negate().and((f) -> !ArrayUtils.contains(excludes, f.getName())))
       .collect(
         LinkedHashMap::new
-      , (map, field) -> map.putIfAbsent(field.getName(), Suppressor.orNull(object, field, SavageReflection::get))
+      , (map, field) -> map.putIfAbsent(field.getName(), ThrowableBiFunction.orNull(object, field, SavageReflection::get))
       , LinkedHashMap::putAll)
     );
     // @formatter:on

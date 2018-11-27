@@ -128,7 +128,7 @@ public interface Streamr {
    * @return unclosed (actually, duplicated) stream of T which modified each elements
    */
   static <T> Stream<T> tweak(final Stream<T> stream, final UnaryOperator<T> tweaker) {
-    return Optional.ofNullable(stream).orElseGet(Stream::empty).map(Optional.ofNullable(tweaker).orElse((t) -> t)).collect(Collectors.toList()).stream();
+    return stream(stream).map(Optional.ofNullable(tweaker).orElse(UnaryOperator.identity())).collect(Collectors.toList()).stream();
   }
 
   /**
@@ -138,7 +138,7 @@ public interface Streamr {
    * @param stream {@link Stream}, maybe null
    * @return {@link Collection} of T
    */
-  static <C extends Collection<T>, T> C collect(final Stream<T> stream, final Supplier<C> supplier) {
+  static <T, C extends Collection<T>> C collect(final Stream<T> stream, final Supplier<? extends C> supplier) {
     return stream(stream).collect(Collectors.toCollection(supplier));
   }
 }

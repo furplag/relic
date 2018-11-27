@@ -67,9 +67,9 @@ public class ReflectionsTest {
 
   @Test
   public void testIsStatic() throws ReflectiveOperationException, SecurityException {
-    assertFalse(Reflections.isStatic.test(null));
-    assertFalse(Reflections.isStatic.test(FieldUtils.getDeclaredField(TheObject.class, "thePrimitive", true)));
-    assertTrue(Reflections.isStatic.test(FieldUtils.getDeclaredField(Reflections.class, "isStatic", true)));
+    assertFalse(Reflections.isStatic(null));
+    assertFalse(Reflections.isStatic(FieldUtils.getDeclaredField(TheObject.class, "thePrimitive", true)));
+    assertTrue(Reflections.isStatic(FieldUtils.getDeclaredField(TheObject.class, "THE_BOOLEAN_STATIC", true)));
   }
 
   @Test

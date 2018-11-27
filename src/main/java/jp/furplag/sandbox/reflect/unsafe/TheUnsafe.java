@@ -19,23 +19,22 @@ package jp.furplag.sandbox.reflect.unsafe;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import jp.furplag.function.Suppressor;
-import jp.furplag.function.Trebuchet;
+import jp.furplag.function.ThrowableBiConsumer;
+import jp.furplag.function.ThrowableBiFunction;
+import jp.furplag.function.ThrowableBiPredicate;
+import jp.furplag.function.ThrowableFunction;
+import jp.furplag.function.ThrowablePredicate;
+import jp.furplag.function.ThrowableTriFunction;
 import jp.furplag.sandbox.reflect.Reflections;
 import jp.furplag.sandbox.stream.Streamr;
 
@@ -46,30 +45,27 @@ import jp.furplag.sandbox.stream.Streamr;
  */
 public final class TheUnsafe {
 
-  /** prefix of handler . */
-  private static enum Prefix /* @formatter:off */ { get, put }/* @formatter:on */
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {
+    private static final TheUnsafe theUnsafe = new TheUnsafe();
+  }
 
-  /** {@link AccessibleObject#trySetAccessible()} implicitly . */
-  private static final UnaryOperator<Field> conciliation = (field) -> Stream.ofNullable(field).peek(AccessibleObject::trySetAccessible).findAny().orElse(null);
-  /** prettifying method name . */
-  private static final BiFunction<Class<?>, Prefix, String> methodName = (type, prefix) -> String.join("", Objects.toString(prefix, ""), StringUtils.capitalize(Objects.toString(type, "").replaceAll("^.*\\.", "").toLowerCase(Locale.ROOT)));
-
-  /** {@link MethodType} for getter . */
-  private static final Function<Class<?>, MethodType> getMethodType = (type) -> MethodType.methodType(type, Object.class, long.class);
-  /** {@link MethodType} for setter . */
-  private static final Function<Class<?>, MethodType> putMethodType = (type) -> MethodType.methodType(void.class, Object.class, long.class, type);
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
   /* @formatter:off */ static {invalidOffset = -1L;}/* @formatter:on */
 
   /** {@link sun.misc.Unsafe#getUnsafe()}. */
   private final Object theUnsafe;
+
   /** {@link sun.misc.Unsafe#getObject(Object, long)}. */
   private final Map<Class<?>, MethodHandle> gettings;
+
   /** {@link sun.misc.Unsafe#putObject(Object, long, Object)}. */
   private final Map<Class<?>, MethodHandle> settings;
+
   /** {@link sun.misc.Unsafe#staticFieldBase(Field)}. */
   private final MethodHandle staticFieldBase;
+
   /** {@link sun.misc.Unsafe#staticFieldOffset(Field)}. */
   private final MethodHandle staticFieldOffset;
 
@@ -80,17 +76,19 @@ public final class TheUnsafe {
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
    */
   private TheUnsafe() {
-    final Class<?> unsafeClass = Suppressor.orNull("sun.misc.Unsafe", (x) -> Class.forName(x));
-    theUnsafe = Suppressor.orNull(unsafeClass, (x) -> conciliation.apply(x.getDeclaredField("theUnsafe")).get(null));
-    final Trebuchet.ThrowableBiFunction<String, MethodType, MethodHandle> finder = (name, methodType) -> MethodHandles.privateLookupIn(unsafeClass, MethodHandles.lookup()).findVirtual(unsafeClass, name, methodType);
-    final Trebuchet.ThrowableBiFunction<Class<?>, Prefix, Pair<Class<?>, MethodHandle>> pair = (x, y) -> ImmutablePair.of(x, Suppressor.orNull(methodName.apply(x, y), (Prefix.get.equals(y) ? getMethodType : putMethodType).apply(x), finder));
+    final Class<?> unsafeClass = ThrowableFunction.orNull("sun.misc.Unsafe", Class::forName);
+    theUnsafe = ThrowableBiFunction.orNull(unsafeClass, "theUnsafe", (x, y) -> Reflections.conciliation(x.getDeclaredField(y)).get(null));
+    final ThrowableTriFunction<Class<?>, String, MethodType, MethodHandle> finder = UnsafeWeaver::getMethodHandle;
+    final ThrowableBiFunction<Class<?>, UnsafeWeaver.Prefix, Pair<Class<?>, MethodHandle>> getPair =
+      (x, y) -> ImmutablePair.of(x, ThrowableTriFunction.orNull(unsafeClass, UnsafeWeaver.getFormattedMethodName(x, y), UnsafeWeaver.getMethodType(x, y), finder));
 
-    staticFieldBase = Suppressor.orNull("staticFieldBase", MethodType.methodType(Object.class, Field.class), finder);
-    staticFieldOffset = Suppressor.orNull("staticFieldOffset", MethodType.methodType(long.class, Field.class), finder);
-    objectFieldOffset = Suppressor.orNull("objectFieldOffset", MethodType.methodType(long.class, Field.class), finder);
+    staticFieldBase = ThrowableTriFunction.orNull(unsafeClass, "staticFieldBase", MethodType.methodType(Object.class, Field.class), finder);
+    staticFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "staticFieldOffset", MethodType.methodType(long.class, Field.class), finder);
+    objectFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "objectFieldOffset", MethodType.methodType(long.class, Field.class), finder);
+
     // @formatter:off
-    gettings = fieldAccessors(pair, Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
-    settings = fieldAccessors(pair, Prefix.put, gettings.keySet().toArray(new Class<?>[] {}));
+    gettings = fieldAccessors(getPair, UnsafeWeaver.Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
+    settings = fieldAccessors(getPair, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(new Class<?>[] {}));
     // @formatter:on
   }
 
@@ -98,17 +96,12 @@ public final class TheUnsafe {
    * construct a container of methods to field access .
    *
    * @param pair {@link Pair}
-   * @param prefix {@link Prefix}
+   * @param prefix {@link UnsafeWeaver.Prefix Prefix}
    * @param classes primitives and {@link Object}
    * @return a container of methods to field access
    */
-  private static Map<Class<?>, MethodHandle> fieldAccessors(final BiFunction<Class<?>, Prefix, Pair<Class<?>, MethodHandle>> pair, final Prefix prefix, final Class<?>... classes) {
-    return Streamr.stream(classes).map((x) -> pair.apply(x, prefix)).filter((x) -> Objects.nonNull(x.getValue())).collect(Collectors.toMap(Pair::getKey, Pair::getValue, (first, next) -> first));
-  }
-
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
+  private static Map<Class<?>, MethodHandle> fieldAccessors(final BiFunction<Class<?>, UnsafeWeaver.Prefix, Pair<Class<?>, MethodHandle>> pair, final UnsafeWeaver.Prefix prefix, final Class<?>... classes) {
+    return Streamr.stream(classes).map((x) -> pair.apply(x, prefix)).filter((x) -> Objects.nonNull(x.getValue())).collect(Collectors.toMap(Pair::getKey, Pair::getValue, (current, next) -> next));
   }
 
   /**
@@ -120,7 +113,7 @@ public final class TheUnsafe {
    * @throws ReflectiveOperationException an access error
    */
   private Object fieldBase(Object mysterio, Field field) {
-    return Suppressor.orNull(mysterio, field, (o, f) -> Reflections.isStatic.test(f) ? staticFieldBase.invoke(theUnsafe, f) : o);
+    return ThrowableBiFunction.orNull(mysterio, field, (o, f) -> Reflections.isStatic(f) ? staticFieldBase.invoke(theUnsafe, f) : o);
   }
 
   /**
@@ -130,7 +123,7 @@ public final class TheUnsafe {
    * @return offset of the field, or returns {@link invalidOffset} if the field is null
    */
   private long fieldOffset(Field field) {
-    return (long) Suppressor.orElse(field, (f) -> (Reflections.isStatic.test(f) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, f), invalidOffset);
+    return (long) ThrowableFunction.orDefault(field, (t) -> (Reflections.isStatic(field) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, t), invalidOffset);
   }
 
   /**
@@ -142,8 +135,8 @@ public final class TheUnsafe {
    */
   private Object getInternal(Object mysterio, Field field) {
     // @formatter:off
-    return !(Reflections.isAssignable(mysterio, field) && (Reflections.isStatic.test(field) || !(mysterio instanceof Class))) ? null :
-      Suppressor.orNull(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
+    return !(Reflections.isAssignable(mysterio, field) && (Reflections.isStatic(field) || !(mysterio instanceof Class))) ? null :
+      ThrowableBiFunction.orNull(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
     // @formatter:on
   }
 
@@ -155,7 +148,7 @@ public final class TheUnsafe {
    * @param value the value for update
    */
   private void setInternal(Object mysterio, Field field, Object value) {
-    Suppressor.orNot(mysterio, field, (o, f) -> settings.getOrDefault(f.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f), primivatior(f.getType(), value)));
+    ThrowableBiConsumer.orNot(mysterio, field, (o, f) -> settings.getOrDefault(f.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f), primivatior(f.getType(), value)));
   }
 
   /**
@@ -167,10 +160,10 @@ public final class TheUnsafe {
    */
   private static Object primivatior(final Class<?> fieldType, final Object value) {
     // @formatter:off
-    return Suppressor.orNull(fieldType, value, (t, v) ->
+    return ThrowableBiFunction.orNull(fieldType, value, (t, v) ->
       String.class.equals(t) ? Objects.toString(v, null) :
         !t.isPrimitive() ? v :
-        MethodHandles.lookup().findVirtual(Reflections.getClass(v), methodName.apply(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v));
+        MethodHandles.lookup().findVirtual(Reflections.getClass(v), UnsafeWeaver.getFormattedMethodName(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v));
     // @formatter:on
   }
 
@@ -204,9 +197,9 @@ public final class TheUnsafe {
    */
   public static boolean set(final Object mysterio, final Field field, final Object value) {
     // @formatter:off
-    return Suppressor.isCorrect(mysterio, field, (o, f) ->
+    return ThrowableBiPredicate.orNot(mysterio, field, (o, f) ->
       Reflections.isAssignable(o, f, value) &&
-      Suppressor.isCorrect(value, (v) -> {theUnsafe().setInternal(o, f, v); return Objects.equals(primivatior(f.getType(), v), get(o, f));})
+      ThrowablePredicate.orNot(value, (v) -> {theUnsafe().setInternal(o, f, v); return Objects.equals(primivatior(f.getType(), v), get(o, f));})
     );
     // @formatter:on
   }
