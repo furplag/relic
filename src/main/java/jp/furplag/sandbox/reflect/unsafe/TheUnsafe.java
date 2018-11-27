@@ -23,7 +23,6 @@ import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -44,6 +43,10 @@ import jp.furplag.sandbox.stream.Streamr;
  * @author furplag
  */
 public final class TheUnsafe {
+
+  /** generate the pair of Type and MethodHandle . */
+  private static final ThrowableTriFunction<Class<?>, Class<?>, UnsafeWeaver.Prefix, Pair<Class<?>, MethodHandle>> pairGenerator =
+    (x, y, z) -> ImmutablePair.of(y, ThrowableTriFunction.orNull(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
 
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
@@ -67,41 +70,38 @@ public final class TheUnsafe {
   /** {@link sun.misc.Unsafe#objectFieldOffset(Field)}. */
   private final MethodHandle objectFieldOffset;
 
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
-  }
-
   /**
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
    */
   private TheUnsafe() {
     final Class<?> unsafeClass = ThrowableFunction.orNull("sun.misc.Unsafe", Class::forName);
     theUnsafe = ThrowableBiFunction.orNull(unsafeClass, "theUnsafe", (x, y) -> Reflections.conciliation(x.getDeclaredField(y)).get(null));
-    final ThrowableTriFunction<Class<?>, String, MethodType, MethodHandle> finder = UnsafeWeaver::getMethodHandle;
-    final ThrowableBiFunction<Class<?>, UnsafeWeaver.Prefix, Pair<Class<?>, MethodHandle>> getPair =
-      (x, y) -> ImmutablePair.of(x, ThrowableTriFunction.orNull(unsafeClass, UnsafeWeaver.getFormattedMethodName(x, y), UnsafeWeaver.getMethodType(x, y), finder));
 
-    staticFieldBase = ThrowableTriFunction.orNull(unsafeClass, "staticFieldBase", MethodType.methodType(Object.class, Field.class), finder);
-    staticFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "staticFieldOffset", MethodType.methodType(long.class, Field.class), finder);
-    objectFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "objectFieldOffset", MethodType.methodType(long.class, Field.class), finder);
+    staticFieldBase = ThrowableTriFunction.orNull(unsafeClass, "staticFieldBase", MethodType.methodType(Object.class, Field.class), UnsafeWeaver::getMethodHandle);
+    staticFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "staticFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
+    objectFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "objectFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
 
     // @formatter:off
-    gettings = fieldAccessors(getPair, UnsafeWeaver.Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
-    settings = fieldAccessors(getPair, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(new Class<?>[] {}));
+    gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
+    settings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(Class<?>[]::new));
     // @formatter:on
+  }
+
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {
+    private static final TheUnsafe theUnsafe = new TheUnsafe();
   }
 
   /**
    * construct a container of methods to field access .
    *
-   * @param pair {@link Pair}
+   * @param unsafeClass {@code sun.misc.Unsafe}
    * @param prefix {@link UnsafeWeaver.Prefix Prefix}
    * @param classes primitives and {@link Object}
    * @return a container of methods to field access
    */
-  private static Map<Class<?>, MethodHandle> fieldAccessors(final BiFunction<Class<?>, UnsafeWeaver.Prefix, Pair<Class<?>, MethodHandle>> pair, final UnsafeWeaver.Prefix prefix, final Class<?>... classes) {
-    return Streamr.stream(classes).map((x) -> pair.apply(x, prefix)).filter((x) -> Objects.nonNull(x.getValue())).collect(Collectors.toMap(Pair::getKey, Pair::getValue, (current, next) -> next));
+  private static Map<Class<?>, MethodHandle> fieldAccessors(final Class<?> unsafeClass, final UnsafeWeaver.Prefix prefix, final Class<?>... classes) {
+    return Streamr.stream(classes).map((x) -> pairGenerator.apply(unsafeClass, x, prefix)).filter((x) -> Objects.nonNull(x.getValue())).collect(Collectors.toMap(Pair::getKey, Pair::getValue, (current, next) -> next));
   }
 
   /**
