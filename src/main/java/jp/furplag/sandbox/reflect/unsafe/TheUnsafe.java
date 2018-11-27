@@ -45,14 +45,9 @@ import jp.furplag.sandbox.stream.Streamr;
  */
 public final class TheUnsafe {
 
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
-  }
-
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
-  /* @formatter:off */ static {invalidOffset = -1L;}/* @formatter:on */
+  static {/* @formatter:off */ invalidOffset = -1L; /* @formatter:on */}
 
   /** {@link sun.misc.Unsafe#getUnsafe()}. */
   private final Object theUnsafe;
@@ -71,6 +66,11 @@ public final class TheUnsafe {
 
   /** {@link sun.misc.Unsafe#objectFieldOffset(Field)}. */
   private final MethodHandle objectFieldOffset;
+
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {
+    private static final TheUnsafe theUnsafe = new TheUnsafe();
+  }
 
   /**
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
