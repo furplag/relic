@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -30,15 +29,8 @@ import jp.furplag.sandbox.outerworld.TheExtendedObject;
 import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 import jp.furplag.sandbox.outerworld.nested.Wrappered;
-import jp.furplag.sandbox.stream.Streamr;
 
 public class SavageReflectionTest {
-
-  @Test
-  public void test() {
-    assertFalse(SavageReflection.exclusions.test(null, Reflections.getField(TheEntity.class, "thePrimitive")));
-    assertTrue(SavageReflection.exclusions.test(Streamr.stream(Reflections.getFields(TheEntity.class)).map(Field::getName).collect(Collectors.toSet()), Reflections.getField(TheEntity.class, "thePrimitive")));
-  }
 
   @Test
   public void testGet() {

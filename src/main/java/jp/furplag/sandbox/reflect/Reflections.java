@@ -27,14 +27,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import jp.furplag.function.Suppressor;
+import jp.furplag.function.ThrowableBiPredicate;
+import jp.furplag.function.ThrowableFunction;
 import jp.furplag.sandbox.stream.Streamr;
 
 /**
@@ -45,11 +45,15 @@ import jp.furplag.sandbox.stream.Streamr;
  */
 public interface Reflections {
 
-  /** shorthand for {@link Modifier#isStatic(int)} . */
-  static final Predicate<Field> isStatic = (f) -> f != null && Modifier.isStatic(f.getModifiers());
-
-  /** shorthand for {@link Modifier#isStatic(int)} . */
-  static final Predicate<Field> isNotStatic = isStatic.negate();
+  /**
+   * shorthand for {@link Modifier#isStatic(int)} .
+   *
+   * @param field {@link Field}
+   * @return the result of {@link Modifier#isStatic(int) Modifier#isStatic}({@link Field#getModifiers() modifier}) .
+   */
+  static boolean isStatic(final Field field) {
+    return field != null && Modifier.isStatic(field.getModifiers());
+  }
 
   /**
    * execute {@link AccessibleObject#trySetAccessible()} stealithly .
@@ -73,7 +77,7 @@ public interface Reflections {
     Class<?> clazz = getClass(mysterio);
     while (clazz != null) {
       classes.add(clazz);
-      clazz = clazz.getSuperclass();
+      clazz = clazz. getSuperclass();
     }
 
     return classes.stream();
@@ -101,9 +105,7 @@ public interface Reflections {
    * @return {@link Field}, or null if the field not found
    */
   static Field getField(final Object mysterio, final String fieldName) {
-    // @formatter:off
     return Streamr.firstOf(Streamr.stream(getFields(mysterio)), (f) -> StringUtils.equals(fieldName, f.getName()));
-    // @formatter:on
   }
 
   /**
@@ -124,17 +126,30 @@ public interface Reflections {
    * @return true if the value is able to set the field, or returns false if that is not able to
    */
   static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
-    // @formatter:off
-    return Suppressor.isCorrect(typeOfFiled, typeOfValue, (f, v) ->
-      f != null && !(f.isPrimitive() && v == null) &&
-      !(Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(f)) && Character.class.equals(ClassUtils.primitiveToWrapper(v))) &&
-      (
-        String.class.equals(f) ||
-        (ClassUtils.isAssignable(v, f)) ||
-        Arrays.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom)
-      )
-    );
-    // @formatter:on
+    return ThrowableBiPredicate.orNot(typeOfFiled, typeOfValue, ((ThrowableBiPredicate<Class<?>, Class<?>>)Reflections::notAssignable).negate().and(Reflections::convertible));
+  }
+
+  /**
+   * a part of {@link #isAssignable(Class, Class)} .
+   *
+   * @param typeOfFiled type of the field
+   * @param typeOfValue type of the value
+   * @return true if the value is not able to set the field, or returns false if that is able to
+   */
+  private static boolean notAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
+    return typeOfFiled == null || (typeOfFiled.isPrimitive() && typeOfValue == null) ||
+      (Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled)) && Character.class.equals(ClassUtils.primitiveToWrapper(typeOfValue)));
+  }
+
+  /**
+   * a part of {@link #isAssignable(Class, Class)} .
+   *
+   * @param typeOfFiled type of the field
+   * @param typeOfValue type of the value
+   * @return true if the value is able to set the field, or returns false if that is not able to
+   */
+  private static boolean convertible(final Class<?> f, final Class<?> v) {
+    return String.class.equals(f) || (ClassUtils.isAssignable(v, f)) || Streamr.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom);
   }
 
   /**
@@ -145,9 +160,7 @@ public interface Reflections {
    * @return true if the value is able to set the field, or returns false if that is not able to
    */
   static boolean isAssignable(final Field field, final Object value) {
-    // @formatter:off
     return field != null && isAssignable(field.getType(), getClass(value));
-    // @formatter:on
   }
 
   /**
@@ -158,9 +171,7 @@ public interface Reflections {
    * @return true if the field is declared in class of the object or super class, or returns false if that is not
    */
   static boolean isAssignable(final Object mysterio, final Field field) {
-    // @formatter:off
-    return Suppressor.isCorrect(mysterio, field, (o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o)));
-    // @formatter:on
+    return ThrowableBiPredicate.orNot(mysterio, field, (o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o)));
   }
 
   /**
@@ -185,10 +196,11 @@ public interface Reflections {
    */
   @SafeVarargs
   static <E extends AnnotatedElement> boolean isAnnotatedWith(final E annotatedElement, final Class<? extends Annotation>... annotations) {
-    return Suppressor.orElse(
+    return ThrowableBiPredicate.orNot(
       getAnnotations(annotatedElement)
     , Streamr.stream(annotations).collect(Collectors.toSet())
-    , (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains), false);
+    , (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains)
+    );
   }
 
   /**
@@ -201,7 +213,7 @@ public interface Reflections {
    */
   @SafeVarargs
   static <E extends AnnotatedElement> boolean isAnnotatedWithAllOf(final E annotatedElement, final Class<? extends Annotation>... annotations) {
-    return Suppressor.orElse(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e), false);
+    return ThrowableBiPredicate.orNot(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e));
   }
 
   /**
@@ -213,6 +225,6 @@ public interface Reflections {
    * @return annotations that are present on this element
    */
   private static <E extends AnnotatedElement> Set<Class<?>> getAnnotations(final E annotatedElement) {
-    return Suppressor.orElse(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections.emptySet());
+    return ThrowableFunction.orElseGet(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections::emptySet);
   }
 }

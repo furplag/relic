@@ -140,7 +140,7 @@ public class StreamrTest {
   public void testTweak() {
     assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream((Stream<Object>) null), o -> o).toArray());
     assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream((Stream<Object>) null), Objects::toString).toArray());
-    assertArrayEquals(new String[] { "null", "null", "null" }, Streamr.tweak(Stream.of(null, null, null), Objects::toString).toArray());
+    assertArrayEquals(new String[] {}, Streamr.tweak(Stream.of(null, null, null), Objects::toString).toArray());
     assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream(null, null, null), Objects::toString).toArray());
     assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), null).toArray());
     assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o).toArray());
