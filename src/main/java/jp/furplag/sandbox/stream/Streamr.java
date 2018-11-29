@@ -161,7 +161,7 @@ public interface Streamr {
      */
     @SafeVarargs
     static <T> Stream<T> tweak(final Stream<T> stream, final Function<T, T>... operators) {
-      return Streamr.stream(stream).map(Streamr.stream(operators).reduce((a, b) -> a.andThen(b)).orElse(UnaryOperator.identity())).collect(Collectors.toList()).stream();
+      return Streamr.stream(stream).map(Streamr.stream(operators).reduce((a, b) -> a.andThen(b)).orElse(UnaryOperator.identity()));
     }
 
     /**
