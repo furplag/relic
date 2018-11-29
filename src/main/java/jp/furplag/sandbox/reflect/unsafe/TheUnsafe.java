@@ -80,11 +80,6 @@ public final class TheUnsafe {
   /** {@link sun.misc.Unsafe#objectFieldOffset(Field)} . */
   private final MethodHandle objectFieldOffset;
 
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe} . */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
-  }
-
   /**
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
    */
