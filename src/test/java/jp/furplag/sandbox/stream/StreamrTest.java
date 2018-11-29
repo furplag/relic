@@ -23,17 +23,21 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.DelayQueue;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
 import jp.furplag.sandbox.stream.Streamr.Filter.FilteringMode;
@@ -146,6 +150,17 @@ public class StreamrTest {
     assertEquals(new HashSet<>(Arrays.asList(new Integer[] { 1, 2, 3 })), Streamr.collect(Streamr.stream(new HashSet<>(Arrays.asList(new Integer[] { 1, null, 2, null, 3 }))), HashSet::new));
     assertEquals(new HashSet<>(Arrays.asList(new Integer[] { 1, 2, 3 })), Streamr.collect(Streamr.stream(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)), HashSet::new));
     assertEquals(new HashSet<>(Arrays.asList(new Integer[] { 1, 2, 3 })), Streamr.collect(Streamr.stream(new Integer[] { 1, null, 2, null, 3 }), HashSet::new));
+  }
+
+  @Test
+  public void testToMap() {
+    assertEquals(Collections.emptyMap(), Streamr.collect(Stream.of((Pair<Integer, Integer>) null), null, null));
+    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2)), null, null).toString(), is("{1=2}"));
+    assertEquals(Stream.of(1, 2).map((x) -> Pair.of(x, x)).collect(Collectors.toMap(Pair::getLeft, Pair::getRight)), Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(2, 2), Pair.of(1, 1)), null, null));
+    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2), Pair.of(1, 1)), null, null).toString(), is("{1=1}"));
+    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2), Pair.of(1, 1)), (a, b) -> a, null).toString(), is("{1=2}"));
+    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(2, 2), Pair.of(1, 1), Pair.of(1, 2)), (a, b) -> b, LinkedHashMap::new).toString(), is("{2=2, 1=2}"));
+    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) Pair.of(2, 2), Pair.of(1, 1), Pair.of(1, 2)).sorted(Comparator.comparing(Pair::getLeft)), (a, b) -> b, LinkedHashMap::new).toString(), is("{1=2, 2=2}"));
   }
 
   @Test
