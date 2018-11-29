@@ -30,10 +30,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import jp.furplag.function.ThrowableBiConsumer;
 import jp.furplag.function.ThrowableBiFunction;
-import jp.furplag.function.ThrowableBiPredicate;
 import jp.furplag.function.ThrowableFunction;
-import jp.furplag.function.ThrowablePredicate;
 import jp.furplag.function.ThrowableTriFunction;
+import jp.furplag.function.ThrowableTriPredicate;
 import jp.furplag.sandbox.reflect.Reflections;
 import jp.furplag.sandbox.stream.Streamr;
 
@@ -48,29 +47,40 @@ public final class TheUnsafe {
   private static final ThrowableTriFunction<Class<?>, Class<?>, UnsafeWeaver.Prefix, Pair<Class<?>, MethodHandle>> pairGenerator =
     (x, y, z) -> ImmutablePair.of(y, ThrowableTriFunction.orNull(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
 
+  /** internal snippet for cast the value type . */
+  private static final ThrowableBiFunction<Class<?>, Object, Object> primitivatorOrigin =
+    (t, v) -> String.class.equals(t) ? Objects.toString(v, null) :
+      !t.isPrimitive() ? v :
+      MethodHandles.lookup().findVirtual(Reflections.getClass(v), UnsafeWeaver.getFormattedMethodName(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v);
+
+  /** update value using under unsafe access . */
+  private static final ThrowableTriPredicate<Object, Field, Object> setOrigin =
+    ((ThrowableTriPredicate<Object, Field, Object>) Reflections::isAssignable)
+      .and((t, u, v) -> ThrowableTriPredicate.orNot(t, u, v, (x, y, z) -> {theUnsafe().setInternal(x, y, z); return Objects.equals(primivatior(y.getType(), z), get(x, y));}));
+
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
   static {/* @formatter:off */ invalidOffset = -1L; /* @formatter:on */}
 
-  /** {@link sun.misc.Unsafe#getUnsafe()}. */
+  /** {@link sun.misc.Unsafe#getUnsafe()} . */
   private final Object theUnsafe;
 
-  /** {@link sun.misc.Unsafe#getObject(Object, long)}. */
+  /** {@link sun.misc.Unsafe#getObject(Object, long)} . */
   private final Map<Class<?>, MethodHandle> gettings;
 
-  /** {@link sun.misc.Unsafe#putObject(Object, long, Object)}. */
+  /** {@link sun.misc.Unsafe#putObject(Object, long, Object)} . */
   private final Map<Class<?>, MethodHandle> settings;
 
-  /** {@link sun.misc.Unsafe#staticFieldBase(Field)}. */
+  /** {@link sun.misc.Unsafe#staticFieldBase(Field)} . */
   private final MethodHandle staticFieldBase;
 
-  /** {@link sun.misc.Unsafe#staticFieldOffset(Field)}. */
+  /** {@link sun.misc.Unsafe#staticFieldOffset(Field)} . */
   private final MethodHandle staticFieldOffset;
 
-  /** {@link sun.misc.Unsafe#objectFieldOffset(Field)}. */
+  /** {@link sun.misc.Unsafe#objectFieldOffset(Field)} . */
   private final MethodHandle objectFieldOffset;
 
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe} . */
   private static final class Origin {
     private static final TheUnsafe theUnsafe = new TheUnsafe();
   }
@@ -107,7 +117,7 @@ public final class TheUnsafe {
   /**
    * returns {@link sun.misc.Unsafe#staticFieldBase(Field)} if the field is member of class, or returns {@code classOrInstance} if the field is member of instance .
    *
-   * @param mysterio {@link Class} or the instance.
+   * @param mysterio {@link Class} or the instance
    * @param field {@link Field}
    * @return the object which declaring the field
    * @throws ReflectiveOperationException an access error
@@ -127,11 +137,11 @@ public final class TheUnsafe {
   }
 
   /**
-   * read value using under unsafe access.
+   * read value using under unsafe access .
    *
-   * @param mysterio {@link Class} or the instance .
+   * @param mysterio {@link Class} or the instance
    * @param field {@link Field}
-   * @return the value of the field of classOrInstance
+   * @return the value of the field of class ( or the instance )
    */
   private Object getInternal(Object mysterio, Field field) {
     // @formatter:off
@@ -141,9 +151,9 @@ public final class TheUnsafe {
   }
 
   /**
-   * update value using under unsafe access.
+   * update value using under unsafe access .
    *
-   * @param mysterio {@link Class} or the instance .
+   * @param mysterio {@link Class} or the instance
    * @param field the field to update
    * @param value the value for update
    */
@@ -159,12 +169,7 @@ public final class TheUnsafe {
    * @return transformed object
    */
   private static Object primivatior(final Class<?> fieldType, final Object value) {
-    // @formatter:off
-    return ThrowableBiFunction.orNull(fieldType, value, (t, v) ->
-      String.class.equals(t) ? Objects.toString(v, null) :
-        !t.isPrimitive() ? v :
-        MethodHandles.lookup().findVirtual(Reflections.getClass(v), UnsafeWeaver.getFormattedMethodName(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v));
-    // @formatter:on
+    return ThrowableBiFunction.orNull(fieldType, value, primitivatorOrigin);
   }
 
   /**
@@ -177,9 +182,9 @@ public final class TheUnsafe {
   };
 
   /**
-   * read value using under unsafe access.
+   * read value using under unsafe access .
    *
-   * @param mysterio {@link Class} or the instance .
+   * @param mysterio {@link Class} or the instance
    * @param field {@link Field}
    * @return the value of the field
    */
@@ -188,19 +193,14 @@ public final class TheUnsafe {
   }
 
   /**
-   * update value using under unsafe access.
+   * update value using under unsafe access .
    *
-   * @param mysterio {@link Class} or the instance .
+   * @param mysterio {@link Class} or the instance
    * @param field the field to update
    * @param value the value for update
    * @return true if update successful
    */
   public static boolean set(final Object mysterio, final Field field, final Object value) {
-    // @formatter:off
-    return ThrowableBiPredicate.orNot(mysterio, field, (o, f) ->
-      Reflections.isAssignable(o, f, value) &&
-      ThrowablePredicate.orNot(value, (v) -> {theUnsafe().setInternal(o, f, v); return Objects.equals(primivatior(f.getType(), v), get(o, f));})
-    );
-    // @formatter:on
+    return ThrowableTriPredicate.orNot(mysterio, field, value, setOrigin);
   }
 }
