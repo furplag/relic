@@ -102,6 +102,11 @@ public final class TheUnsafe {
     // @formatter:on
   }
 
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {
+    private static final TheUnsafe theUnsafe = new TheUnsafe();
+  }
+
   /**
    * construct a container of methods to field access .
    *
