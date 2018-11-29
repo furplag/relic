@@ -49,17 +49,6 @@ public interface Streamr {
   }
 
   /**
-   * do less coding in case of {@link Stream#filter(java.util.function.Predicate) Stream#filter}({@link Objects#nonNull(Object) Objects::nonNull}) .
-   *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @return the stream which excluded null
-   */
-  private static <T> Stream<T> excludeNull(final Stream<T> stream) {
-    return Optional.ofNullable(stream).orElseGet(Stream::empty).filter(Objects::nonNull);
-  }
-
-  /**
    * do less coding in case of {@link Collection#stream()} .
    *
    * @param <T> the type of stream elements
@@ -74,24 +63,23 @@ public interface Streamr {
    * do less coding when using {@link Stream} .
    *
    * @param <T> the type of stream elements
-   * @param streams {@link Stream Stream(s)}, maybe null contains
+   * @param stream {@link Stream}, maybe null
    * @return the stream which excluded empty element
    */
-  @SuppressWarnings("unchecked")
-  @SafeVarargs
-  static <T> Stream<T> stream(final Stream<? super T>... streams) {
-    return streams == null ? Stream.empty() : (Stream<T>) Arrays.stream(streams).filter(Objects::nonNull).reduce(Stream::concat).orElseGet(Stream::empty).filter(Objects::nonNull);
+  static <T> Stream<T> stream(final Stream<T> stream) {
+    return excludeNull(stream);
   }
 
   /**
    * do less coding when using {@link Stream} .
    *
    * @param <T> the type of stream elements
-   * @param stream {@link Stream}, maybe null
+   * @param streams {@link Stream Stream(s)}, maybe null contains
    * @return the stream which excluded empty element
    */
-  static <T> Stream<T> stream(final Stream<T> stream) {
-    return excludeNull(stream);
+  @SafeVarargs
+  static <T> Stream<T> stream(final Stream<T>... streams) {
+    return streamInternal((Object[]) streams);
   }
 
   /**
@@ -105,9 +93,63 @@ public interface Streamr {
    * @param elements an array of T, maybe null
    * @return the stream which excluded null
    */
+  @SuppressWarnings("unchecked")
   @SafeVarargs
   static <T> Stream<T> stream(final T... elements) {
-    return elements == null ? Stream.empty() : excludeNull(Arrays.stream(elements));
+    // @formatter:off
+    return elements == null || elements.length < 1 ? Stream.empty() :
+      isStream(elements) ? isStreamArray(elements) ?
+        streamInternal(elements) : stream((Stream<T>) elements[0]) :
+      excludeNull(Arrays.stream(elements));
+    // @formatter:on
+  }
+
+  /**
+   * do less coding in case of {@link Stream#filter(java.util.function.Predicate) Stream#filter}({@link Objects#nonNull(Object) Objects::nonNull}) .
+   *
+   * @param <T> the type of the stream elements
+   * @param stream {@link Stream}, maybe null
+   * @return the stream which excluded null
+   */
+  private static <T> Stream<T> excludeNull(final Stream<T> stream) {
+    return Optional.ofNullable(stream).orElseGet(Stream::empty).filter(Objects::nonNull);
+  }
+
+  /**
+   * detect the parameter is array of {@link Stream} .
+   *
+   * @param <T> the type of the stream elements
+   * @param elements an array of T, maybe null
+   * @return true if the type of elements is {@link Stream}
+   */
+  @SafeVarargs
+  private static <T> boolean isStream(final T... elements) {
+    return ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).map(Object::getClass).allMatch(Stream.class::isAssignableFrom));
+  }
+
+  /**
+   * detect the parameter is array of {@link Stream} .
+   *
+   * @param <T> the type of the stream elements
+   * @param elements an array of T, maybe null
+   * @return true if the type of elements is an array of {@link Stream}
+   */
+  @SafeVarargs
+  private static <T> boolean isStreamArray(final T... elements) {
+    return isStream(elements) && ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).count() > 1);
+  }
+
+  /**
+   * do less coding when using {@link Stream} .
+   *
+   * @param <T> the type of stream elements
+   * @param streams {@link Stream Stream(s)}, maybe null contains
+   * @return the stream which excluded empty element
+   */
+  @SuppressWarnings("unchecked")
+  @SafeVarargs
+  private static <T> Stream<T> streamInternal(final Object... streams) {
+    return streams == null ? Stream.empty() : (Stream<T>) Arrays.stream(streams).map((t) -> (Stream<T>) t).filter(Objects::nonNull).reduce(Stream::concat).orElseGet(Stream::empty).filter(Objects::nonNull);
   }
 
   /**
@@ -169,6 +211,20 @@ public interface Streamr {
      *
      * @param <T> the type of the stream elements
      * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
+     * @param collection {@link Collection}, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> filtering(final FilteringMode filteringMode, final Collection<T> collection, final Function<? super T, Boolean>... filters) {
+      return filtering(filteringMode, Streamr.stream(collection), filters);
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
      * @param stream {@link Stream}, maybe null
      * @param filters condition(s), maybe null
      * @return unclosed (actually, duplicated) stream of T which filtered elements
@@ -176,6 +232,20 @@ public interface Streamr {
     @SafeVarargs
     static <T> Stream<T> filtering(final FilteringMode filteringMode, final Stream<T> stream, final Function<? super T, Boolean>... filters) {
       return Streamr.stream(stream).filter(unite(filteringMode, filters)).collect(Collectors.toList()).stream();
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
+     * @param elements an array of T, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> filtering(final FilteringMode filteringMode, final T[] elements, final Function<? super T, Boolean>... filters) {
+      return filtering(filteringMode, Streamr.stream(elements), filters);
     }
 
     /**

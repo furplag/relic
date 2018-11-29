@@ -166,6 +166,9 @@ public class StreamrTest {
     assertArrayEquals(new Integer[] { 2, 1, 3 }, Streamr.Filter.filtering(FilteringMode.Or, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
     assertArrayEquals(new Integer[] {}, Streamr.Filter.filtering(FilteringMode.And, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
     assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.filtering(FilteringMode.Or, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.filtering(FilteringMode.Or, new Integer[] { 2, null, 1, 3, 4 }, (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.filtering(FilteringMode.Or, Arrays.asList(new Integer[] { 2, null, 1, 3, 4 }), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 1, 1 }, Streamr.Filter.filtering(FilteringMode.And, Arrays.asList(Stream.of(2, null, 1, 3),  Stream.of(2, null, 1, 3) ).toArray(), (x) -> ((Integer) x) % 2 != 0, (x) -> ((Integer) x) < 3).toArray());
   }
 
   @Test
