@@ -20,11 +20,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import jp.furplag.function.ThrowablePredicate;
 
 /**
  * do less coding when using Stream API .
@@ -33,6 +36,17 @@ import java.util.stream.Stream;
  *
  */
 public interface Streamr {
+
+  /**
+   * we might to use this many .
+   *
+   * @param <T> the type of the stream elements
+   * @param stream {@link Stream}, maybe null
+   * @return {@link Collection} of T
+   */
+  static <T, R extends Collection<T>> R collect(final Stream<T> stream, final Supplier<R> supplier) {
+    return stream(stream).collect(Collectors.toCollection(supplier));
+  }
 
   /**
    * do less coding in case of {@link Stream#filter(java.util.function.Predicate) Stream#filter}({@link Objects#nonNull(Object) Objects::nonNull}) .
@@ -54,6 +68,19 @@ public interface Streamr {
    */
   static <T> Stream<T> stream(final Collection<T> collection) {
     return collection == null ? Stream.empty() : excludeNull(collection.stream());
+  }
+
+  /**
+   * do less coding when using {@link Stream} .
+   *
+   * @param <T> the type of stream elements
+   * @param streams {@link Stream Stream(s)}, maybe null contains
+   * @return the stream which excluded empty element
+   */
+  @SuppressWarnings("unchecked")
+  @SafeVarargs
+  static <T> Stream<T> stream(final Stream<? super T>... streams) {
+    return streams == null ? Stream.empty() : (Stream<T>) Arrays.stream(streams).filter(Objects::nonNull).reduce(Stream::concat).orElseGet(Stream::empty).filter(Objects::nonNull);
   }
 
   /**
@@ -84,61 +111,85 @@ public interface Streamr {
   }
 
   /**
-   * returns the first of element in the stream that match the given predicate .
+   * do less coding when using Stream API .
    *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @param condition {@link Predicate}
-   * @return the first of element in the stream that match the given predicate
+   * @author furplag
+   *
    */
-  static <T> T firstOf(final Stream<T> stream, final Predicate<? super T> condition) {
-    return filtering(stream, condition).findFirst().orElse(null);
-  }
+  public interface Filter {
 
-  /**
-   * returns elements in the stream that match the given predicate .
-   *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @param condition {@link Predicate}
-   * @return elements in the stream that match the given predicate
-   */
-  static <T> Stream<T> filtering(final Stream<T> stream, final Predicate<? super T> condition) {
-    return condition == null ? stream : stream.dropWhile(condition.negate()).filter(condition);
-  }
+    /**
+     * controls of {@link Predicate#and(java.util.function.Predicate)} /  {@link Predicate#or(java.util.function.Predicate)} .
+     *
+     * @author furplag
+     *
+     */
+    public static enum FilteringMode {
+      /** {@link Predicate#and(Predicate)} . */
+      And,
+      /** {@link Predicate#or(Predicate)} . */
+      Or;
 
-  /**
-   * returns the last of element in the stream that match the given predicate .
-   *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @param condition {@link Predicate}
-   * @return the last of element in the stream that match the given predicate
-   */
-  static <T> T lastOf(final Stream<T> stream, final Predicate<? super T> condition) {
-    return filtering(stream, condition).reduce((current, next) -> next).orElse(null);
-  }
+      /**
+       * detect the {@link FilteringMode} is &quot;{@link FilteringMode#And And}&quot; .
+       *
+       * @return {@code true} if {@link FilteringMode} is &quot;{@link FilteringMode#And And}&quot;, otherwise {@code false} .
+       */
+      public boolean and() {
+        return this.equals(And);
+      }
 
-  /**
-   * do less coding in case of {@link Stream#map(java.util.function.Function) Stream.map()}.{@link Stream#collect(java.util.stream.Collector) collect(Collectors.toList())}.{@link Collection#stream() stream()} .
-   *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @param tweaker {@link UnaryOperator}
-   * @return unclosed (actually, duplicated) stream of T which modified each elements
-   */
-  static <T> Stream<T> tweak(final Stream<T> stream, final UnaryOperator<T> tweaker) {
-    return stream(stream).map(Optional.ofNullable(tweaker).orElse(UnaryOperator.identity())).collect(Collectors.toList()).stream();
-  }
+      /**
+       * returns a {@link Predicate} which united specified conditions .
+       *
+       * @param <T> the type of the stream elements
+       * @param function condition(s)
+       * @return a {@link Predicate} which united specified conditions .
+       */
+      public <T> Predicate<T> predicate(Function<? super T, Boolean> function) {
+        return ThrowablePredicate.of(function::apply, (t) -> and());
+      }
+    }
 
-  /**
-   * we might to use this many .
-   *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @return {@link Collection} of T
-   */
-  static <T, C extends Collection<T>> C collect(final Stream<T> stream, final Supplier<? extends C> supplier) {
-    return stream(stream).collect(Collectors.toCollection(supplier));
+    /**
+     * do less coding in case of {@link Stream#map(java.util.function.Function) Stream.map()}.{@link Stream#collect(java.util.stream.Collector) collect(Collectors.toList())}.{@link Collection#stream() stream()} .
+     *
+     * @param <T> the type of the stream elements
+     * @param stream {@link Stream}, maybe null
+     * @param operators {@link UnaryOperator}
+     * @return unclosed (actually, duplicated) stream of T which modified each elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> tweak(final Stream<T> stream, final Function<T, T>... operators) {
+      return Streamr.stream(stream).map(Streamr.stream(operators).reduce((a, b) -> a.andThen(b)).orElse(UnaryOperator.identity()));
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
+     * @param stream {@link Stream}, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> filtering(final FilteringMode filteringMode, final Stream<T> stream, final Function<? super T, Boolean>... filters) {
+      return Streamr.stream(stream).filter(unite(filteringMode, filters)).collect(Collectors.toList()).stream();
+    }
+
+    /**
+     * unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot; .
+     *
+     * @param filteringMode &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
+     * @param filters condition(s), maybe null
+     * @return a {@link Predicate} which united specified conditions
+     */
+    @SafeVarargs
+    private static <T> Predicate<? super T> unite(final FilteringMode filteringMode, final Function<? super T, Boolean>... filters) {
+      final FilteringMode andOr = Objects.requireNonNullElse(filteringMode, FilteringMode.And);
+
+      return Streamr.stream(filters).map(andOr::predicate).reduce((a, b) -> andOr.and() ? a.and(b) : a.or(b)).orElse((t) -> andOr.and());
+    }
   }
 }

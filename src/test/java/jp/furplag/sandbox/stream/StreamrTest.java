@@ -16,6 +16,7 @@
 
 package jp.furplag.sandbox.stream;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayDeque;
@@ -29,11 +30,13 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.DelayQueue;
+import java.util.function.Function;
 import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+
+import jp.furplag.sandbox.stream.Streamr.Filter.FilteringMode;
 
 public class StreamrTest {
 
@@ -68,6 +71,15 @@ public class StreamrTest {
     assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(new HashSet<>(Arrays.asList(new Integer[] { 1, null, 2, null, 3 }))).toArray(Integer[]::new));
     assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)).toArray(Integer[]::new));
     assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(new Integer[] { 1, null, 2, null, 3 }).toArray(Integer[]::new));
+
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Stream.of(1, 2, 3)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, Streamr.stream(Stream.of(1, 2, 3), Stream.of(4, 5, 6)).toArray(Integer[]::new));
+
+    assertArrayEquals(new Integer[] {}, Streamr.stream(Stream.ofNullable((Integer) null)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Stream.of(1, 2, 3)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, Streamr.stream(Stream.of(1, 2, 3), Stream.of(4, 5, 6)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, Streamr.stream(Stream.of(1, 2, 3), null, Stream.of(4, 5, 6)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, Streamr.stream(Stream.of(1, 2, 3), null, Stream.of(4, null, 5, null, 6)).toArray(Integer[]::new));
   }
 
   @Test
@@ -137,41 +149,35 @@ public class StreamrTest {
   }
 
   @Test
-  public void testTweak() {
-    assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream((Stream<Object>) null), o -> o).toArray());
-    assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream((Stream<Object>) null), Objects::toString).toArray());
-    assertArrayEquals(new String[] {}, Streamr.tweak(Stream.of(null, null, null), Objects::toString).toArray());
-    assertArrayEquals(new Object[] {}, Streamr.tweak(Streamr.stream(null, null, null), Objects::toString).toArray());
-    assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), null).toArray());
-    assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o).toArray());
-    assertArrayEquals(new Object[] { null, null, null, null, null, null, null, null, null, null }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> null).toArray());
-    assertArrayEquals(new Integer[] { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 }, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).toArray());
-    assertEquals(5, Streamr.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).mapToInt(Integer::intValue).sum());
+  public void testFilteringMode() {
+    assertThat(Streamr.Filter.FilteringMode.And.and(), is(true));
+    assertThat(Streamr.Filter.FilteringMode.Or.and(), is(false));
   }
 
   @Test
-  public void testFirstOf() {
-    assertEquals(null, Streamr.firstOf(Streamr.stream((Stream<Long>) null), o -> o.intValue() % 2 == 0));
-    assertEquals(null, Streamr.firstOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 10));
-    assertEquals((Long) 6L, Streamr.firstOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 5));
-    assertEquals("南", Streamr.firstOf(Arrays.stream("南無阿弥陀仏".split("")), null));
-    assertEquals("南", Streamr.firstOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "南".equals(o)));
-    assertEquals("無", Streamr.firstOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "無".equals(o)));
-    assertEquals("仏", Streamr.firstOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "仏".equals(o)));
-    assertEquals("南", Streamr.firstOf(Arrays.stream("南無阿弥陀仏".split("")), Objects::nonNull));
-    assertEquals(null, Streamr.firstOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "虚".equals(o)));
+  public void testFiltering() {
+    assertArrayEquals(Stream.empty().toArray(), Streamr.Filter.filtering(null, Stream.empty(), (Function<Object, Boolean>)null).toArray());
+    assertArrayEquals(Stream.empty().toArray(), Streamr.Filter.filtering(null, Stream.of(null, null, null), (Function<Object, Boolean>)null).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (Function<Object, Boolean>)null).toArray());
+    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0).toArray());
+    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0).toArray());
+    assertArrayEquals(new Integer[] { 1 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
+    assertArrayEquals(new Integer[] { 1 }, Streamr.Filter.filtering(FilteringMode.And, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3 }, Streamr.Filter.filtering(FilteringMode.Or, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
+    assertArrayEquals(new Integer[] {}, Streamr.Filter.filtering(FilteringMode.And, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.filtering(FilteringMode.Or, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
   }
 
   @Test
-  public void testLastOf() {
-    assertEquals(null, Streamr.lastOf(Streamr.stream((Stream<Long>) null), o -> o.intValue() % 2 == 0));
-    assertEquals(null, Streamr.lastOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 10));
-    assertEquals((Long) 9L, Streamr.lastOf(LongStream.rangeClosed(0, 9).boxed(), o -> o.intValue() > 5));
-    assertEquals("仏", Streamr.lastOf(Arrays.stream("南無阿弥陀仏".split("")), null));
-    assertEquals("南", Streamr.lastOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "南".equals(o)));
-    assertEquals("無", Streamr.lastOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "無".equals(o)));
-    assertEquals("仏", Streamr.lastOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "仏".equals(o)));
-    assertEquals("仏", Streamr.lastOf(Arrays.stream("南無阿弥陀仏".split("")), Objects::nonNull));
-    assertEquals(null, Streamr.lastOf(Arrays.stream("南無阿弥陀仏".split("")), o -> "虚".equals(o)));
+  public void testFilterTweak() {
+    assertArrayEquals(new Object[] {}, Streamr.Filter.tweak(Streamr.stream((Stream<Object>) null), (o) -> o).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.Filter.tweak(Streamr.stream((Stream<Object>) null), Objects::toString).toArray());
+    assertArrayEquals(new String[] {}, Streamr.Filter.tweak(Stream.of(null, null, null), Objects::toString).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.Filter.tweak(Streamr.stream(null, null, null), Objects::toString).toArray());
+    assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), (Function<Integer, Integer>[]) null).toArray());
+    assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), (o) -> o).toArray());
+    assertArrayEquals(new Object[] { null, null, null, null, null, null, null, null, null, null }, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> null).toArray());
+    assertArrayEquals(new Integer[] { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 }, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).toArray());
+    assertThat(Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).mapToInt(Integer::intValue).sum(), is(5));
   }
 }

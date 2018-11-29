@@ -108,7 +108,7 @@ public interface Reflections {
    * @return {@link Field}, or null if the field not found
    */
   static Field getField(final Object mysterio, final String fieldName) {
-    return Streamr.firstOf(Streamr.stream(getFields(mysterio)), (f) -> StringUtils.equals(fieldName, f.getName()));
+    return Streamr.Filter.filtering(null, Streamr.stream(getFields(mysterio)), (f) -> StringUtils.equals(fieldName, f.getName())).findFirst().orElse(null);
   }
 
   /**
