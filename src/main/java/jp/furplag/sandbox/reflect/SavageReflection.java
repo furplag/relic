@@ -103,13 +103,12 @@ public interface SavageReflection {
    */
   static Map<String, Object> read(final Object object, final String... excludes) {
     // @formatter:off
-    return object instanceof Class ? Collections.emptyMap() : Collections.unmodifiableMap(Streamr.stream(Reflections.getFields(object instanceof Class ? null : object))
-      .filter(((Predicate<Field>) Reflections::isStatic).or((f) -> ArrayUtils.contains(excludes, f.getName())).negate())
+    return object instanceof Class ? Collections.emptyMap() :
+      Streamr.Filter.filtering(Streamr.Filter.FilteringMode.And, Reflections.getFields(object), (t) -> !Reflections.isStatic(t), (t) -> !ArrayUtils.contains(excludes, t.getName()))
       .collect(
         LinkedHashMap::new
       , (map, field) -> map.putIfAbsent(field.getName(), ThrowableBiFunction.orNull(object, field, SavageReflection::get))
-      , LinkedHashMap::putAll)
-    );
+      , LinkedHashMap::putAll);
     // @formatter:on
   }
 }
