@@ -18,14 +18,19 @@ package jp.furplag.sandbox.stream;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import jp.furplag.function.ThrowablePredicate;
 
@@ -46,6 +51,18 @@ public interface Streamr {
    */
   static <T, R extends Collection<T>> R collect(final Stream<T> stream, final Supplier<R> supplier) {
     return stream(stream).collect(Collectors.toCollection(supplier));
+  }
+
+  /**
+   * we might to use this many .
+   *
+   * @param <T> the type of the key of stream elements
+   * @param <U> the type of the value of stream elements
+   * @param entries {@link Stream} of {@link Pair}, maybe null
+   * @return {@link Map}
+   */
+  static <T, U> Map<T, U> collect(final Stream<Pair<T, U>> entries, BinaryOperator<U> mergeFunction, final Supplier<Map<T, U>> supplier) {
+    return Streamr.stream(entries).collect(Collectors.toMap(Pair::getLeft, Pair::getRight, Objects.requireNonNullElse(mergeFunction, (current, next) -> next), Objects.requireNonNullElse(supplier, HashMap::new)));
   }
 
   /**
