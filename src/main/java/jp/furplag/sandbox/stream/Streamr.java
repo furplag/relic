@@ -43,14 +43,164 @@ import jp.furplag.function.ThrowablePredicate;
 public interface Streamr {
 
   /**
-   * we might to use this many .
+   * do less coding when using {@link Stream#filter(Predicate)} .
    *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @return {@link Collection} of T
+   * @author furplag
+   *
    */
-  static <T, R extends Collection<T>> R collect(final Stream<T> stream, final Supplier<R> supplier) {
-    return stream(stream).collect(Collectors.toCollection(supplier));
+  public interface Filter {
+
+    /**
+     * controls of {@link Predicate#and(java.util.function.Predicate)} / {@link Predicate#or(java.util.function.Predicate)} .
+     *
+     * @author furplag
+     *
+     */
+    static enum FilteringMode {
+      /** {@link Predicate#and(Predicate)} . */
+      And,
+      /** {@link Predicate#or(Predicate)} . */
+      Or;
+
+      /**
+       * detect the {@link FilteringMode} is &quot;{@link FilteringMode#And And}&quot; .
+       *
+       * @return {@code true} if {@link FilteringMode} is &quot;{@link FilteringMode#And And}&quot;, otherwise {@code false} .
+       */
+      public boolean and() {
+        return this.equals(And);
+      }
+
+      /**
+       * returns a {@link Predicate} which united specified conditions .
+       *
+       * @param <T> the type of the stream elements
+       * @param function condition(s)
+       * @return a {@link Predicate} which united specified conditions .
+       */
+      public <T> Predicate<T> predicate(Function<? super T, Boolean> function) {
+        return ThrowablePredicate.of(function::apply, (t) -> and());
+      }
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.or(anotherOne).or(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param collection {@link Collection}, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> anyOf(final Collection<T> collection, final Function<? super T, Boolean>... filters) {
+      return anyOf(Streamr.stream(collection), filters);
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.or(anotherOne).or(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param stream {@link Stream}, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> anyOf(final Stream<T> stream, final Function<? super T, Boolean>... filters) {
+      return filter(FilteringMode.Or, stream, filters);
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.or(anotherOne).or(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param elements an array of T, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> anyOf(final T[] elements, final Function<? super T, Boolean>... filters) {
+      return anyOf(Streamr.stream(elements), filters);
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
+     * @param stream {@link Stream}, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    private static <T> Stream<T> filter(final FilteringMode filteringMode, final Stream<T> stream, final Function<? super T, Boolean>... filters) {
+      return Streamr.stream(stream).filter(unite(filteringMode, filters)).collect(Collectors.toList()).stream();
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param collection {@link Collection}, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> filtering(final Collection<T> collection, final Function<? super T, Boolean>... filters) {
+      return filtering(Streamr.stream(collection), filters);
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param stream {@link Stream}, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> filtering(final Stream<T> stream, final Function<? super T, Boolean>... filters) {
+      return filter(FilteringMode.And, stream, filters);
+    }
+
+    /**
+     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
+     *
+     * @param <T> the type of the stream elements
+     * @param elements an array of T, maybe null
+     * @param filters condition(s), maybe null
+     * @return unclosed (actually, duplicated) stream of T which filtered elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> filtering(final T[] elements, final Function<? super T, Boolean>... filters) {
+      return filtering(Streamr.stream(elements), filters);
+    }
+
+    /**
+     * do less coding in case of {@link Stream#map(java.util.function.Function) Stream.map()}.{@link Stream#collect(java.util.stream.Collector) collect(Collectors.toList())}.{@link Collection#stream() stream()} .
+     *
+     * @param <T> the type of the stream elements
+     * @param stream {@link Stream}, maybe null
+     * @param operators {@link UnaryOperator}
+     * @return unclosed (actually, duplicated) stream of T which modified each elements
+     */
+    @SafeVarargs
+    static <T> Stream<T> tweak(final Stream<T> stream, final Function<T, T>... operators) {
+      return Streamr.stream(stream).map(Streamr.stream(operators).reduce((a, b) -> a.andThen(b)).orElse(UnaryOperator.identity()));
+    }
+
+    /**
+     * unite specified conditions to one {@link Predicate} with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot; .
+     *
+     * @param filteringMode &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
+     * @param filters condition(s), maybe null
+     * @return a {@link Predicate} which united specified conditions
+     */
+    @SafeVarargs
+    private static <T> Predicate<? super T> unite(final FilteringMode filteringMode, final Function<? super T, Boolean>... filters) {
+      final FilteringMode andOr = Objects.requireNonNullElse(filteringMode, FilteringMode.And);
+
+      return Streamr.stream(filters).map(andOr::predicate).reduce((a, b) -> andOr.and() ? a.and(b) : a.or(b)).orElse((t) -> andOr.and());
+    }
   }
 
   /**
@@ -62,7 +212,61 @@ public interface Streamr {
    * @return {@link Map}
    */
   static <T, U> Map<T, U> collect(final Stream<Pair<T, U>> entries, BinaryOperator<U> mergeFunction, final Supplier<Map<T, U>> supplier) {
-    return Streamr.stream(entries).collect(Collectors.toMap(Pair::getLeft, Pair::getRight, Objects.requireNonNullElse(mergeFunction, (current, next) -> next), Objects.requireNonNullElse(supplier, HashMap::new)));
+    // @formatter:off
+    return Streamr.stream(entries)
+      .collect(Collectors.toMap(
+          Pair::getLeft
+        , Pair::getRight
+        , Objects.requireNonNullElse(mergeFunction, (current, next) -> next)
+        , Objects.requireNonNullElse(supplier, HashMap::new))
+      );
+    // @formatter:on
+  }
+
+  /**
+   * we might to use this many .
+   *
+   * @param <T> the type of the stream elements
+   * @param stream {@link Stream}, maybe null
+   * @return {@link Collection} of T
+   */
+  static <T, R extends Collection<T>> R collect(final Stream<T> stream, final Supplier<R> supplier) {
+    return stream(stream).collect(Collectors.toCollection(supplier));
+  }
+
+  /**
+   * do less coding in case of {@link Stream#filter(java.util.function.Predicate) Stream#filter}({@link Objects#nonNull(Object) Objects::nonNull}) .
+   *
+   * @param <T> the type of the stream elements
+   * @param stream {@link Stream}, maybe null
+   * @return the stream which excluded null
+   */
+  private static <T> Stream<T> excludeNull(final Stream<T> stream) {
+    return Optional.ofNullable(stream).orElseGet(Stream::empty).filter(Objects::nonNull);
+  }
+
+  /**
+   * detect the parameter is array of {@link Stream} .
+   *
+   * @param <T> the type of the stream elements
+   * @param elements an array of T, maybe null
+   * @return true if the type of elements is {@link Stream}
+   */
+  @SafeVarargs
+  private static <T> boolean isStream(final T... elements) {
+    return ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).map(Object::getClass).allMatch(Stream.class::isAssignableFrom));
+  }
+
+  /**
+   * detect the parameter is array of {@link Stream} .
+   *
+   * @param <T> the type of the stream elements
+   * @param elements an array of T, maybe null
+   * @return true if the type of elements is an array of {@link Stream}
+   */
+  @SafeVarargs
+  private static <T> boolean isStreamArray(final T... elements) {
+    return isStream(elements) && ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).count() > 1);
   }
 
   /**
@@ -122,41 +326,6 @@ public interface Streamr {
   }
 
   /**
-   * do less coding in case of {@link Stream#filter(java.util.function.Predicate) Stream#filter}({@link Objects#nonNull(Object) Objects::nonNull}) .
-   *
-   * @param <T> the type of the stream elements
-   * @param stream {@link Stream}, maybe null
-   * @return the stream which excluded null
-   */
-  private static <T> Stream<T> excludeNull(final Stream<T> stream) {
-    return Optional.ofNullable(stream).orElseGet(Stream::empty).filter(Objects::nonNull);
-  }
-
-  /**
-   * detect the parameter is array of {@link Stream} .
-   *
-   * @param <T> the type of the stream elements
-   * @param elements an array of T, maybe null
-   * @return true if the type of elements is {@link Stream}
-   */
-  @SafeVarargs
-  private static <T> boolean isStream(final T... elements) {
-    return ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).map(Object::getClass).allMatch(Stream.class::isAssignableFrom));
-  }
-
-  /**
-   * detect the parameter is array of {@link Stream} .
-   *
-   * @param <T> the type of the stream elements
-   * @param elements an array of T, maybe null
-   * @return true if the type of elements is an array of {@link Stream}
-   */
-  @SafeVarargs
-  private static <T> boolean isStreamArray(final T... elements) {
-    return isStream(elements) && ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).count() > 1);
-  }
-
-  /**
    * do less coding when using {@link Stream} .
    *
    * @param <T> the type of stream elements
@@ -166,117 +335,9 @@ public interface Streamr {
   @SuppressWarnings("unchecked")
   @SafeVarargs
   private static <T> Stream<T> streamInternal(final Object... streams) {
-    return streams == null ? Stream.empty() : (Stream<T>) Arrays.stream(streams).map((t) -> (Stream<T>) t).filter(Objects::nonNull).reduce(Stream::concat).orElseGet(Stream::empty).filter(Objects::nonNull);
-  }
-
-  /**
-   * do less coding when using Stream API .
-   *
-   * @author furplag
-   *
-   */
-  public interface Filter {
-
-    /**
-     * controls of {@link Predicate#and(java.util.function.Predicate)} /  {@link Predicate#or(java.util.function.Predicate)} .
-     *
-     * @author furplag
-     *
-     */
-    public static enum FilteringMode {
-      /** {@link Predicate#and(Predicate)} . */
-      And,
-      /** {@link Predicate#or(Predicate)} . */
-      Or;
-
-      /**
-       * detect the {@link FilteringMode} is &quot;{@link FilteringMode#And And}&quot; .
-       *
-       * @return {@code true} if {@link FilteringMode} is &quot;{@link FilteringMode#And And}&quot;, otherwise {@code false} .
-       */
-      public boolean and() {
-        return this.equals(And);
-      }
-
-      /**
-       * returns a {@link Predicate} which united specified conditions .
-       *
-       * @param <T> the type of the stream elements
-       * @param function condition(s)
-       * @return a {@link Predicate} which united specified conditions .
-       */
-      public <T> Predicate<T> predicate(Function<? super T, Boolean> function) {
-        return ThrowablePredicate.of(function::apply, (t) -> and());
-      }
-    }
-
-    /**
-     * do less coding in case of {@link Stream#map(java.util.function.Function) Stream.map()}.{@link Stream#collect(java.util.stream.Collector) collect(Collectors.toList())}.{@link Collection#stream() stream()} .
-     *
-     * @param <T> the type of the stream elements
-     * @param stream {@link Stream}, maybe null
-     * @param operators {@link UnaryOperator}
-     * @return unclosed (actually, duplicated) stream of T which modified each elements
-     */
-    @SafeVarargs
-    static <T> Stream<T> tweak(final Stream<T> stream, final Function<T, T>... operators) {
-      return Streamr.stream(stream).map(Streamr.stream(operators).reduce((a, b) -> a.andThen(b)).orElse(UnaryOperator.identity()));
-    }
-
-    /**
-     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
-     *
-     * @param <T> the type of the stream elements
-     * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
-     * @param collection {@link Collection}, maybe null
-     * @param filters condition(s), maybe null
-     * @return unclosed (actually, duplicated) stream of T which filtered elements
-     */
-    @SafeVarargs
-    static <T> Stream<T> filtering(final FilteringMode filteringMode, final Collection<T> collection, final Function<? super T, Boolean>... filters) {
-      return filtering(filteringMode, Streamr.stream(collection), filters);
-    }
-
-    /**
-     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
-     *
-     * @param <T> the type of the stream elements
-     * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
-     * @param stream {@link Stream}, maybe null
-     * @param filters condition(s), maybe null
-     * @return unclosed (actually, duplicated) stream of T which filtered elements
-     */
-    @SafeVarargs
-    static <T> Stream<T> filtering(final FilteringMode filteringMode, final Stream<T> stream, final Function<? super T, Boolean>... filters) {
-      return Streamr.stream(stream).filter(unite(filteringMode, filters)).collect(Collectors.toList()).stream();
-    }
-
-    /**
-     * do less coding in case of {@link Stream#filter(Predicate) Stream.filter(predicate.and(anotherOne).and(other)...)} .
-     *
-     * @param <T> the type of the stream elements
-     * @param filteringMode unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
-     * @param elements an array of T, maybe null
-     * @param filters condition(s), maybe null
-     * @return unclosed (actually, duplicated) stream of T which filtered elements
-     */
-    @SafeVarargs
-    static <T> Stream<T> filtering(final FilteringMode filteringMode, final T[] elements, final Function<? super T, Boolean>... filters) {
-      return filtering(filteringMode, Streamr.stream(elements), filters);
-    }
-
-    /**
-     * unite specified conditions to one Predicate with &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot; .
-     *
-     * @param filteringMode &quot;{@link FilteringMode#And And}&quot; or &quot;{@link FilteringMode#Or Or}&quot;
-     * @param filters condition(s), maybe null
-     * @return a {@link Predicate} which united specified conditions
-     */
-    @SafeVarargs
-    private static <T> Predicate<? super T> unite(final FilteringMode filteringMode, final Function<? super T, Boolean>... filters) {
-      final FilteringMode andOr = Objects.requireNonNullElse(filteringMode, FilteringMode.And);
-
-      return Streamr.stream(filters).map(andOr::predicate).reduce((a, b) -> andOr.and() ? a.and(b) : a.or(b)).orElse((t) -> andOr.and());
-    }
+    // @formatter:off
+    return streams == null ? Stream.empty() :
+      (Stream<T>) Arrays.stream(streams).map((t) -> (Stream<T>) t).filter(Objects::nonNull).reduce(Stream::concat).orElseGet(Stream::empty).filter(Objects::nonNull);
+    // @formatter:on
   }
 }

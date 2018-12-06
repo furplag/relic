@@ -40,8 +40,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import jp.furplag.sandbox.stream.Streamr.Filter.FilteringMode;
-
 public class StreamrTest {
 
   @Test
@@ -171,19 +169,21 @@ public class StreamrTest {
 
   @Test
   public void testFiltering() {
-    assertArrayEquals(Stream.empty().toArray(), Streamr.Filter.filtering(null, Stream.empty(), (Function<Object, Boolean>)null).toArray());
-    assertArrayEquals(Stream.empty().toArray(), Streamr.Filter.filtering(null, Stream.of(null, null, null), (Function<Object, Boolean>)null).toArray());
-    assertArrayEquals(new Integer[] { 2, 1, 3 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (Function<Object, Boolean>)null).toArray());
-    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0).toArray());
-    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0).toArray());
-    assertArrayEquals(new Integer[] { 1 }, Streamr.Filter.filtering(null, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
-    assertArrayEquals(new Integer[] { 1 }, Streamr.Filter.filtering(FilteringMode.And, Stream.of(2, null, 1, 3), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
-    assertArrayEquals(new Integer[] { 2, 1, 3 }, Streamr.Filter.filtering(FilteringMode.Or, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
-    assertArrayEquals(new Integer[] {}, Streamr.Filter.filtering(FilteringMode.And, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
-    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.filtering(FilteringMode.Or, Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
-    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.filtering(FilteringMode.Or, new Integer[] { 2, null, 1, 3, 4 }, (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
-    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.filtering(FilteringMode.Or, Arrays.asList(new Integer[] { 2, null, 1, 3, 4 }), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
-    assertArrayEquals(new Integer[] { 1, 1 }, Streamr.Filter.filtering(FilteringMode.And, Arrays.asList(Stream.of(2, null, 1, 3),  Stream.of(2, null, 1, 3) ).toArray(), (x) -> ((Integer) x) % 2 != 0, (x) -> ((Integer) x) < 3).toArray());
+    assertArrayEquals(Stream.empty().toArray(), Streamr.Filter.filtering(Stream.empty(), (Function<Object, Boolean>)null).toArray());
+    assertArrayEquals(Stream.empty().toArray(), Streamr.Filter.filtering(Stream.of(null, null, null), (Function<Object, Boolean>)null).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3 }, Streamr.Filter.filtering(Stream.of(2, null, 1, 3), (Function<Object, Boolean>)null).toArray());
+    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(Stream.of(2, null, 1, 3), (x) -> x % 2 != 0).toArray());
+    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(Arrays.asList(2, null, 1, 3), (x) -> x % 2 != 0).toArray());
+    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(new Integer[] { 2, null, 1, 3 }, (x) -> x % 2 != 0).toArray());
+    assertArrayEquals(new Integer[] { 1, 3 }, Streamr.Filter.filtering(Stream.of(2, null, 1, 3), (x) -> x % 2 != 0).toArray());
+    assertArrayEquals(new Integer[] { 1 }, Streamr.Filter.filtering(Stream.of(2, null, 1, 3), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
+    assertArrayEquals(new Integer[] { 1 }, Streamr.Filter.filtering(Stream.of(2, null, 1, 3), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
+    assertArrayEquals(new Integer[] {}, Streamr.Filter.filtering(Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3 }, Streamr.Filter.anyOf(Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x < 3).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.anyOf(Stream.of(2, null, 1, 3, 4), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.anyOf(new Integer[] { 2, null, 1, 3, 4 }, (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 2, 1, 3, 4 }, Streamr.Filter.anyOf(Arrays.asList(new Integer[] { 2, null, 1, 3, 4 }), (x) -> x % 2 != 0, (x) -> x % 2 == 0).toArray());
+    assertArrayEquals(new Integer[] { 1, 1 }, Streamr.Filter.filtering(Arrays.asList(Stream.of(2, null, 1, 3),  Stream.of(2, null, 1, 3) ).toArray(), (x) -> ((Integer) x) % 2 != 0, (x) -> ((Integer) x) < 3).toArray());
   }
 
   @Test

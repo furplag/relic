@@ -43,17 +43,6 @@ public interface SavageReflection {
    * @param field {@link Field}
    * @return value of field
    */
-  private static Object readField(final Object mysterio, final Field field) {
-    return ThrowableBiFunction.orNull(mysterio, field, TheUnsafe::get);
-  }
-
-  /**
-   * read field value whether protected ( or invisible ) .
-   *
-   * @param mysterio {@link Class} or the instance
-   * @param field {@link Field}
-   * @return value of field
-   */
   static Object get(final Object mysterio, final Field field) {
     return !Reflections.isAssignable(mysterio, field) ? null : ThrowableBiFunction.orNull(mysterio, field, SavageReflection::readField);
   }
@@ -67,6 +56,35 @@ public interface SavageReflection {
    */
   static Object get(final Object mysterio, final String fieldName) {
     return get(mysterio, Reflections.getField(mysterio, fieldName));
+  }
+
+  /**
+   * read field(s) value of the instance whether protected ( or invisible ) .
+   *
+   * @param object the instance
+   * @param excludes the name of field which you want to except from result.
+   * @return {@link LinkedHashMap} &lt;{@link String}, {@link Object}&gt;
+   */
+  static Map<String, Object> read(final Object object, final String... excludes) {
+    // @formatter:off
+    return object instanceof Class ? Collections.emptyMap() :
+      Streamr.Filter.filtering(Reflections.getFields(object), (t) -> !Reflections.isStatic(t), (t) -> !ArrayUtils.contains(excludes, t.getName()))
+      .collect(
+        LinkedHashMap::new
+      , (map, field) -> map.putIfAbsent(field.getName(), ThrowableBiFunction.orNull(object, field, SavageReflection::get))
+      , LinkedHashMap::putAll);
+    // @formatter:on
+  }
+
+  /**
+   * read field value whether protected ( or invisible ) .
+   *
+   * @param mysterio {@link Class} or the instance
+   * @param field {@link Field}
+   * @return value of field
+   */
+  private static Object readField(final Object mysterio, final Field field) {
+    return ThrowableBiFunction.orNull(mysterio, field, TheUnsafe::get);
   }
 
   /**
@@ -91,23 +109,5 @@ public interface SavageReflection {
    */
   static boolean set(final Object mysterio, final String fieldName, final Object value) {
     return set(mysterio, Reflections.getField(mysterio, fieldName), value);
-  }
-
-  /**
-   * read field(s) value of the instance whether protected ( or invisible ) .
-   *
-   * @param object the instance
-   * @param excludes the name of field which you want to except from result.
-   * @return {@link LinkedHashMap} &lt;{@link String}, {@link Object}&gt;
-   */
-  static Map<String, Object> read(final Object object, final String... excludes) {
-    // @formatter:off
-    return object instanceof Class ? Collections.emptyMap() :
-      Streamr.Filter.filtering(Streamr.Filter.FilteringMode.And, Reflections.getFields(object), (t) -> !Reflections.isStatic(t), (t) -> !ArrayUtils.contains(excludes, t.getName()))
-      .collect(
-        LinkedHashMap::new
-      , (map, field) -> map.putIfAbsent(field.getName(), ThrowableBiFunction.orNull(object, field, SavageReflection::get))
-      , LinkedHashMap::putAll);
-    // @formatter:on
   }
 }

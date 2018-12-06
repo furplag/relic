@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import jp.furplag.function.ThrowableBiPredicate;
 import jp.furplag.function.ThrowableFunction;
+import jp.furplag.function.ThrowablePredicate;
 import jp.furplag.sandbox.stream.Streamr;
 
 /**
@@ -68,7 +69,7 @@ public interface Reflections {
     Class<?> clazz = getClass(mysterio);
     while (clazz != null) {
       classes.add(clazz);
-      clazz = clazz. getSuperclass();
+      clazz = clazz.getSuperclass();
     }
 
     return classes.stream();
@@ -108,7 +109,7 @@ public interface Reflections {
    * @return {@link Field}, or null if the field not found
    */
   static Field getField(final Object mysterio, final String fieldName) {
-    return Streamr.Filter.filtering(null, Streamr.stream(getFields(mysterio)), (f) -> StringUtils.equals(fieldName, f.getName())).findFirst().orElse(null);
+    return Streamr.Filter.filtering(getFields(mysterio), (f) -> StringUtils.equals(fieldName, f.getName())).findFirst().orElse(null);
   }
 
   /**
@@ -132,10 +133,7 @@ public interface Reflections {
   @SafeVarargs
   static <E extends AnnotatedElement> boolean isAnnotatedWith(final E annotatedElement, final Class<? extends Annotation>... annotations) {
     return ThrowableBiPredicate.orNot(
-      getAnnotations(annotatedElement)
-    , Streamr.stream(annotations).collect(Collectors.toSet())
-    , (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains)
-    );
+        getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains));
   }
 
   /**
@@ -161,7 +159,7 @@ public interface Reflections {
   static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
     final BiPredicate<Class<?>, Class<?>> isConvertible = (f, v) -> String.class.equals(f) || (ClassUtils.isAssignable(v, f)) || Streamr.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom);
 
-    return ThrowableBiPredicate.orNot(typeOfFiled, typeOfValue, ((ThrowableBiPredicate<Class<?>, Class<?>>)Reflections::notAssignable).negate().and(isConvertible));
+    return ThrowableBiPredicate.orNot(typeOfFiled, typeOfValue, ((ThrowableBiPredicate<Class<?>, Class<?>>) Reflections::notAssignable).negate().and(isConvertible));
   }
 
   /**
@@ -205,7 +203,7 @@ public interface Reflections {
    * @return the result of {@link Modifier#isStatic(int) Modifier#isStatic}({@link Field#getModifiers() modifier}) .
    */
   static boolean isStatic(final Field field) {
-    return field != null && Modifier.isStatic(field.getModifiers());
+    return ThrowablePredicate.orNot(field, (t) ->Modifier.isStatic(t.getModifiers()));
   }
 
   /**
@@ -216,7 +214,9 @@ public interface Reflections {
    * @return true if the value is not able to set the field, or returns false if that is able to
    */
   private static boolean notAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
+    // @formatter:off
     return typeOfFiled == null || (typeOfFiled.isPrimitive() && typeOfValue == null) ||
       (Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled)) && Character.class.equals(ClassUtils.primitiveToWrapper(typeOfValue)));
+    // @formatter:on
   }
 }

@@ -57,9 +57,9 @@ public final class TheUnsafe {
   private static final ThrowableTriPredicate<Object, Field, Object> setOrigin =
     ((ThrowableTriPredicate<Object, Field, Object>) Reflections::isAssignable)
       .and((t, u, v) -> ThrowableTriPredicate.orNot(t, u, v, (x, y, z) -> {theUnsafe().setInternal(x, y, z); return Objects.equals(primivatior(y.getType(), z), get(x, y));}));
-
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
+
   static {/* @formatter:off */ invalidOffset = -1L; /* @formatter:on */}
 
   /** {@link sun.misc.Unsafe#getUnsafe()} . */
@@ -115,6 +115,49 @@ public final class TheUnsafe {
   }
 
   /**
+   * read value using under unsafe access .
+   *
+   * @param mysterio {@link Class} or the instance
+   * @param field {@link Field}
+   * @return the value of the field
+   */
+  public static Object get(final Object mysterio, final Field field) {
+    return theUnsafe().getInternal(mysterio, field);
+  }
+
+  /**
+   * internal snippet for cast the value type .
+   *
+   * @param fieldType type of the filed
+   * @param value the value
+   * @return transformed object
+   */
+  private static Object primivatior(final Class<?> fieldType, final Object value) {
+    return ThrowableBiFunction.orNull(fieldType, value, primitivatorOrigin);
+  }
+
+  /**
+   * update value using under unsafe access .
+   *
+   * @param mysterio {@link Class} or the instance
+   * @param field the field to update
+   * @param value the value for update
+   * @return true if update successful
+   */
+  public static boolean set(final Object mysterio, final Field field, final Object value) {
+    return ThrowableTriPredicate.orNot(mysterio, field, value, setOrigin);
+  }
+
+  /**
+   * {@link TheUnsafe} .
+   *
+   * @return {@link TheUnsafe}
+   */
+  private static TheUnsafe theUnsafe() {
+    return Origin.theUnsafe;
+  }
+
+  /**
    * returns {@link sun.misc.Unsafe#staticFieldBase(Field)} if the field is member of class, or returns {@code classOrInstance} if the field is member of instance .
    *
    * @param mysterio {@link Class} or the instance
@@ -134,7 +177,7 @@ public final class TheUnsafe {
    */
   private long fieldOffset(Field field) {
     return (long) ThrowableFunction.orDefault(field, (t) -> (Reflections.isStatic(field) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, t), invalidOffset);
-  }
+  };
 
   /**
    * read value using under unsafe access .
@@ -159,48 +202,5 @@ public final class TheUnsafe {
    */
   private void setInternal(Object mysterio, Field field, Object value) {
     ThrowableBiConsumer.orNot(mysterio, field, (o, f) -> settings.getOrDefault(f.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f), primivatior(f.getType(), value)));
-  }
-
-  /**
-   * internal snippet for cast the value type .
-   *
-   * @param fieldType type of the filed
-   * @param value the value
-   * @return transformed object
-   */
-  private static Object primivatior(final Class<?> fieldType, final Object value) {
-    return ThrowableBiFunction.orNull(fieldType, value, primitivatorOrigin);
-  }
-
-  /**
-   * {@link TheUnsafe} .
-   *
-   * @return {@link TheUnsafe}
-   */
-  private static TheUnsafe theUnsafe() {
-    return Origin.theUnsafe;
-  };
-
-  /**
-   * read value using under unsafe access .
-   *
-   * @param mysterio {@link Class} or the instance
-   * @param field {@link Field}
-   * @return the value of the field
-   */
-  public static Object get(final Object mysterio, final Field field) {
-    return theUnsafe().getInternal(mysterio, field);
-  }
-
-  /**
-   * update value using under unsafe access .
-   *
-   * @param mysterio {@link Class} or the instance
-   * @param field the field to update
-   * @param value the value for update
-   * @return true if update successful
-   */
-  public static boolean set(final Object mysterio, final Field field, final Object value) {
-    return ThrowableTriPredicate.orNot(mysterio, field, value, setOrigin);
   }
 }
