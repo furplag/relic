@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import jp.furplag.function.ThrowableBiFunction;
 import jp.furplag.function.ThrowableTriPredicate;
@@ -66,7 +69,9 @@ public interface SavageReflection {
    */
   static Map<String, Object> read(final Object object, final String... excludes) {
     // @formatter:off
-    return Streamr.Filter.filtering((object instanceof Class ? new Field[] {} : Reflections.getFields(object)), (t) -> !Reflections.isStatic(t), (t) -> !Arrays.asList(Objects.requireNonNullElse(excludes, new String[] {})).contains(t.getName()))
+    return Streamr.stream(object instanceof Class ? new Field[] {} : Reflections.getFields(object))
+      .filter(Predicate.not(Reflections::isStatic))
+      .filter((t) -> !ArrayUtils.contains(excludes, t.getName()))
       .collect(
         LinkedHashMap::new
       , (map, t) -> map.putIfAbsent(t.getName(), ThrowableBiFunction.orNull(object, t, SavageReflection::get))
