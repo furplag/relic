@@ -19,7 +19,7 @@ package jp.furplag.sandbox.reflect;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.junit.Test;
 
@@ -204,9 +204,9 @@ public class SavageReflectionTest {
       assertEquals((Object) null, SavageReflection.read(new Overriden(), e.getKey()).get(e.getKey()));
       assertNotEquals(e.getValue(), SavageReflection.read(new Wrappered()).get(e.getKey()));
     });
-    assertEquals(new HashMap<>(), SavageReflection.read(null));
+    assertEquals(new LinkedHashMap<>(), SavageReflection.read(null));
 
-    var expected = new HashMap<String, Object>();
+    var expected = new LinkedHashMap<String, Object>();
     expected.put("PUBLIC_STATIC_FINAL_STRING", "a static String.");
     expected.put("PACKAGE_STATIC_FINAL_LONG", 123456L);
     expected.put("PROTECTED_STATIC_FINAL_DOUBLE", .123456);
