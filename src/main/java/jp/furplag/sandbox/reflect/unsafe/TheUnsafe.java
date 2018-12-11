@@ -23,10 +23,6 @@ import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import jp.furplag.function.ThrowableBiConsumer;
 import jp.furplag.function.ThrowableBiFunction;
@@ -44,8 +40,8 @@ import jp.furplag.sandbox.stream.Streamr;
 public final class TheUnsafe {
 
   /** generate the pair of Type and MethodHandle . */
-  private static final ThrowableTriFunction<Class<?>, Class<?>, UnsafeWeaver.Prefix, Pair<Class<?>, MethodHandle>> pairGenerator =
-    (x, y, z) -> ImmutablePair.of(y, ThrowableTriFunction.orNull(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
+  private static final ThrowableTriFunction<Class<?>, Class<?>, UnsafeWeaver.Prefix, ? extends Map.Entry<Class<?>, MethodHandle>> pairGenerator =
+    (x, y, z) -> Map.entry(y, ThrowableTriFunction.orNull(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
 
   /** internal snippet for cast the value type . */
   private static final ThrowableBiFunction<Class<?>, Object, Object> primitivatorOrigin =
@@ -111,7 +107,7 @@ public final class TheUnsafe {
    * @return a container of methods to field access
    */
   private static Map<Class<?>, MethodHandle> fieldAccessors(final Class<?> unsafeClass, final UnsafeWeaver.Prefix prefix, final Class<?>... classes) {
-    return Streamr.stream(classes).map((x) -> pairGenerator.apply(unsafeClass, x, prefix)).filter((x) -> Objects.nonNull(x.getValue())).collect(Collectors.toMap(Pair::getKey, Pair::getValue, (current, next) -> next));
+    return Streamr.collect(Streamr.stream(classes).map((x) -> pairGenerator.apply(unsafeClass, x, prefix)).filter((x) -> Objects.nonNull(x.getValue())), null, null);
   }
 
   /**

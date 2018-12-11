@@ -30,8 +30,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import jp.furplag.function.ThrowablePredicate;
 
 /**

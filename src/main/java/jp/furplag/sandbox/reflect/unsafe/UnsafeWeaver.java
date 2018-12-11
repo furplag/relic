@@ -44,7 +44,7 @@ interface UnsafeWeaver {
    * @return formatted name for unsafe field accessor of &quot;getter&quot; and &quot;setter&quot;
    */
   static String getFormattedMethodName(final Class<?> type, final Prefix prefix) {
-    return String.join("", Objects.toString(prefix, ""), StringUtils.capitalize(Objects.toString(type, "").replaceAll("^.*\\.", "").toLowerCase(Locale.ROOT)));
+    return String.join("", Objects.toString(prefix, ""),  StringUtils.capitalize(Objects.toString(type, "").replaceAll("^.*\\.", "").toLowerCase(Locale.ROOT)));
   }
 
   /**

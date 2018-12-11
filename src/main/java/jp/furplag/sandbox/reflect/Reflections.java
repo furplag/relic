@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import jp.furplag.function.ThrowableBiPredicate;
 import jp.furplag.function.ThrowableFunction;
@@ -109,7 +108,7 @@ public interface Reflections {
    * @return {@link Field}, or null if the field not found
    */
   static Field getField(final Object mysterio, final String fieldName) {
-    return Streamr.Filter.filtering(getFields(mysterio), (f) -> StringUtils.equals(fieldName, f.getName())).findFirst().orElse(null);
+    return Streamr.Filter.filtering(getFields(mysterio), (f) -> f.getName().equals(fieldName)).findFirst().orElse(null);
   }
 
   /**
