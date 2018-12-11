@@ -16,6 +16,7 @@
 
 package jp.furplag.sandbox.reflect;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Field;
@@ -206,13 +207,18 @@ public class SavageReflectionTest {
     });
     assertEquals(new LinkedHashMap<>(), SavageReflection.read(null));
 
-    var expected = new LinkedHashMap<String, Object>();
-    expected.put("PUBLIC_STATIC_FINAL_STRING", "a static String.");
-    expected.put("PACKAGE_STATIC_FINAL_LONG", 123456L);
-    expected.put("PROTECTED_STATIC_FINAL_DOUBLE", .123456);
-    expected.put("PRIVATE_STATIC_FINAL_STRING", "a static String.");
-    expected.put("NULL", null);
-    assertEquals(expected, SavageReflection.read(Overriden.class));
+    assertThat(SavageReflection.read(Overriden.class).get("PUBLIC_STATIC_FINAL_STRING"), is("a static String."));
+    assertThat(SavageReflection.read(Overriden.class).get("PACKAGE_STATIC_FINAL_LONG"), is(123456L));
+    assertThat(SavageReflection.read(Overriden.class).get("PROTECTED_STATIC_FINAL_DOUBLE"), is(.123456));
+    assertThat(SavageReflection.read(Overriden.class).get("PRIVATE_STATIC_FINAL_STRING"), is("a static String."));
+    assertThat(SavageReflection.read(Overriden.class).get("NULL"), is((Object) null));
+    assertThat(SavageReflection.read(Overriden.class).containsKey("message"), is(false));
+
+    assertThat(SavageReflection.read(new Overriden()).containsKey("PUBLIC_STATIC_FINAL_STRING"), is(false));
+    assertThat(SavageReflection.read(new Overriden()).containsKey("PACKAGE_STATIC_FINAL_LONG"), is(false));
+    assertThat(SavageReflection.read(new Overriden()).containsKey("PROTECTED_STATIC_FINAL_DOUBLE"), is(false));
+    assertThat(SavageReflection.read(new Overriden()).containsKey("PRIVATE_STATIC_FINAL_STRING"), is(false));
+    assertThat(SavageReflection.read(new Overriden()).containsKey("NULL"), is(false));
 
     assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), (String) null));
     assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), (String[]) null));
