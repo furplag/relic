@@ -47,7 +47,7 @@ import jp.furplag.sandbox.stream.Streamr;
 public interface Reflections {
 
   /**
-   * execute {@link AccessibleObject#trySetAccessible()} stealithly .
+   * execute {@link AccessibleObject#trySetAccessible()} stealthily .
    *
    * @param <T> any of {@link AccessibleObject}
    * @param accessibleObject {@link AccessibleObject}
