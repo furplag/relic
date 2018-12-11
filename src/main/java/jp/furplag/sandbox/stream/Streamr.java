@@ -30,8 +30,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import jp.furplag.function.ThrowablePredicate;
 
 /**
@@ -208,15 +206,18 @@ public interface Streamr {
    *
    * @param <T> the type of the key of stream elements
    * @param <U> the type of the value of stream elements
-   * @param entries {@link Stream} of {@link Pair}, maybe null
+   * @param entries {@link Stream} of {@link Map.Entry}, maybe null
+   * @param mergeFunction a merge function, used to resolve collisions betweenvalues associated with the same key,
+   *         as supplied to {@link Map#merge(Object, Object, java.util.function.BiFunction)}
+   * @param supplier {@link Supplier} of result
    * @return {@link Map}
    */
-  static <T, U> Map<T, U> collect(final Stream<Pair<T, U>> entries, BinaryOperator<U> mergeFunction, final Supplier<Map<T, U>> supplier) {
+  static <T, U> Map<T, U> collect(final Stream<? extends Map.Entry<T, U>> entries, BinaryOperator<U> mergeFunction, final Supplier<Map<T, U>> supplier) {
     // @formatter:off
     return Streamr.stream(entries)
       .collect(Collectors.toMap(
-          Pair::getLeft
-        , Pair::getRight
+          Map.Entry::getKey
+        , Map.Entry::getValue
         , Objects.requireNonNullElse(mergeFunction, (current, next) -> next)
         , Objects.requireNonNullElse(supplier, HashMap::new))
       );
@@ -227,7 +228,9 @@ public interface Streamr {
    * we might to use this many .
    *
    * @param <T> the type of the stream elements
+   * @param <R> the type of results supplied by this supplier
    * @param stream {@link Stream}, maybe null
+   * @param supplier {@link Supplier} of result
    * @return {@link Collection} of T
    */
   static <T, R extends Collection<T>> R collect(final Stream<T> stream, final Supplier<R> supplier) {
