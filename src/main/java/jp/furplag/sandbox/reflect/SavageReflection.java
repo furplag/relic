@@ -17,10 +17,10 @@
 package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -62,19 +62,42 @@ public interface SavageReflection {
   /**
    * read field(s) value of the instance whether protected ( or invisible ) .
    *
-   * @param object the instance
-   * @param excludes the name of field which you want to except from result.
+   * @param mysterio {@link Class} or the instance
+   * @param excludes the name of field which you want to except from result
    * @return {@link LinkedHashMap} &lt;{@link String}, {@link Object}&gt;
    */
-  static Map<String, Object> read(final Object object, final String... excludes) {
+  static Map<String, Object> read(final Object mysterio, final String... excludes) {
+    return mappingFields(readFields(mysterio, excludes), mysterio);
+  }
+
+  /**
+   * read field(s) value of the instance whether protected ( or invisible ) .
+   *
+   * @param mysterio {@link Class} or the instance
+   * @param excludes the name of field which you want to except from result
+   * @return {@link Stream} of field which member of {@code mysterio}
+   */
+  private static Stream<Field> readFields(final Object mysterio, final String... excludes) {
     // @formatter:off
-    return object instanceof Class ? Collections.emptyMap() :
-      Streamr.stream(Reflections.getFields(object))
-      .filter(Predicate.not(Reflections::isStatic).and((t) -> !ArrayUtils.contains(excludes, t.getName())))
-      .collect(
-        LinkedHashMap::new
-      , (map, t) -> map.putIfAbsent(t.getName(), ThrowableBiFunction.orNull(object, t, SavageReflection::get))
-      , LinkedHashMap::putAll);
+    return Streamr.stream(Reflections.getFields(mysterio))
+    .filter(mysterio instanceof Class ? Reflections::isStatic : Predicate.not(Reflections::isStatic))
+    .filter((t) -> !ArrayUtils.contains(excludes, t.getName()));
+    // @formatter:on
+  }
+
+  /**
+   * read field(s) value of the instance whether protected ( or invisible ) .
+   *
+   * @param fields {@link Stream} of field which member of {@code mysterio}
+   * @param mysterio {@link Class} or the instance
+   * @return {@link LinkedHashMap} &lt;{@link String}, {@link Object}&gt;
+   */
+  private static Map<String, Object> mappingFields(final Stream<Field> fields, final Object mysterio) {
+    // @formatter:off
+    return Streamr.stream(fields).collect(
+      LinkedHashMap::new
+    , (map, t) -> map.putIfAbsent(t.getName(), readField(mysterio, t))
+    , LinkedHashMap::putAll);
     // @formatter:on
   }
 
