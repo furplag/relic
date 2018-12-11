@@ -18,7 +18,6 @@ package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -67,13 +66,11 @@ public interface SavageReflection {
    */
   static Map<String, Object> read(final Object object, final String... excludes) {
     // @formatter:off
-    return object instanceof Class ? Collections.emptyMap() :
-      Streamr.collect(
-        Streamr.Filter.filtering(Reflections.getFields(object), (t) -> !Reflections.isStatic(t), (t) -> !Arrays.asList(Objects.requireNonNullElse(excludes, new String[] {})).contains(t.getName()))
-        .map((t) -> Map.entry(t.getName(), ThrowableBiFunction.orNull(object, t, SavageReflection::get)))
-      , (a, b) -> a
-      , LinkedHashMap::new
-    );
+    return Streamr.Filter.filtering((object instanceof Class ? new Field[] {} : Reflections.getFields(object)), (t) -> !Reflections.isStatic(t), (t) -> !Arrays.asList(Objects.requireNonNullElse(excludes, new String[] {})).contains(t.getName()))
+      .collect(
+        LinkedHashMap::new
+      , (map, t) -> map.putIfAbsent(t.getName(), ThrowableBiFunction.orNull(object, t, SavageReflection::get))
+      , LinkedHashMap::putAll);
     // @formatter:on
   }
 
