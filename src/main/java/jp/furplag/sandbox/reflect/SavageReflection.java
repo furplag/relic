@@ -68,11 +68,12 @@ public interface SavageReflection {
   static Map<String, Object> read(final Object object, final String... excludes) {
     // @formatter:off
     return object instanceof Class ? Collections.emptyMap() :
-      Streamr.Filter.filtering(Reflections.getFields(object), (t) -> !Reflections.isStatic(t), (t) -> !Arrays.asList(Objects.requireNonNullElse(excludes, new String[] {})).contains(t.getName()))
-      .collect(
-        LinkedHashMap::new
-      , (map, field) -> map.putIfAbsent(field.getName(), ThrowableBiFunction.orNull(object, field, SavageReflection::get))
-      , LinkedHashMap::putAll);
+      Streamr.collect(
+        Streamr.Filter.filtering(Reflections.getFields(object), (t) -> !Reflections.isStatic(t), (t) -> !Arrays.asList(Objects.requireNonNullElse(excludes, new String[] {})).contains(t.getName()))
+        .map((t) -> Map.entry(t.getName(), ThrowableBiFunction.orNull(object, t, SavageReflection::get)))
+      , (a, b) -> a
+      , LinkedHashMap::new
+    );
     // @formatter:on
   }
 
