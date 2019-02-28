@@ -17,7 +17,6 @@
 package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -81,7 +80,7 @@ public interface SavageReflection {
     // @formatter:off
     return Streamr.stream(Reflections.getFields(mysterio))
     .filter(mysterio instanceof Class ? Reflections::isStatic : Predicate.not(Reflections::isStatic))
-    .filter(ThrowablePredicate.of((t) -> !Streamr.collect(Streamr.stream(excludes).filter((s) -> !s.isEmpty()), ArrayList::new).contains(t.getName()), (t, e) -> false));
+    .filter(ThrowablePredicate.of((t) -> !Streamr.collect(excludes).contains(t.getName()), (t, e) -> false));
     // @formatter:on
   }
 
