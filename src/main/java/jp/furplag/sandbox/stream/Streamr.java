@@ -16,9 +16,11 @@
 
 package jp.furplag.sandbox.stream;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -235,6 +237,28 @@ public interface Streamr {
    */
   static <T, R extends Collection<T>> R collect(final Stream<T> stream, final Supplier<R> supplier) {
     return stream(stream).collect(Collectors.toCollection(supplier));
+  }
+
+  /**
+   * we might to use this many .
+   *
+   * @param <R> the type of results supplied by this supplier
+   * @param supplier {@link Supplier} of result
+   * @param elements an array of {@link String}, maybe null
+   * @return {@link Collection} of {@link String}, except null and empty
+   */
+  static <R extends Collection<String>> R collect(final Supplier<R> supplier, final String... elements) {
+    return stream(elements).filter((e) -> !e.isEmpty()).collect(Collectors.toCollection(supplier));
+  }
+
+  /**
+   * we might to use this many .
+   *
+   * @param elements an array of {@link String}, maybe null
+   * @return {@link List}, except null and empty
+   */
+  static List<String> collect(final String... elements) {
+    return collect(ArrayList::new, elements);
   }
 
   /**
