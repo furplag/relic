@@ -17,14 +17,14 @@
 package jp.furplag.sandbox.reflect;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import jp.furplag.function.ThrowableBiFunction;
+import jp.furplag.function.ThrowablePredicate;
 import jp.furplag.function.ThrowableTriPredicate;
 import jp.furplag.sandbox.reflect.unsafe.TheUnsafe;
 import jp.furplag.sandbox.stream.Streamr;
@@ -81,7 +81,7 @@ public interface SavageReflection {
     // @formatter:off
     return Streamr.stream(Reflections.getFields(mysterio))
     .filter(mysterio instanceof Class ? Reflections::isStatic : Predicate.not(Reflections::isStatic))
-    .filter((t) -> !ArrayUtils.contains(excludes, t.getName()));
+    .filter(ThrowablePredicate.of((t) -> !Streamr.collect(Streamr.stream(excludes).filter((s) -> !s.isEmpty()), ArrayList::new).contains(t.getName()), (t, e) -> false));
     // @formatter:on
   }
 
