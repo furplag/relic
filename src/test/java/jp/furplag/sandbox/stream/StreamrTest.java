@@ -16,9 +16,7 @@
 
 package jp.furplag.sandbox.stream;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,9 +34,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StreamrTest {
 
@@ -153,18 +150,18 @@ public class StreamrTest {
   @Test
   public void testToMap() {
     assertEquals(Collections.emptyMap(), Streamr.collect(Stream.of((Pair<Integer, Integer>) null), null, null));
-    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2)), null, null).toString(), is("{1=2}"));
+    assertEquals("{1=2}", Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2)), null, null).toString());
     assertEquals(Stream.of(1, 2).map((x) -> Pair.of(x, x)).collect(Collectors.toMap(Pair::getLeft, Pair::getRight)), Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(2, 2), Pair.of(1, 1)), null, null));
-    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2), Pair.of(1, 1)), null, null).toString(), is("{1=1}"));
-    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2), Pair.of(1, 1)), (a, b) -> a, null).toString(), is("{1=2}"));
-    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(2, 2), Pair.of(1, 1), Pair.of(1, 2)), (a, b) -> b, LinkedHashMap::new).toString(), is("{2=2, 1=2}"));
-    assertThat(Streamr.collect(Stream.of((Pair<Integer, Integer>) Pair.of(2, 2), Pair.of(1, 1), Pair.of(1, 2)).sorted(Comparator.comparing(Pair::getLeft)), (a, b) -> b, LinkedHashMap::new).toString(), is("{1=2, 2=2}"));
+    assertEquals("{1=1}", Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2), Pair.of(1, 1)), null, null).toString());
+    assertEquals("{1=2}", Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(1, 2), Pair.of(1, 1)), (a, b) -> a, null).toString());
+    assertEquals("{2=2, 1=2}", Streamr.collect(Stream.of((Pair<Integer, Integer>) null, Pair.of(2, 2), Pair.of(1, 1), Pair.of(1, 2)), (a, b) -> b, LinkedHashMap::new).toString());
+    assertEquals("{1=2, 2=2}", Streamr.collect(Stream.of((Pair<Integer, Integer>) Pair.of(2, 2), Pair.of(1, 1), Pair.of(1, 2)).sorted(Comparator.comparing(Pair::getLeft)), (a, b) -> b, LinkedHashMap::new).toString());
   }
 
   @Test
   public void testFilteringMode() {
-    assertThat(Streamr.Filter.FilteringMode.And.and(), is(true));
-    assertThat(Streamr.Filter.FilteringMode.Or.and(), is(false));
+    assertTrue(Streamr.Filter.FilteringMode.And.and());
+    assertFalse(Streamr.Filter.FilteringMode.Or.and());
   }
 
   @Test
@@ -196,6 +193,6 @@ public class StreamrTest {
     assertArrayEquals(new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), (o) -> o).toArray());
     assertArrayEquals(new Object[] { null, null, null, null, null, null, null, null, null, null }, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> null).toArray());
     assertArrayEquals(new Integer[] { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 }, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).toArray());
-    assertThat(Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).mapToInt(Integer::intValue).sum(), is(5));
+    assertEquals(5, Streamr.Filter.tweak(IntStream.rangeClosed(0, 9).boxed(), o -> o % 2).mapToInt(Integer::intValue).sum());
   }
 }

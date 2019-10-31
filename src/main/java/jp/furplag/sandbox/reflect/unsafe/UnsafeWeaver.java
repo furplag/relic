@@ -21,10 +21,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Locale;
 import java.util.Objects;
-
 import org.apache.commons.lang3.StringUtils;
-
-import jp.furplag.function.ThrowableBiFunction;
+import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
  * handle class member whether protected ( or invisible ) using &quot;sun.misc.Unsafe&quot; .
@@ -56,7 +54,7 @@ interface UnsafeWeaver {
    * @return {@link MethodHandle}
    */
   static MethodHandle getMethodHandle(final Class<?> sunMiscUnsafe, final String methodName, final MethodType methodType) {
-    return ThrowableBiFunction.orNull(methodName, methodType, (x, y) -> MethodHandles.privateLookupIn(sunMiscUnsafe, MethodHandles.lookup()).findVirtual(sunMiscUnsafe, x, y));
+    return Trebuchet.orNull(sunMiscUnsafe, methodName, methodType, (x, y, z) -> MethodHandles.privateLookupIn(x, MethodHandles.lookup()).findVirtual(x, y, z));
   }
 
   /**

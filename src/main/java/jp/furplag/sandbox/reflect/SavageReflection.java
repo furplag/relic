@@ -21,12 +21,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import jp.furplag.function.ThrowableBiFunction;
-import jp.furplag.function.ThrowablePredicate;
-import jp.furplag.function.ThrowableTriPredicate;
 import jp.furplag.sandbox.reflect.unsafe.TheUnsafe;
 import jp.furplag.sandbox.stream.Streamr;
+import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
  * handles class member whether protected ( or invisible ) .
@@ -44,7 +41,7 @@ public interface SavageReflection {
    * @return value of field
    */
   static Object get(final Object mysterio, final Field field) {
-    return !Reflections.isAssignable(mysterio, field) ? null : ThrowableBiFunction.orNull(mysterio, field, SavageReflection::readField);
+    return !Reflections.isAssignable(mysterio, field) ? null : Trebuchet.orNull(mysterio, field, (t, u) -> SavageReflection.readField(t, u));
   }
 
   /**
@@ -80,7 +77,7 @@ public interface SavageReflection {
     // @formatter:off
     return Streamr.stream(Reflections.getFields(mysterio))
     .filter(mysterio instanceof Class ? Reflections::isStatic : Predicate.not(Reflections::isStatic))
-    .filter(ThrowablePredicate.of((t) -> !Streamr.collect(excludes).contains(t.getName()), (t, e) -> false));
+    .filter((t) -> Trebuchet.orNot(t, (x) -> !Streamr.collect(excludes).contains(x.getName())));
     // @formatter:on
   }
 
@@ -108,7 +105,7 @@ public interface SavageReflection {
    * @return value of field
    */
   private static Object readField(final Object mysterio, final Field field) {
-    return ThrowableBiFunction.orNull(mysterio, field, TheUnsafe::get);
+    return Trebuchet.orNull(mysterio, field, (m, f) -> TheUnsafe.get(m, f));
   }
 
   /**
@@ -120,7 +117,7 @@ public interface SavageReflection {
    * @return true if the field update successfully
    */
   static boolean set(final Object mysterio, final Field field, final Object value) {
-    return Reflections.isAssignable(mysterio, field, value) && ThrowableTriPredicate.orNot(mysterio, field, value, TheUnsafe::set);
+    return Reflections.isAssignable(mysterio, field, value) && Trebuchet.orNot(mysterio, field, value, TheUnsafe::set);
   }
 
   /**
