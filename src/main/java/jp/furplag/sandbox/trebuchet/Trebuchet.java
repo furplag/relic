@@ -26,7 +26,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import jp.furplag.sandbox.stream.Streamr;
+import jp.furplag.sandbox.trebuchet.Trebuchet.Consumers;
+import jp.furplag.sandbox.trebuchet.Trebuchet.Functions;
+import jp.furplag.sandbox.trebuchet.Trebuchet.Predicates;
 
 /**
  * code snippets against some problems when handling exceptions in lambda expression .
@@ -366,14 +370,15 @@ public interface Trebuchet {
 
   /** shorthands for {@link Objects#requireNonNullElse(Object, Object)} . *//* @formatter:off */
   static interface De {
-    @SuppressWarnings({"unchecked"}) private static <T, U> BiConsumer<T, U> fault(final BiConsumer<? super T, ? super U> consumer) {/* @formatter:off */return (BiConsumer<T, U>) Objects.requireNonNullElse(consumer, (t, u) -> {});}
-    @SuppressWarnings({"unchecked"}) private static <T, U, R> BiFunction<T, U, R> fault(final BiFunction<? super T, ? super U, ? extends R> function) {/* @formatter:off */return (BiFunction<T, U, R>) Objects.requireNonNullElse(function, (t, u) -> null);}
-    @SuppressWarnings({"unchecked"}) private static <T, U> BiPredicate<T, U> fault(final BiPredicate<? super T, ? super U> predicate) {/* @formatter:off */return (BiPredicate<T, U>) Objects.requireNonNullElse(predicate, (t, u) -> false);}
-    @SuppressWarnings({"unchecked"}) private static <T> Consumer<T> fault(final Consumer<? super T> consumer) {/* @formatter:off */return (Consumer<T>) Objects.requireNonNullElse(consumer, (t) -> {});}
-    @SuppressWarnings({"unchecked"}) private static <T, U, V> Consumers.Tri<T, U, V> fault(final Consumers.Tri<? super T, ? super U, ? super V> consumer) {/* @formatter:off */return (Consumers.Tri<T, U, V>) Objects.requireNonNullElse(consumer, (t, u, v) -> {});}
-    @SuppressWarnings({"unchecked"}) private static <T, R> Function<T, R> fault(final Function<? super T, ? extends R> function) {/* @formatter:off */return (Function<T, R>) Objects.requireNonNullElse(function, (t) -> null);}
-    @SuppressWarnings({"unchecked"}) private static <T, U, V, R> Functions.Tri<T, U, V, R> fault(final Functions.Tri<? super T, ? super U, ? super V, ? extends R> function) {/* @formatter:off */return (Functions.Tri<T, U, V, R>) Objects.requireNonNullElse(function, (t, u, v) -> null);}
-    @SuppressWarnings({"unchecked"}) private static <T> Predicate<T> fault(final Predicate<? super T> predicate) {/* @formatter:off */return (Predicate<T>) Objects.requireNonNullElse(predicate, (t) -> false);}
+    @SuppressWarnings({"unchecked"}) private static <T, U> BiConsumer<T, U> fault(final BiConsumer<? super T, ? super U> consumer) {return (BiConsumer<T, U>) Objects.requireNonNullElse(consumer, (t, u) -> {});}
+    @SuppressWarnings({"unchecked"}) private static <T, U, R> BiFunction<T, U, R> fault(final BiFunction<? super T, ? super U, ? extends R> function) {return (BiFunction<T, U, R>) Objects.requireNonNullElse(function, (t, u) -> null);}
+    @SuppressWarnings({"unchecked"}) private static <T, U> BiPredicate<T, U> fault(final BiPredicate<? super T, ? super U> predicate) {return (BiPredicate<T, U>) Objects.requireNonNullElse(predicate, (t, u) -> false);}
+    @SuppressWarnings({"unchecked"}) private static <T> Consumer<T> fault(final Consumer<? super T> consumer) {return (Consumer<T>) Objects.requireNonNullElse(consumer, (t) -> {});}
+    @SuppressWarnings({"unchecked"}) private static <T, U, V> Consumers.Tri<T, U, V> fault(final Consumers.Tri<? super T, ? super U, ? super V> consumer) {return (Consumers.Tri<T, U, V>) Objects.requireNonNullElse(consumer, (t, u, v) -> {});}
+    @SuppressWarnings({"unchecked"}) private static <T, R> Function<T, R> fault(final Function<? super T, ? extends R> function) {return (Function<T, R>) Objects.requireNonNullElse(function, (t) -> null);}
+    @SuppressWarnings({"unchecked"}) private static <T, U, V, R> Functions.Tri<T, U, V, R> fault(final Functions.Tri<? super T, ? super U, ? super V, ? extends R> function) {return (Functions.Tri<T, U, V, R>) Objects.requireNonNullElse(function, (t, u, v) -> null);}
+    @SuppressWarnings({"unchecked"}) private static <T> Predicate<T> fault(final Predicate<? super T> predicate) {return (Predicate<T>) Objects.requireNonNullElse(predicate, (t) -> false);}
+    @SuppressWarnings({"unchecked"}) private static <T> Comparator<T> fault(final Comparator<? super T> comparator) {return (Comparator<T>) Objects.requireNonNullElse(comparator, new Comparator<>() {@Override public int compare(Object o1, Object o2) {return 0;}});}
   }/* @formatter:on */
 
   /**
@@ -907,7 +912,7 @@ public interface Trebuchet {
        * @throws NullPointerException if the argument is null
        *//* @formatter:off */
       static <T> Tri<T> maxBy(Comparator<? super T> comparator) {
-        return (a, b, c) -> Streamr.stream(a, b, c).max(Objects.requireNonNullElse(comparator, new Comparator<T>() {@Override public int compare(T o1, T o2) {return 0;}})).orElse(null);
+        return (a, b, c) -> Streamr.stream(a, b, c).max(De.fault(comparator)).orElse(null);
       }/* @formatter:on */
 
       /**
@@ -919,7 +924,7 @@ public interface Trebuchet {
        * @throws NullPointerException if the argument is null
        *//* @formatter:off */
       static <T> Tri<T> minBy(Comparator<? super T> comparator) {
-        return (a, b, c) -> Streamr.stream(a, b, c).min(Objects.requireNonNullElse(comparator, new Comparator<T>() {@Override public int compare(T o1, T o2) {return 0;}})).orElse(null);
+        return (a, b, c) -> Streamr.stream(a, b, c).min(De.fault(comparator)).orElse(null);
       }/* @formatter:on */
     }
 
