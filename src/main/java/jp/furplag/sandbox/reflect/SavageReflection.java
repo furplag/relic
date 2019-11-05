@@ -41,7 +41,7 @@ public interface SavageReflection {
    * @return value of field
    */
   static Object get(final Object mysterio, final Field field) {
-    return !Reflections.isAssignable(mysterio, field) ? null : Trebuchet.orNull(mysterio, field, (t, u) -> SavageReflection.readField(t, u));
+    return !Reflections.isAssignable(mysterio, field) ? null : Trebuchet.Functions.orNot(mysterio, field, (t, u) -> SavageReflection.readField(t, u));
   }
 
   /**
@@ -77,7 +77,7 @@ public interface SavageReflection {
     // @formatter:off
     return Streamr.stream(Reflections.getFields(mysterio))
     .filter(mysterio instanceof Class ? Reflections::isStatic : Predicate.not(Reflections::isStatic))
-    .filter((t) -> Trebuchet.orNot(t, (x) -> !Streamr.collect(excludes).contains(x.getName())));
+    .filter((t) -> Trebuchet.Predicates.orNot(t, (x) -> !Streamr.collect(excludes).contains(x.getName())));
     // @formatter:on
   }
 
@@ -105,7 +105,7 @@ public interface SavageReflection {
    * @return value of field
    */
   private static Object readField(final Object mysterio, final Field field) {
-    return Trebuchet.orNull(mysterio, field, (m, f) -> TheUnsafe.get(m, f));
+    return Trebuchet.Functions.orNot(mysterio, field, TheUnsafe::get);
   }
 
   /**
@@ -117,7 +117,7 @@ public interface SavageReflection {
    * @return true if the field update successfully
    */
   static boolean set(final Object mysterio, final Field field, final Object value) {
-    return Reflections.isAssignable(mysterio, field, value) && Trebuchet.orNot(mysterio, field, value, TheUnsafe::set);
+    return Reflections.isAssignable(mysterio, field, value) && Trebuchet.Predicates.orNot(mysterio, field, value, TheUnsafe::set);
   }
 
   /**

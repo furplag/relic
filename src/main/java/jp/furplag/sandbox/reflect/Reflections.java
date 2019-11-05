@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ClassUtils;
 import jp.furplag.sandbox.stream.Streamr;
-import jp.furplag.sandbox.trebuchet.Predicates;
 import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
@@ -80,7 +79,7 @@ public interface Reflections {
    * @return annotations that are present on this element
    */
   private static <E extends AnnotatedElement> Set<Class<?>> getAnnotations(final E annotatedElement) {
-    return Trebuchet.orElse(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections::emptySet);
+    return Trebuchet.Functions.orElse(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections::emptySet);
   }
 
   /**
@@ -128,7 +127,7 @@ public interface Reflections {
    */
   @SafeVarargs
   static <E extends AnnotatedElement> boolean isAnnotatedWith(final E annotatedElement, final Class<? extends Annotation>... annotations) {
-    return Trebuchet.orNot(
+    return Trebuchet.Functions.orNot(
         getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains));
   }
 
@@ -142,7 +141,7 @@ public interface Reflections {
    */
   @SafeVarargs
   static <E extends AnnotatedElement> boolean isAnnotatedWithAllOf(final E annotatedElement, final Class<? extends Annotation>... annotations) {
-    return Trebuchet.orNot(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e));
+    return Trebuchet.Functions.orNot(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e));
   }
 
   /**
@@ -155,7 +154,7 @@ public interface Reflections {
   static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
     final BiPredicate<Class<?>, Class<?>> isConvertible = (f, v) -> String.class.equals(f) || (ClassUtils.isAssignable(v, f)) || Streamr.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom);
 
-    return Trebuchet.orNot(typeOfFiled, typeOfValue, Predicates.Bi.of(Reflections::notAssignable, (x, y, ex) -> true).negate().and(isConvertible));
+    return Trebuchet.Predicates.orNot(typeOfFiled, typeOfValue, (t, u) -> Trebuchet.Predicates.Bi.not(Reflections::notAssignable).and(isConvertible).test(t, u));
   }
 
   /**
@@ -177,7 +176,7 @@ public interface Reflections {
    * @return true if the field is declared in class of the object or super class, or returns false if that is not
    */
   static boolean isAssignable(final Object mysterio, final Field field) {
-    return Trebuchet.orNot(mysterio, field, (o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o)));
+    return Trebuchet.Predicates.orNot(mysterio, field, (o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o)));
   }
 
   /**
@@ -199,7 +198,7 @@ public interface Reflections {
    * @return the result of {@link Modifier#isStatic(int) Modifier#isStatic}({@link Field#getModifiers() modifier}) .
    */
   static boolean isStatic(final Field field) {
-    return Trebuchet.orNot(field, (f) -> Modifier.isStatic(f.getModifiers()));
+    return Trebuchet.Predicates.orNot(field, (f) -> Modifier.isStatic(f.getModifiers()));
   }
 
   /**

@@ -46,7 +46,7 @@ public interface Tag<K, V> extends Map.Entry<K, V> {
 
     @Override
     default int compareTo(Indexed<K, V> anotherOne) {
-      return Trebuchet.orElse(this, anotherOne, (t1, t2) -> t1.getKey().compareTo(t2.getKey()), (x, y, ex) -> Objects.isNull(Objects.requireNonNullElse(x.getKey(), y.getKey())) ? 0 : Objects.isNull(x.getKey()) ? -1 : 1);
+      return Trebuchet.Functions.orElse(this, anotherOne, (t1, t2) -> t1.getKey().compareTo(t2.getKey()), (x, y, ex) -> Objects.isNull(Objects.requireNonNullElse(x.getKey(), y.getKey())) ? 0 : Objects.isNull(x.getKey()) ? -1 : 1);
     }
   }
 

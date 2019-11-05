@@ -54,7 +54,7 @@ interface UnsafeWeaver {
    * @return {@link MethodHandle}
    */
   static MethodHandle getMethodHandle(final Class<?> sunMiscUnsafe, final String methodName, final MethodType methodType) {
-    return Trebuchet.orNull(sunMiscUnsafe, methodName, methodType, (x, y, z) -> MethodHandles.privateLookupIn(x, MethodHandles.lookup()).findVirtual(x, y, z));
+    return Trebuchet.Functions.orNot(sunMiscUnsafe, methodName, methodType, (x, y, z) -> MethodHandles.privateLookupIn(x, MethodHandles.lookup()).findVirtual(x, y, z));
   }
 
   /**
