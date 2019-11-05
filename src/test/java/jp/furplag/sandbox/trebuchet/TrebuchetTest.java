@@ -109,9 +109,8 @@ class TrebuchetTest {
     });
     try {
       consumer.accept(actual[0]);
-      fail("there must raise NullPointerException .");
     } catch (Throwable ex) {
-      assertTrue(ex instanceof NullPointerException);
+      fail("there must not raise any exceptions .");
     }
     try {
       consumer = Consumers.Uni.of(consumer.andThen((t) -> {
@@ -120,8 +119,36 @@ class TrebuchetTest {
       consumer.accept(actual[0]);
       assertEquals("NULLPOINTEREXCEPTION", actual[0]);
     } catch (Throwable ex) {
-      fail("there must not raise NullPointerException .");
+      fail("there must not raise any exceptions .");
     }
+
+    final String[] tests = {null, null};
+    Trebuchet.Consumers.orNot((Integer) null, (t) -> tests[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Uni.of((Integer t) -> tests[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, ex) -> {}).accept((Integer) null);
+    assertEquals(tests[0], tests[1]);
+    assertNull(tests[1]);
+    Trebuchet.Consumers.orNot(0, (t) -> tests[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Uni.of((Integer t) -> tests[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, ex) -> {}).accept(0);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("0", tests[1]);
+    Trebuchet.Consumers.orNot(1, (t) -> tests[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Uni.of((Integer t) -> tests[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd")).accept(1);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("odd", tests[1]);
+    Trebuchet.Consumers.orNot(2, (t) -> tests[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Uni.of((Integer t) -> tests[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd")).accept(2);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("even", tests[1]);
+
+    Trebuchet.Consumers.orElse((Integer) null, (t) -> tests[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, ex) -> tests[0] = "NaN");
+    Trebuchet.Consumers.Uni.of((Integer t) -> tests[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, ex) -> tests[1] = "NaN").accept((Integer) null);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("NaN", tests[1]);
+
+    Trebuchet.Consumers.Uni.of((Integer t) -> tests[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, ex) -> tests[1] = "NaN").andThen(null).accept(2);
+    assertEquals("even", tests[1]);
+    Trebuchet.Consumers.Uni.of((Integer t) -> tests[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, ex) -> tests[1] = "NaN").andThen((t) -> tests[1] += (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd")).accept(2);
+    assertEquals("eveneven", tests[1]);
   }
 
   @Test
@@ -168,6 +195,33 @@ class TrebuchetTest {
       }
       assertEquals(expects[i + 10], actuals.get(i + 10));
     });
+
+    final String[] tests = {null, null};
+    Trebuchet.Consumers.orNot((Integer) null, tests, (t, u) -> u[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Bi.of((Integer t, String[] u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> {}).accept((Integer) null, tests);
+    assertEquals(tests[0], tests[1]);
+    assertNull(tests[1]);
+    Trebuchet.Consumers.orNot(0, tests, (t, u) -> u[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Bi.of((Integer t, String[] u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> {}).accept(0, tests);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("0", tests[1]);
+    Trebuchet.Consumers.orNot(1, tests, (t, u) -> u[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Bi.of((Integer t, String[] u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> {}).accept(1, tests);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("odd", tests[1]);
+    Trebuchet.Consumers.orNot(2, tests, (t, u) -> u[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Bi.of((Integer t, String[] u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> {}).accept(2, tests);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("even", tests[1]);
+
+    Trebuchet.Consumers.orElse((Integer) null, tests, (t, u) -> u[0] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> u[0] = "NaN");
+    Trebuchet.Consumers.Bi.of((Integer t, String[] u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> u[1] = "NaN").accept((Integer) null, tests);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("NaN", tests[1]);
+
+    Trebuchet.Consumers.Bi.of((Integer t, String[] u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> {}).andThen(null).accept(2, tests);
+    Trebuchet.Consumers.Bi.of((Integer t, String[] u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, ex) -> {}).andThen((t, u) -> u[1] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd")).accept(2, tests);
+    assertEquals("even", tests[1]);
   }
 
   @Test
@@ -214,5 +268,37 @@ class TrebuchetTest {
       }
       assertEquals(expects[i + 10], actuals.get(i + 10));
     });
+
+    final String[] tests = {null, null};
+    Trebuchet.Consumers.orNot((Integer) null, tests, 0, (t, u, v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> {}).accept((Integer) null, tests, 1);
+    assertEquals(tests[0], tests[1]);
+    assertNull(tests[1]);
+    Trebuchet.Consumers.orNot(0, tests, 0, (t, u, v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> {}).accept(0, tests, 1);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("0", tests[1]);
+    Trebuchet.Consumers.orNot(1, tests, 0, (t, u, v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> {}).accept(1, tests, 1);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("odd", tests[1]);
+    Trebuchet.Consumers.orNot(2, tests, 0, (t, u, v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"));
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> {}).accept(2, tests, 1);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("even", tests[1]);
+
+    Trebuchet.Consumers.orElse((Integer) null, tests, 0, (t, u, v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> u[0] = "NaN");
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> u[v] = "NaN").accept((Integer) null, tests, 1);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("NaN", tests[1]);
+
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> {}).andThen(null).accept(2, tests, 1);
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (t, u, v) -> {}).andThen((t, u, v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd")).accept(2, tests, 1);
+    assertEquals("even", tests[1]);
+
+    Trebuchet.Consumers.orElse((Integer) null, tests, 0, (t, u, v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (ex) -> tests[0] = ex.getClass().getSimpleName());
+    Trebuchet.Consumers.Tri.of((Integer t, String[] u, Integer v) -> u[v] = (t == 0 ? "0" : t % 2 == 0 ? "even" : "odd"), (ex) -> tests[1] = ex.getClass().getSimpleName()).accept(null, tests, 1);
+    assertEquals(tests[0], tests[1]);
+    assertEquals("NullPointerException", tests[1]);
   }
 }
