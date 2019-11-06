@@ -40,6 +40,12 @@ import org.junit.jupiter.api.Test;
 public class StreamrTest {
 
   @Test
+  void paintItGreen() {
+    assertArrayEquals(new Object[] {}, Streamr.stream(Stream.empty(), Stream.empty(), Stream.empty()).toArray());
+    assertArrayEquals(new Object[] {}, Streamr.stream((Stream<Object>[]) null).toArray());
+  }
+
+  @Test
   public void test() {
     assertArrayEquals(new Object[] {}, Streamr.stream((Stream<Object>) null).toArray());
     assertArrayEquals(new Object[] {}, Streamr.stream((List<Object>) null).toArray());

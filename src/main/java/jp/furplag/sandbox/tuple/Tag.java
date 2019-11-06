@@ -17,7 +17,6 @@ package jp.furplag.sandbox.tuple;
 
 import java.util.Map;
 import java.util.Objects;
-import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
  * an immutable pair consisting of two object elements .
@@ -29,54 +28,25 @@ import jp.furplag.sandbox.trebuchet.Trebuchet;
  */
 public interface Tag<K, V> extends Map.Entry<K, V> {
 
-  static interface Indexed<K extends Comparable<K>, V> extends Comparable<Indexed<K, V>>, Tag<K, V> {
-
-    /**
-     * create a new instance of {@link Tag} .
-     *
-     * @param <K> the key element type
-     * @param <V> the value element type
-     * @param key
-     * @param value
-     * @return a new instance of {@link Indexed}
-     */
-    static <K extends Comparable<K>, V> Indexed<K, V> entry(final K key, final V value) {
-      return (Indexed<K, V>) Map.entry(key, value);
-    }
-
-    @Override
-    default int compareTo(Indexed<K, V> anotherOne) {
-      return Trebuchet.Functions.orElse(this, anotherOne, (t1, t2) -> t1.getKey().compareTo(t2.getKey()), (x, y, ex) -> Objects.isNull(Objects.requireNonNullElse(x.getKey(), y.getKey())) ? 0 : Objects.isNull(x.getKey()) ? -1 : 1);
-    }
-  }
-
   /**
    * returns the type of the value .
    *
    * @return the type of the value
    */
   @SuppressWarnings({"unchecked"})
-  default Class<V> getValueType() {
-    return (Class<V>) getValue().getClass();
-  }
+  default Class<V> getValueType() {/* @formatter:off */return (Class<V>) getValue().getClass();/* @formatter:on */}
 
   /**
+   * throws {@code UnsupportedOperationException} .
    * <p>
-   * Throws {@code UnsupportedOperationException} .
-   * </p>
-   *
-   * <p>
-   * The {@link Tag} is immutable, so this operation is not supported .
-   * </p>
+   * the {@link Tag} is immutable, so this operation is not supported .
    *
    * @param value the value to set
    * @return never
    * @throws UnsupportedOperationException as this operation is not supported
    */
   @Override
-  default V setValue(V value) {
-    throw new UnsupportedOperationException();
-  }
+  default V setValue(V value) {/* @formatter:off */throw new UnsupportedOperationException();/* @formatter:on */}
 
   /**
    * create a new instance of {@link Tag} .
@@ -87,7 +57,11 @@ public interface Tag<K, V> extends Map.Entry<K, V> {
    * @param value
    * @return a new instance of {@link Tag}
    */
-  static <K, V> Tag<K, V> entry(final K key, final V value) {
-    return (Tag<K, V>) Map.entry(key, value);
-  }
+  static <K, V> Tag<K, V> entry(final K key, final V value) {/* @formatter:off */
+    return new Tag<>() {
+      {Objects.requireNonNull(key);}
+      @Override public K getKey() {return key;}
+      @Override public V getValue() {return value;}
+    };
+  /* @formatter:on */}
 }

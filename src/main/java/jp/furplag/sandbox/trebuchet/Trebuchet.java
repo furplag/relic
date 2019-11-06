@@ -26,11 +26,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 import jp.furplag.sandbox.stream.Streamr;
-import jp.furplag.sandbox.trebuchet.Trebuchet.Consumers;
-import jp.furplag.sandbox.trebuchet.Trebuchet.Functions;
-import jp.furplag.sandbox.trebuchet.Trebuchet.Predicates;
 
 /**
  * code snippets against some problems when handling exceptions in lambda expression .
@@ -275,7 +271,7 @@ public interface Trebuchet {
      * @param fallen {@link Consumers.Tri}, do nothing if this is null
      * @see {@link Consumers.Bi#accept(Object, Object)}
      *//* @formatter:off */
-    static <T, U, EX extends Throwable> void orElse(final T t, final U u, final Bi<? super T, ? super U> consumer, final Tri<? super T, ? super U, ? super EX> fallen) {
+    static <T, U, EX extends Throwable> void orElse(final T t, final U u, final BiConsumer<? super T, ? super U> consumer, final Tri<? super T, ? super U, ? super EX> fallen) {
       Bi.of(consumer, fallen).accept(t, u);
     }/* @formatter:on */
 
@@ -310,7 +306,7 @@ public interface Trebuchet {
      * @param fallen {@link Consumer}, do nothing if this is null
      * @see {@link Consumers.Tri#accept(Object, Object, Object)}
      *//* @formatter:off */
-    static <T, U, V, EX extends Throwable> void orElse(final T t, final U u, final V v, final Tri<? super T, ? super U, ? super V> consumer, final Uni<? super EX> fallen) {
+    static <T, U, V, EX extends Throwable> void orElse(final T t, final U u, final V v, final Tri<? super T, ? super U, ? super V> consumer, final Consumer<? super EX> fallen) {
       Tri.of(consumer, fallen).accept(t, u, v);
     }/* @formatter:on */
 
@@ -324,7 +320,7 @@ public interface Trebuchet {
      * @param fallen {@link BiConsumer}, do nothing if this is null
      * @see {@link Consumers.Uni#accept(Object)}
      *//* @formatter:off */
-    static <T, EX extends Throwable> void orElse(final T t, final Uni<? super T> consumer, final Bi<? super T, ? super EX> fallen) {
+    static <T, EX extends Throwable> void orElse(final T t, final Consumer<? super T> consumer, final BiConsumer<? super T, ? super EX> fallen) {
       Uni.of(consumer, fallen).accept(t);
     }/* @formatter:on */
 
@@ -337,7 +333,7 @@ public interface Trebuchet {
      * @param u the value of the second argument to the operation
      * @param consumer {@link BiConsumer}, may not be null
      *//* @formatter:off */
-    static <T, U> void orNot(final T t, final U u, final Bi<? super T, ? super U> consumer) {
+    static <T, U> void orNot(final T t, final U u, final BiConsumer<? super T, ? super U> consumer) {
       Bi.of(consumer).accept(t, u);
     }/* @formatter:on */
 
@@ -363,7 +359,7 @@ public interface Trebuchet {
      * @param t the value of the input to the operation
      * @param consumer {@link Consumer}, may not be null
      *//* @formatter:off */
-    static <T, U, V> void orNot(final T t, final Uni<? super T> consumer) {
+    static <T, U, V> void orNot(final T t, final Consumer<? super T> consumer) {
       Uni.of(consumer).accept(t);
     }/* @formatter:on */
   }
@@ -371,6 +367,7 @@ public interface Trebuchet {
   /** shorthands for {@link Objects#requireNonNullElse(Object, Object)} . *//* @formatter:off */
   static interface De {
     @SuppressWarnings({"unchecked"}) private static <T, U> BiConsumer<T, U> fault(final BiConsumer<? super T, ? super U> consumer) {return (BiConsumer<T, U>) Objects.requireNonNullElse(consumer, (t, u) -> {});}
+    @SuppressWarnings({"unchecked"}) private static <R> Supplier<R> fault(final Supplier<? extends R> supplier) {return (Supplier<R>) Objects.requireNonNullElse(supplier, () -> null);}
     @SuppressWarnings({"unchecked"}) private static <T, U, R> BiFunction<T, U, R> fault(final BiFunction<? super T, ? super U, ? extends R> function) {return (BiFunction<T, U, R>) Objects.requireNonNullElse(function, (t, u) -> null);}
     @SuppressWarnings({"unchecked"}) private static <T, U> BiPredicate<T, U> fault(final BiPredicate<? super T, ? super U> predicate) {return (BiPredicate<T, U>) Objects.requireNonNullElse(predicate, (t, u) -> false);}
     @SuppressWarnings({"unchecked"}) private static <T> Consumer<T> fault(final Consumer<? super T> consumer) {return (Consumer<T>) Objects.requireNonNullElse(consumer, (t) -> {});}
@@ -412,7 +409,7 @@ public interface Trebuchet {
        * @return {@link BiFunction}
        * @throws NullPointerException if function is null
        *//* @formatter:off */
-      static <T, U, R> BiFunction<T, U, R> of(final BiFunction<? super T, ? super U, ? extends R> function) {
+      static <T, U, R> Bi<T, U, R> of(final BiFunction<? super T, ? super U, ? extends R> function) {
         return of(function, null);
       }/* @formatter:on */
 
@@ -429,13 +426,13 @@ public interface Trebuchet {
        * @throws NullPointerException if function is null
        */
       @SuppressWarnings({"unchecked"})/* @formatter:off */
-      static <T, U, R, EX extends Throwable> BiFunction<T, U, R> of(final BiFunction<? super T, ? super U, ? extends R> function, final Tri<? super T, ? super U, ? super EX, ? extends R> fallen) {
+      static <T, U, R, EX extends Throwable> Bi<T, U, R> of(final BiFunction<? super T, ? super U, ? extends R> function, final Tri<? super T, ? super U, ? super EX, ? extends R> fallen) {
         return (t, u) -> {try {return function.apply(t, u);} catch (Throwable e) {return De.fault(fallen).apply(t, u, (EX) e);}};
       }/* @formatter:on */
 
       /** {@inheritDoc} */
       @Override
-      default <V> BiFunction<T, U, V> andThen(Function<? super R, ? extends V> after) {/* @formatter:off */return of(BiFunction.super.andThen(De.fault(after)));/* @formatter:on */}
+      default <V> Bi<T, U, V> andThen(Function<? super R, ? extends V> after) {/* @formatter:off */return of(BiFunction.super.andThen(De.fault(after)));/* @formatter:on */}
 
       /** {@inheritDoc} */
       @Override
@@ -576,7 +573,7 @@ public interface Trebuchet {
        * @return {@link Function}
        * @throws NullPointerException if function is null
        *//* @formatter:off */
-      static <T, R> Function<T, R> of(final Function<? super T, ? extends R> function) {return of(function, null);}
+      static <T, R> Uni<T, R> of(final Function<? super T, ? extends R> function) {return of(function, null);}
       /* @formatter:on */
 
       /**
@@ -591,23 +588,23 @@ public interface Trebuchet {
        * @throws NullPointerException if function is null
        */
       @SuppressWarnings({"unchecked"})/* @formatter:off */
-      static <T, R, EX extends Throwable> Function<T, R> of(final Function<? super T, ? extends R> function, final BiFunction<? super T, ? super EX, ? extends R> fallen) {
+      static <T, R, EX extends Throwable> Uni<T, R> of(final Function<? super T, ? extends R> function, final BiFunction<? super T, ? super EX, ? extends R> fallen) {
         return (t) -> {try {return function.apply(t);} catch (Throwable e) {return De.fault(fallen).apply(t, (EX) e);}};
       }/* @formatter:on */
 
       /** {@inheritDoc} */
       @Override
-      default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) {
+      default <V> Uni<T, V> andThen(Function<? super R, ? extends V> after) {
         return of(Function.super.andThen(De.fault(after)));
       }
 
       /** {@inheritDoc} */
       @Override
-      default R apply(T t) {/* @formatter:off */try {return orThrow(t);} catch (Throwable e) {Trebuchet.sneakyThrow(e);} return null;/* @formatter:on */}
+      default R apply(T t) {/* @formatter:off */try {return orThrow(t);} catch (Throwable e) {sneakyThrow(e);} return null;/* @formatter:on */}
 
       /** {@inheritDoc} */
       @Override
-      default <V> Function<V, R> compose(Function<? super V, ? extends T> before) {/* @formatter:off */return of(Function.super.compose(De.fault(before)));/* @formatter:on */}
+      default <V> Uni<V, R> compose(Function<? super V, ? extends T> before) {/* @formatter:off */return of(Function.super.compose(De.fault(before)));/* @formatter:on */}
 
       /**
        * applies this function to the given argument .
@@ -634,8 +631,8 @@ public interface Trebuchet {
      *         occurred
      * @see {@link Functions.Bi#apply(Object, Object)}
      *//* @formatter:off */
-    static <T, U, R> R orElse(final T t, final U u, final Bi<? super T, ? super U, ? extends R> function, final Supplier<R> fallen) {
-      return orElse(t, u, function, (x, y, ex) -> Objects.requireNonNullElse(fallen, () -> null).get());
+    static <T, U, R> R orElse(final T t, final U u, final BiFunction<? super T, ? super U, ? extends R> function, final Supplier<R> fallen) {
+      return Bi.of(function, (x, y, ex) -> De.fault(fallen).get()).apply(t, u);
     }/* @formatter:on */
 
     /**
@@ -654,7 +651,7 @@ public interface Trebuchet {
      *         error occurred
      * @see {@link Functions.Bi#apply(Object, Object)}
      *//* @formatter:off */
-    static <T, U, R, EX extends Throwable> R orElse(final T t, final U u, final Bi<? super T, ? super U, ? extends R> function, final Tri<? super T, ? super U, ? super EX, ? extends R> fallen) {
+    static <T, U, R, EX extends Throwable> R orElse(final T t, final U u, final BiFunction<? super T, ? super U, ? extends R> function, final Tri<? super T, ? super U, ? super EX, ? extends R> fallen) {
       return Bi.of(function, fallen).apply(t, u);
     }/* @formatter:on */
 
@@ -676,7 +673,7 @@ public interface Trebuchet {
      * @see {@link Functions.Tri#apply(Object, Object, Object)}
      *//* @formatter:off */
     static <T, U, V, R> R orElse(final T t, final U u, final V v, final Tri<? super T, ? super U, ? super V, ? extends R> function, final Supplier<R> fallen) {
-      return orElse(t, u, v, function, (x, y, z) -> Objects.requireNonNullElse(fallen, () -> null).get());
+      return Tri.of(function, (x, y, z) -> De.fault(fallen).get()).apply(t, u, v);
     }/* @formatter:on */
 
     /**
@@ -718,7 +715,7 @@ public interface Trebuchet {
      *         error occurred
      * @see {@link Functions.Tri#apply(Object, Object, Object)}
      *//* @formatter:off */
-    static <T, U, V, R, EX extends Throwable> R orElse(final T t, final U u, final V v, final Tri<? super T, ? super U, ? super V, R> function, final Uni<? super EX, ? extends R> fallen) {
+    static <T, U, V, R, EX extends Throwable> R orElse(final T t, final U u, final V v, final Tri<? super T, ? super U, ? super V, R> function, final Function<? super EX, ? extends R> fallen) {
       return Tri.of(function, fallen).apply(t, u, v);
     }/* @formatter:on */
 
@@ -736,7 +733,7 @@ public interface Trebuchet {
      *         occurred
      * @see {@link Functions.Uni#apply(Object)}
      *//* @formatter:off */
-    static <T, R, EX extends Throwable> R orElse(final T t, final Uni<? super T, ? extends R> function, final Bi<? super T, ? super EX, ? extends R> fallen) {
+    static <T, R, EX extends Throwable> R orElse(final T t, final Uni<? super T, ? extends R> function, final BiFunction<? super T, ? super EX, ? extends R> fallen) {
       return Uni.of(function, fallen).apply(t);
     }/* @formatter:on */
 
@@ -754,7 +751,7 @@ public interface Trebuchet {
      * @see {@link Functions.Uni#apply(Object)}
      *//* @formatter:off */
     static <T, R> R orElse(final T t, final Uni<? super T, ? extends R> function, final Supplier<R> fallen) {
-      return orElse(t, function, (x, ex) -> Objects.requireNonNullElse(fallen, () -> null).get());
+      return Uni.of(function, (x, ex) -> De.fault(fallen).get()).apply(t);
     }/* @formatter:on */
 
     /**
@@ -769,7 +766,7 @@ public interface Trebuchet {
      * @return the result of function.apply(t, u) if done it normally, or null if error occurred
      *//* @formatter:off */
     static <T, U, R> R orNot(final T t, final U u, final Bi<? super T, ? super U, ? extends R> function) {
-      return orElse(t, u, function, () -> null);
+      return Bi.of(function, (x, y, ex) -> null).apply(t, u);
     }/* @formatter:on */
 
     /**
@@ -787,7 +784,7 @@ public interface Trebuchet {
      * @return the result of function.apply(t, u, v) if done it normally, or null if error occurred
      *//* @formatter:off */
     static <T, U, V, R> R orNot(final T t, final U u, final V v, final Tri<? super T, ? super U, ? super V, ? extends R> function) {
-      return orElse(t, u, v, function, () -> null);
+      return Tri.of(function, (ex) -> null).apply(t, u, v);
     }/* @formatter:on */
 
     /**
@@ -800,13 +797,12 @@ public interface Trebuchet {
      * @return the result of function.apply(t) if done it normally, or null if error occurred
      *//* @formatter:off */
     static <T, R> R orNot(final T t, final Uni<? super T, ? extends R> function) {
-      return orElse(t, function, () -> null);
+      return Uni.of(function, (x, ex) -> null).apply(t);
     }/* @formatter:on */
   }
 
   /**
-   * the {@link UnaryOperator} against some problems when handling exceptions in lambda
-   * expression .
+   * the {@link UnaryOperator} against some problems when handling exceptions in lambda expression .
    *
    * @author furplag
    *
@@ -833,7 +829,7 @@ public interface Trebuchet {
        * @return {@link BinaryOperator}
        * @throws NullPointerException if {@code operator} is null
        */
-      static <T> BinaryOperator<T> of(final BiFunction<? super T, ? super T, ? extends T> operator) {/* @formatter:off */return Functions.Bi.of(operator)::apply;/* @formatter:on */}
+      static <T> Bi<T> of(final BiFunction<? super T, ? super T, ? extends T> operator) {/* @formatter:off */return Functions.Bi.of(operator)::apply;/* @formatter:on */}
 
       /**
        * should never write ugly try-catch block to handle exceptions in lambda expression .
@@ -841,11 +837,12 @@ public interface Trebuchet {
        * @param <T> the type of the operands and result of the operator
        * @param <EX> anything thrown
        * @param operator {@link BinaryOperator}, may not be null
-       * @param fallen {@link Functions.Tri}, or the operator that always return null if this is null
+       * @param fallen {@link Functions.Tri}, or the operator that always return null if this is
+       *        null
        * @return {@link BinaryOperator}
        * @throws NullPointerException if {@code operator} is null
        *//* @formatter:off */
-      static <T, EX extends Throwable> BinaryOperator<T> of(final BiFunction<? super T, ? super T, ? extends T> operator, final Functions.Tri<? super T, ? super T, ? super EX, ? extends T> fallen) {
+      static <T, EX extends Throwable> Bi<T> of(final BiFunction<? super T, ? super T, ? extends T> operator, final Functions.Tri<? super T, ? super T, ? super EX, ? extends T> fallen) {
         return Functions.Bi.of(operator, fallen)::apply;
       }/* @formatter:on */
     }
@@ -904,11 +901,13 @@ public interface Trebuchet {
       }/* @formatter:on */
 
       /**
-       * returns a {@link Tri} which returns the greater of three elements according to the specified {@code Comparator} .
+       * returns a {@link Tri} which returns the greater of three elements according to the
+       * specified {@code Comparator} .
        *
        * @param <T> the type of the input arguments of the comparator
        * @param comparator a {@code Comparator} for comparing the three values
-       * @return a {@link Tri} which returns the greater of its operands, according to the supplied {@link Comparator}
+       * @return a {@link Tri} which returns the greater of its operands, according to the supplied
+       *         {@link Comparator}
        * @throws NullPointerException if the argument is null
        *//* @formatter:off */
       static <T> Tri<T> maxBy(Comparator<? super T> comparator) {
@@ -916,11 +915,13 @@ public interface Trebuchet {
       }/* @formatter:on */
 
       /**
-       * returns a {@link Tri} which returns the lesser of three elements according to the specified {@code Comparator} .
+       * returns a {@link Tri} which returns the lesser of three elements according to the specified
+       * {@code Comparator} .
        *
        * @param <T> the type of the input arguments of the comparator
        * @param comparator a {@code Comparator} for comparing the three values
-       * @return a {@link Tri} which returns the lesser of its operands, according to the supplied {@link Comparator}
+       * @return a {@link Tri} which returns the lesser of its operands, according to the supplied
+       *         {@link Comparator}
        * @throws NullPointerException if the argument is null
        *//* @formatter:off */
       static <T> Tri<T> minBy(Comparator<? super T> comparator) {
@@ -948,7 +949,7 @@ public interface Trebuchet {
        * @return {@link UnaryOperator}
        * @throws NullPointerException if {@code operator} is null
        */
-      static <T> UnaryOperator<T> of(final Function<? super T, ? extends T> operator) {/* @formatter:off */return Functions.Uni.of(operator)::apply;/* @formatter:on */}
+      static <T> Uni<T> of(final Function<? super T, ? extends T> operator) {/* @formatter:off */return Functions.Uni.of(operator)::apply;/* @formatter:on */}
 
       /**
        * should never write ugly try-catch block to handle exceptions in lambda expression .
@@ -956,19 +957,19 @@ public interface Trebuchet {
        * @param <T> the type of the operands and result of the operator
        * @param <EX> anything thrown
        * @param operator {@link BinaryOperator}, may not be null
-       * @param fallen {@link Functions.Tri}, or the operator that always return null if this is null
+       * @param fallen {@link Functions.Tri}, or the operator that always return null if this is
+       *        null
        * @return {@link BinaryOperator}
        * @throws NullPointerException if {@code operator} is null
        *//* @formatter:off */
-      static <T, EX extends Throwable> UnaryOperator<T> of(final Function<? super T, ? extends T> operator, final Functions.Bi<? super T, ? super EX, ? extends T> fallen) {
+      static <T, EX extends Throwable> Uni<T> of(final Function<? super T, ? extends T> operator, final Functions.Bi<? super T, ? super EX, ? extends T> fallen) {
         return Functions.Uni.of(operator, fallen)::apply;
       }/* @formatter:on */
     }
   }
 
   /**
-   * the {@link Predicate} against some problems when handling exceptions in lambda
-   * expression .
+   * the {@link Predicate} against some problems when handling exceptions in lambda expression .
    *
    * @author furplag
    *
@@ -999,7 +1000,7 @@ public interface Trebuchet {
        * @throws NullPointerException if target is null
        */
       @SuppressWarnings("unchecked")/* @formatter:off */
-      static <T, U> BiPredicate<T, U> not(final BiPredicate<? super T, ? super U> target) {return (BiPredicate<T, U>) of(target).negate();}/* @formatter:on */
+      static <T, U> Bi<T, U> not(final BiPredicate<? super T, ? super U> target) {return (Bi<T, U>) of(target).negate();}/* @formatter:on */
 
       /**
        * should never write ugly try-catch block to handle exceptions in lambda expression .
@@ -1010,7 +1011,7 @@ public interface Trebuchet {
        * @return {@link BiPredicate}
        * @throws NullPointerException if {@code predicate} is null
        */
-      static <T, U> BiPredicate<T, U> of(final BiPredicate<? super T, ? super U> predicate) {/* @formatter:off */return Functions.Bi.of(predicate::test)::apply;/* @formatter:on */}
+      static <T, U> Bi<T, U> of(final BiPredicate<? super T, ? super U> predicate) {/* @formatter:off */return Functions.Bi.of(predicate::test)::apply;/* @formatter:on */}
 
       /**
        * should never write ugly try-catch block to handle exceptions in lambda expression .
@@ -1023,31 +1024,31 @@ public interface Trebuchet {
        * @return {@link BiPredicate}
        * @throws NullPointerException if {@code predicate} is null
        *//* @formatter:off */
-      static <T, U, EX extends Throwable> BiPredicate<T, U> of(final BiPredicate<? super T, ? super U> predicate, final Tri<? super T, ? super U, ? super EX> fallen) {
+      static <T, U, EX extends Throwable> Bi<T, U> of(final BiPredicate<? super T, ? super U> predicate, final Tri<? super T, ? super U, ? super EX> fallen) {
         return Functions.Bi.of(predicate::test, fallen)::apply;
       }/* @formatter:on */
 
       /** {@inheritDoc} */
       @Override
-      default BiPredicate<T, U> and(BiPredicate<? super T, ? super U> other) {
+      default Bi<T, U> and(BiPredicate<? super T, ? super U> other) {
         return of(BiPredicate.super.and(De.fault(other)));
       }
 
       /** {@inheritDoc} */
       @Override
-      default <V> BiFunction<T, U, V> andThen(Function<? super Boolean, ? extends V> after) {
+      default <V> Functions.Bi<T, U, V> andThen(Function<? super Boolean, ? extends V> after) {
         throw new UnsupportedOperationException();
       }
 
       /** {@inheritDoc} */
       @Override
-      default BiPredicate<T, U> negate() {
+      default Bi<T, U> negate() {
         return of(BiPredicate.super.negate());
       }
 
       /** {@inheritDoc} */
       @Override
-      default BiPredicate<T, U> or(BiPredicate<? super T, ? super U> other) {
+      default Bi<T, U> or(BiPredicate<? super T, ? super U> other) {
         return of(BiPredicate.super.and(De.fault(other)));
       }
 
@@ -1199,9 +1200,10 @@ public interface Trebuchet {
        * @param target predicate to negate
        *
        * @return a predicate that negates the results of the supplied predicate
-       */@SuppressWarnings("unchecked")/* @formatter:off */
-      static <T> Predicate<T> not(final Predicate<? super T> target) {
-        return (Predicate<T>) of(Objects.requireNonNullElse(target, (x) -> true)).negate();
+       */
+      @SuppressWarnings("unchecked")/* @formatter:off */
+      static <T> Uni<T> not(final Predicate<? super T> target) {
+        return (Uni<T>) of(Objects.requireNonNullElse(target, (x) -> true)).negate();
       }
 
       /**
@@ -1212,7 +1214,7 @@ public interface Trebuchet {
        * @return {@link Predicate}
        * @throws NullPointerException if predicate is null
        */
-      static <T> Predicate<T> of(final Predicate<T> predicate) {/* @formatter:off */return of(predicate);/* @formatter:on */}
+      static <T> Uni<T> of(final Predicate<T> predicate) {/* @formatter:off */return of(predicate);/* @formatter:on */}
 
       /**
        * should never write ugly try-catch block to handle exceptions in lambda expression .
@@ -1224,24 +1226,24 @@ public interface Trebuchet {
        * @return {@link Predicate}
        * @throws NullPointerException if predicate is null
        *//* @formatter:off */
-      static <T, EX extends Throwable> Predicate<T> of(final Predicate<T> predicate, final BiPredicate<? super T, ? super EX> fallen) {return Functions.Uni.of(predicate::test, fallen::test)::apply;}
+      static <T, EX extends Throwable> Uni<T> of(final Predicate<T> predicate, final BiPredicate<? super T, ? super EX> fallen) {return Functions.Uni.of(predicate::test, fallen::test)::apply;}
       /* @formatter:on */
 
       /** {@inheritDoc} */
       @Override
-      default Predicate<T> and(Predicate<? super T> other) {/* @formatter:off */return of(Predicate.super.and(De.fault(other)));/* @formatter:on */}
+      default Uni<T> and(Predicate<? super T> other) {/* @formatter:off */return of(Predicate.super.and(De.fault(other)));/* @formatter:on */}
 
       /** {@inheritDoc} */
       @Override
-      default <V> Function<T, V> andThen(Function<? super Boolean, ? extends V> after) {/* @formatter:off */throw new UnsupportedOperationException();/* @formatter:on */}
+      default <V> Functions.Uni<T, V> andThen(Function<? super Boolean, ? extends V> after) {/* @formatter:off */throw new UnsupportedOperationException();/* @formatter:on */}
 
       /** {@inheritDoc} */
       @Override
-      default Predicate<T> negate() {/* @formatter:off */return of(Predicate.super.negate());/* @formatter:on */}
+      default Uni<T> negate() {/* @formatter:off */return of(Predicate.super.negate());/* @formatter:on */}
 
       /** {@inheritDoc} */
       @Override
-      default Predicate<T> or(Predicate<? super T> other) {/* @formatter:off */return of(Predicate.super.or(De.fault(other)));/* @formatter:on */}
+      default Uni<T> or(Predicate<? super T> other) {/* @formatter:off */return of(Predicate.super.or(De.fault(other)));/* @formatter:on */}
 
       /** {@inheritDoc} */
       @Override
@@ -1256,9 +1258,8 @@ public interface Trebuchet {
      * @param <U> the type of the second argument to the predicate
      * @param t the value of the first argument to the predicate
      * @param u the value of the second argument to the predicate
-     * @param predicate {@link BiPredicate}, may not be null
-     * @param fallen {@link Predicates.Tri}, or the function that always return false if this is
-     *        null
+     * @param predicate {@link Bi}, may not be null
+     * @param fallen {@link Tri}, or the function that always return false if this is null
      * @return the result of predicate.test(t, u, v) if done it normally, or fallen.test(t, u, EX)
      *         if error occurred
      *//* @formatter:off */
@@ -1276,8 +1277,8 @@ public interface Trebuchet {
      * @param t the value of the first argument to the predicate
      * @param u the value of the second argument to the predicate
      * @param v the value of the third argument to the predicate
-     * @param predicate {@link Predicates.Tri}, may not be null
-     * @param fallen {@link Predicate}, or the function that always return false if this is null
+     * @param predicate {@link Tri}, may not be null
+     * @param fallen {@link Tri}, or the function that always return false if this is null
      * @return the result of predicate.test(t, u, v) if done it normally, or fallen.test(t, u, v) if
      *         error occurred
      *//* @formatter:off */
@@ -1296,8 +1297,8 @@ public interface Trebuchet {
      * @param t the value of the first argument to the predicate
      * @param u the value of the second argument to the predicate
      * @param v the value of the third argument to the predicate
-     * @param predicate {@link Predicates.Tri}, may not be null
-     * @param fallen {@link Predicate}, or the function that always return false if this is null
+     * @param predicate {@link Tri}, may not be null
+     * @param fallen {@link Uni}, or the function that always return false if this is null
      * @return the result of predicate.test(t, u, v) if done it normally, or fallen.test(EX) if
      *         error occurred
      *//* @formatter:off */
@@ -1312,8 +1313,8 @@ public interface Trebuchet {
      * @param <T> the type of the input to the predicate
      * @param <EX> anything thrown
      * @param t the value of the input to the predicate
-     * @param predicate {@link Predicate}, may not be null
-     * @param fallen {@link BiPredicate}, or the function that always return false if this is null
+     * @param predicate {@link Uni}, may not be null
+     * @param fallen {@link Bi}, or the function that always return false if this is null
      * @return the result of predicate.test(t, u, v) if done it normally, or fallen.test(t, EX) if
      *         error occurred
      */
@@ -1330,7 +1331,7 @@ public interface Trebuchet {
      * @param <U> the type of the second argument to the predicate
      * @param t the value of the first argument to the predicate
      * @param u the value of the second argument to the predicate
-     * @param predicate {@link Predicates.Tri}, may not be null
+     * @param predicate {@link Bi}, may not be null
      * @return the result of predicate.test(t, u) if done it normally, or false if error occurred
      *//* @formatter:off */
     static <T, U> boolean orNot(final T t, final U u, final Bi<? super T, ? super U> predicate) {
@@ -1347,10 +1348,10 @@ public interface Trebuchet {
      * @param t the value of the first argument to the predicate
      * @param u the value of the second argument to the predicate
      * @param v the value of the third argument to the predicate
-     * @param predicate {@link Predicates.Tri}, may not be null
+     * @param predicate {@link Tri}, may not be null
      * @return the result of predicate.test(t, u, v) if done it normally, or false if error occurred
      *//* @formatter:off */
-    static <T, U, V> boolean orNot(final T t, final U u, final V v, final Predicates.Tri<? super T, ? super U, ? super V> predicate) {
+    static <T, U, V> boolean orNot(final T t, final U u, final V v, final Tri<? super T, ? super U, ? super V> predicate) {
       return Functions.orElse(t, u, v, predicate, () -> false);
     }/* @formatter:on */
 
@@ -1360,12 +1361,11 @@ public interface Trebuchet {
      *
      * @param <T> the type of the input to the predicate
      * @param t the value of the input to the predicate
-     * @param predicate {@link Predicates.Tri}, may not be null
+     * @param predicate {@link Uni}, may not be null
      * @return the result of predicate.test(t) if done it normally, or false if error occurred
      *//* @formatter:off */
-    static <T> boolean orNot(final T t, final Uni<? super T> predicate) {
-      return Functions.orElse(t, predicate::test, () -> false);
-    }/* @formatter:on */
+    static <T> boolean orNot(final T t, final Uni<? super T> predicate) {return Functions.orElse(t, predicate::test, () -> false);}
+    /* @formatter:on */
   }
 
   /**
@@ -1376,10 +1376,9 @@ public interface Trebuchet {
    * @throws EX anything thrown
    * @see <a href=
    *      "https://projectlombok.org/features/SneakyThrows">lombok.Lombok#sneakyThrow(Throwable)</a>
-   */
+   *//* @formatter:off */
   @SuppressWarnings({"unchecked"})
   static <EX extends Throwable> void sneakyThrow(final Throwable ex) throws EX {
-    throw (EX) Objects.requireNonNullElse(ex,
-        new IllegalArgumentException("hmm, no way call me with null ."));
-  }
+    throw (EX) Objects.requireNonNullElse(ex, new IllegalArgumentException("hmm, no way call me with null ."));
+  }/* @formatter:on */
 }
