@@ -16,8 +16,7 @@
 
 package jp.furplag.sandbox.reflect.unsafe;
 
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -25,15 +24,13 @@ import java.lang.reflect.Field;
 import java.security.Permission;
 import java.util.Arrays;
 import java.util.List;
-
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.TheEntity;
 import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 
-public class TheUnsafeTest {
+class TheUnsafeTest {
 
   private static class TestSecurityManager extends SecurityManager {
 
@@ -60,7 +57,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void test() throws Throwable {
+  void test() throws Throwable {
     MethodHandle theUnsafe = null;
     theUnsafe = MethodHandles.privateLookupIn(TheUnsafe.class, MethodHandles.lookup()).findStatic(TheUnsafe.class, "theUnsafe", MethodType.methodType(TheUnsafe.class));
     try {
@@ -76,7 +73,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testGet() throws ReflectiveOperationException {
+  void testGet() throws ReflectiveOperationException {
     assertEquals((Object) null, TheUnsafe.get(null, null));
     assertEquals((Object) null, TheUnsafe.get(TheEntity.class, null));
     assertEquals((Object) null, TheUnsafe.get(new TheEntity(), null));
@@ -169,7 +166,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetStatic() throws ReflectiveOperationException {
+  void testSetStatic() throws ReflectiveOperationException {
 
     Field PUBLIC_STATIC_FINAL_STRING = TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING");
     Field PACKAGE_STATIC_FINAL_LONG = TheEntity.class.getDeclaredField("PACKAGE_STATIC_FINAL_LONG");
@@ -213,7 +210,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSet() throws ReflectiveOperationException {
+  void testSet() throws ReflectiveOperationException {
 
     Field thePrimitive = TheEntity.class.getDeclaredField("thePrimitive");
     Field thePrimitiveOfPackage = TheEntity.class.getDeclaredField("thePrimitiveOfPackage");
@@ -264,7 +261,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToBoolean() throws ReflectiveOperationException {
+  void testSetToBoolean() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theBoolean = TheObject.class.getDeclaredField("theBoolean");
     theBoolean.setAccessible(true);
@@ -289,7 +286,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToByte() throws ReflectiveOperationException {
+  void testSetToByte() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theByte = TheObject.class.getDeclaredField("theByte");
 
@@ -315,7 +312,7 @@ public class TheUnsafeTest {
 
 
   @Test
-  public void testSetToChar() throws ReflectiveOperationException {
+  void testSetToChar() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theChar = TheObject.class.getDeclaredField("theChar");
 
@@ -342,7 +339,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToDouble() throws ReflectiveOperationException {
+  void testSetToDouble() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theDouble = TheObject.class.getDeclaredField("theDouble");
 
@@ -371,7 +368,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToFloat() throws ReflectiveOperationException {
+  void testSetToFloat() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theFloat = TheObject.class.getDeclaredField("theFloat");
 
@@ -400,7 +397,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToInt() throws ReflectiveOperationException {
+  void testSetToInt() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theInt = TheObject.class.getDeclaredField("theInt");
 
@@ -429,7 +426,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToLong() throws ReflectiveOperationException {
+  void testSetToLong() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theLong = TheObject.class.getDeclaredField("theLong");
 
@@ -458,7 +455,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToShort() throws ReflectiveOperationException {
+  void testSetToShort() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theShort = TheObject.class.getDeclaredField("theShort");
 
@@ -487,7 +484,7 @@ public class TheUnsafeTest {
   }
 
   @Test
-  public void testSetToString() throws ReflectiveOperationException {
+  void testSetToString() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
     Field theString = TheObject.class.getDeclaredField("theString");
 
@@ -516,5 +513,4 @@ public class TheUnsafeTest {
     TheUnsafe.set(theObject, list, null);
     assertEquals((List<?>) null, theObject.getList());
   }
-
 }

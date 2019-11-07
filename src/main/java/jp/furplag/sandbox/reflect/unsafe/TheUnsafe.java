@@ -23,14 +23,9 @@ import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
-import jp.furplag.function.ThrowableBiConsumer;
-import jp.furplag.function.ThrowableBiFunction;
-import jp.furplag.function.ThrowableFunction;
-import jp.furplag.function.ThrowableTriFunction;
-import jp.furplag.function.ThrowableTriPredicate;
 import jp.furplag.sandbox.reflect.Reflections;
 import jp.furplag.sandbox.stream.Streamr;
+import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
  * handle class member whether protected ( or invisible ) using sun.misc.Unsafe .
@@ -40,19 +35,19 @@ import jp.furplag.sandbox.stream.Streamr;
 public final class TheUnsafe {
 
   /** generate the pair of Type and MethodHandle . */
-  private static final ThrowableTriFunction<Class<?>, Class<?>, UnsafeWeaver.Prefix, ? extends Map.Entry<Class<?>, MethodHandle>> pairGenerator =
-    (x, y, z) -> Map.entry(y, ThrowableTriFunction.orNull(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
+  private static final Trebuchet.Functions.Tri<Class<?>, Class<?>, UnsafeWeaver.Prefix, ? extends Map.Entry<Class<?>, MethodHandle>> pairGenerator =
+    (x, y, z) -> Map.entry(y, Trebuchet.Functions.orNot(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
 
   /** internal snippet for cast the value type . */
-  private static final ThrowableBiFunction<Class<?>, Object, Object> primitivatorOrigin =
+  private static final Trebuchet.Functions.Bi<Class<?>, Object, Object> primitivatorOrigin =
     (t, v) -> String.class.equals(t) ? Objects.toString(v, null) :
       !t.isPrimitive() ? v :
       MethodHandles.lookup().findVirtual(Reflections.getClass(v), UnsafeWeaver.getFormattedMethodName(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v);
 
   /** update value using under unsafe access . */
-  private static final ThrowableTriPredicate<Object, Field, Object> setOrigin =
-    ((ThrowableTriPredicate<Object, Field, Object>) Reflections::isAssignable)
-      .and((t, u, v) -> ThrowableTriPredicate.orNot(t, u, v, (x, y, z) -> {theUnsafe().setInternal(x, y, z); return Objects.equals(primivatior(y.getType(), z), get(x, y));}));
+  private static final Trebuchet.Predicates.Tri<Object, Field, Object> setOrigin =
+    ((Trebuchet.Predicates.Tri<Object, Field, Object>) Reflections::isAssignable)
+      .and((t, u, v) -> Trebuchet.Functions.orNot(t, u, v, (x, y, z) -> {theUnsafe().setInternal(x, y, z); return Objects.equals(primivatior(y.getType(), z), get(x, y));}));
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
 
@@ -78,20 +73,18 @@ public final class TheUnsafe {
 
   /**
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
-   */
+   *//* @formatter:off */
   private TheUnsafe() {
-    final Class<?> unsafeClass = ThrowableFunction.orNull("sun.misc.Unsafe", Class::forName);
-    theUnsafe = ThrowableBiFunction.orNull(unsafeClass, "theUnsafe", (x, y) -> Reflections.conciliation(x.getDeclaredField(y)).get(null));
+    final Class<?> unsafeClass = Trebuchet.Functions.orNot("sun.misc.Unsafe", Class::forName);
+    theUnsafe = Trebuchet.Functions.orNot(unsafeClass, "theUnsafe", (x, y) -> Reflections.conciliation(x.getDeclaredField(y)).get(null));
 
-    staticFieldBase = ThrowableTriFunction.orNull(unsafeClass, "staticFieldBase", MethodType.methodType(Object.class, Field.class), UnsafeWeaver::getMethodHandle);
-    staticFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "staticFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
-    objectFieldOffset = ThrowableTriFunction.orNull(unsafeClass, "objectFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
+    staticFieldBase = Trebuchet.Functions.orNot(unsafeClass, "staticFieldBase", MethodType.methodType(Object.class, Field.class), UnsafeWeaver::getMethodHandle);
+    staticFieldOffset = Trebuchet.Functions.orNot(unsafeClass, "staticFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
+    objectFieldOffset = Trebuchet.Functions.orNot(unsafeClass, "objectFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
 
-    // @formatter:off
     gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
     settings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(Class<?>[]::new));
-    // @formatter:on
-  }
+  }/* @formatter:on */
 
   /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
   private static final class Origin {
@@ -129,7 +122,7 @@ public final class TheUnsafe {
    * @return transformed object
    */
   private static Object primivatior(final Class<?> fieldType, final Object value) {
-    return ThrowableBiFunction.orNull(fieldType, value, primitivatorOrigin);
+    return Trebuchet.Functions.orNot(fieldType, value, primitivatorOrigin);
   }
 
   /**
@@ -141,7 +134,7 @@ public final class TheUnsafe {
    * @return true if update successful
    */
   public static boolean set(final Object mysterio, final Field field, final Object value) {
-    return ThrowableTriPredicate.orNot(mysterio, field, value, setOrigin);
+    return Trebuchet.Predicates.orNot(mysterio, field, value, setOrigin);
   }
 
   /**
@@ -162,7 +155,7 @@ public final class TheUnsafe {
    * @throws ReflectiveOperationException an access error
    */
   private Object fieldBase(Object mysterio, Field field) {
-    return ThrowableBiFunction.orNull(mysterio, field, (o, f) -> Reflections.isStatic(f) ? staticFieldBase.invoke(theUnsafe, f) : o);
+    return Trebuchet.Functions.orNot(mysterio, field, (o, f) -> Reflections.isStatic(f) ? staticFieldBase.invoke(theUnsafe, f) : o);
   }
 
   /**
@@ -172,7 +165,7 @@ public final class TheUnsafe {
    * @return offset of the field, or returns {@link invalidOffset} if the field is null
    */
   private long fieldOffset(Field field) {
-    return (long) ThrowableFunction.orDefault(field, (t) -> (Reflections.isStatic(field) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, t), invalidOffset);
+    return (long) Trebuchet.Functions.orElse(field, (t) -> (Reflections.isStatic(t) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, t), () -> invalidOffset);
   };
 
   /**
@@ -185,7 +178,7 @@ public final class TheUnsafe {
   private Object getInternal(Object mysterio, Field field) {
     // @formatter:off
     return !(Reflections.isAssignable(mysterio, field) && (Reflections.isStatic(field) || !(mysterio instanceof Class))) ? null :
-      ThrowableBiFunction.orNull(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
+      Trebuchet.Functions.orNot(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
     // @formatter:on
   }
 
@@ -197,6 +190,6 @@ public final class TheUnsafe {
    * @param value the value for update
    */
   private void setInternal(Object mysterio, Field field, Object value) {
-    ThrowableBiConsumer.orNot(mysterio, field, (o, f) -> settings.getOrDefault(f.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f), primivatior(f.getType(), value)));
+    Trebuchet.Consumers.orNot(mysterio, field, value, (_mysterio, _field, _value) -> settings.getOrDefault(_field.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(_mysterio, _field), fieldOffset(_field), primivatior(_field.getType(), _value)));
   }
 }

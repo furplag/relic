@@ -31,8 +31,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import jp.furplag.function.ThrowablePredicate;
+import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
  * do less coding when using Stream API .
@@ -79,7 +78,8 @@ public interface Streamr {
        * @return a {@link Predicate} which united specified conditions .
        */
       public <T> Predicate<T> predicate(Function<? super T, Boolean> function) {
-        return ThrowablePredicate.of(function::apply, (t) -> and());
+        return Trebuchet.Functions.Uni.of(function, (t, ex) -> and())::apply;
+
       }
     }
 
@@ -281,7 +281,7 @@ public interface Streamr {
    */
   @SafeVarargs
   private static <T> boolean isStream(final T... elements) {
-    return ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).map(Object::getClass).allMatch(Stream.class::isAssignableFrom));
+    return Trebuchet.Predicates.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).map(Object::getClass).allMatch(Stream.class::isAssignableFrom));
   }
 
   /**
@@ -293,7 +293,7 @@ public interface Streamr {
    */
   @SafeVarargs
   private static <T> boolean isStreamArray(final T... elements) {
-    return isStream(elements) && ThrowablePredicate.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).count() > 1);
+    return isStream(elements) && Trebuchet.Predicates.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).count() > 1);
   }
 
   /**

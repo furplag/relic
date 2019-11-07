@@ -16,14 +16,10 @@
 
 package jp.furplag.sandbox.reflect;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
-
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.TheEntity;
 import jp.furplag.sandbox.outerworld.TheExtendedObject;
@@ -31,10 +27,10 @@ import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 import jp.furplag.sandbox.outerworld.nested.Wrappered;
 
-public class SavageReflectionTest {
+class SavageReflectionTest {
 
   @Test
-  public void testGet() {
+  void testGet() {
     assertNull(SavageReflection.get(null, (String) null));
     assertNull(SavageReflection.get(TheEntity.class, (String) null));
     assertNull(SavageReflection.get(TheEntity.class, (Field) null));
@@ -95,7 +91,7 @@ public class SavageReflectionTest {
   }
 
   @Test
-  public void testSetStatic() throws ReflectiveOperationException {
+  void testSetStatic() throws ReflectiveOperationException {
     assertFalse(SavageReflection.set(null, (String) null, null));
     assertFalse(SavageReflection.set(null, (Field) null, null));
     assertFalse(SavageReflection.set(null, (String) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
@@ -146,7 +142,7 @@ public class SavageReflectionTest {
   }
 
   @Test
-  public void testSet() throws ReflectiveOperationException {
+  void testSet() throws ReflectiveOperationException {
 
     Field thePrimitive = TheEntity.class.getDeclaredField("thePrimitive");
     Field thePrimitiveOfPackage = TheEntity.class.getDeclaredField("thePrimitiveOfPackage");
@@ -199,7 +195,7 @@ public class SavageReflectionTest {
   }
 
   @Test
-  public void testRead() {
+  void testRead() {
     SavageReflection.read(new Overriden()).entrySet().stream().forEach(e -> {
       assertEquals(e.getValue(), SavageReflection.read(new Overriden()).get(e.getKey()));
       assertEquals((Object) null, SavageReflection.read(new Overriden(), e.getKey()).get(e.getKey()));
@@ -207,18 +203,18 @@ public class SavageReflectionTest {
     });
     assertEquals(new LinkedHashMap<>(), SavageReflection.read(null));
 
-    assertThat(SavageReflection.read(Overriden.class).get("PUBLIC_STATIC_FINAL_STRING"), is("a static String."));
-    assertThat(SavageReflection.read(Overriden.class).get("PACKAGE_STATIC_FINAL_LONG"), is(123456L));
-    assertThat(SavageReflection.read(Overriden.class).get("PROTECTED_STATIC_FINAL_DOUBLE"), is(.123456));
-    assertThat(SavageReflection.read(Overriden.class).get("PRIVATE_STATIC_FINAL_STRING"), is("a static String."));
-    assertThat(SavageReflection.read(Overriden.class).get("NULL"), is((Object) null));
-    assertThat(SavageReflection.read(Overriden.class).containsKey("message"), is(false));
+    assertEquals("a static String.", SavageReflection.read(Overriden.class).get("PUBLIC_STATIC_FINAL_STRING"));
+    assertEquals(123456L, SavageReflection.read(Overriden.class).get("PACKAGE_STATIC_FINAL_LONG"));
+    assertEquals(.123456, SavageReflection.read(Overriden.class).get("PROTECTED_STATIC_FINAL_DOUBLE"));
+    assertEquals("a static String.", SavageReflection.read(Overriden.class).get("PRIVATE_STATIC_FINAL_STRING"));
+    assertEquals((Object) null, SavageReflection.read(Overriden.class).get("NULL"));
+    assertFalse(SavageReflection.read(Overriden.class).containsKey("message"));
 
-    assertThat(SavageReflection.read(new Overriden()).containsKey("PUBLIC_STATIC_FINAL_STRING"), is(false));
-    assertThat(SavageReflection.read(new Overriden()).containsKey("PACKAGE_STATIC_FINAL_LONG"), is(false));
-    assertThat(SavageReflection.read(new Overriden()).containsKey("PROTECTED_STATIC_FINAL_DOUBLE"), is(false));
-    assertThat(SavageReflection.read(new Overriden()).containsKey("PRIVATE_STATIC_FINAL_STRING"), is(false));
-    assertThat(SavageReflection.read(new Overriden()).containsKey("NULL"), is(false));
+    assertEquals(SavageReflection.read(new Overriden()).containsKey("PUBLIC_STATIC_FINAL_STRING"), false);
+    assertEquals(SavageReflection.read(new Overriden()).containsKey("PACKAGE_STATIC_FINAL_LONG"), false);
+    assertEquals(SavageReflection.read(new Overriden()).containsKey("PROTECTED_STATIC_FINAL_DOUBLE"), false);
+    assertEquals(SavageReflection.read(new Overriden()).containsKey("PRIVATE_STATIC_FINAL_STRING"), false);
+    assertEquals(SavageReflection.read(new Overriden()).containsKey("NULL"), false);
 
     assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), (String) null));
     assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), (String[]) null));

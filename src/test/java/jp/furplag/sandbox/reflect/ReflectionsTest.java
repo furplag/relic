@@ -16,12 +16,10 @@
 
 package jp.furplag.sandbox.reflect;
 
-import static java.lang.annotation.ElementType.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -38,11 +36,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import jdk.jfr.Experimental;
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.Nothing;
@@ -50,15 +46,15 @@ import jp.furplag.sandbox.outerworld.TheEntity;
 import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 
-public class ReflectionsTest {
+class ReflectionsTest {
 
   @Documented
   @Retention(RetentionPolicy.RUNTIME)
-  @Target(value={CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, MODULE, PARAMETER, TYPE})
+  @Target(value={ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.PACKAGE, ElementType.MODULE, ElementType.PARAMETER, ElementType.TYPE})
   public @interface ReflectionsTestAnnotation {}
 
   @Test
-  public void test() {
+  void test() {
     assertTrue(new Reflections() {} instanceof Reflections);
     assertTrue(Reflections.class.isAssignableFrom(new Reflections() {}.getClass()));
 
@@ -66,14 +62,14 @@ public class ReflectionsTest {
   }
 
   @Test
-  public void testIsStatic() throws ReflectiveOperationException, SecurityException {
+  void testIsStatic() throws ReflectiveOperationException, SecurityException {
     assertFalse(Reflections.isStatic(null));
     assertFalse(Reflections.isStatic(FieldUtils.getDeclaredField(TheObject.class, "thePrimitive", true)));
     assertTrue(Reflections.isStatic(FieldUtils.getDeclaredField(TheObject.class, "THE_BOOLEAN_STATIC", true)));
   }
 
   @Test
-  public void testGetClass() {
+  void testGetClass() {
     assertNull(Reflections.getClass(null));
     assertEquals(Class.class, Reflections.getClass(Class.class));
     assertEquals(String.class, Reflections.getClass(String.class));
@@ -81,7 +77,7 @@ public class ReflectionsTest {
   }
 
   @Test
-  public void testFamilyze() {
+  void testFamilyze() {
     assertArrayEquals(new Object[] {}, Reflections.familyze(null).toArray());
     assertArrayEquals(new Object[] {Object.class}, Reflections.familyze(Object.class).toArray());
     assertArrayEquals(new Object[] {Class.class, Object.class}, Reflections.familyze(Class.class).toArray());
@@ -93,7 +89,7 @@ public class ReflectionsTest {
   }
 
   @Test
-  public void testGetFields() {
+  void testGetFields() {
     assertArrayEquals(new Field[] {}, Reflections.getFields(null));
     assertArrayEquals(new Field[] {}, Reflections.getFields(Object.class));
     assertArrayEquals(Nothing.class.getDeclaredFields(), Reflections.getFields(new Nothing()));
@@ -117,7 +113,7 @@ public class ReflectionsTest {
   }
 
   @Test
-  public void testgetField() {
+  void testgetField() {
     assertEquals((Field) null, Reflections.getField(null, null));
     assertEquals((Field) null, Reflections.getField(null, Objects.toString(null)));
     assertEquals((Field) null, Reflections.getField(null, Objects.toString(null, "")));
@@ -128,7 +124,7 @@ public class ReflectionsTest {
   }
 
   @Test
-  public void testIsAssignableOfClass() throws ReflectiveOperationException, SecurityException {
+  void testIsAssignableOfClass() throws ReflectiveOperationException, SecurityException {
     assertFalse(Reflections.isAssignable((Object) null, (Field) null));
     assertFalse(Reflections.isAssignable((Object) null, TheEntity.class.getDeclaredField("thePrimitive")));
     assertFalse(Reflections.isAssignable(TheEntity.class, (Field) null));
@@ -145,7 +141,7 @@ public class ReflectionsTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testIsAssignableOfField() throws ReflectiveOperationException, SecurityException {
+  void testIsAssignableOfField() throws ReflectiveOperationException, SecurityException {
     assertFalse(Reflections.isAssignable((Field) null, (Object) null));
     assertFalse(Reflections.isAssignable((Field) null, "text"));
     assertFalse(Reflections.isAssignable(TheEntity.class.getDeclaredField("thePrimitiveOfPackage"), (Object) null));
@@ -227,31 +223,31 @@ public class ReflectionsTest {
   }
 
   @Test
-  public void testAnnotatedWith() throws ReflectiveOperationException {
+  void testAnnotatedWith() throws ReflectiveOperationException {
 
-    assertThat(Reflections.isAnnotatedWith(null, (Class<Annotation>[]) null), is(true));
-    assertThat(Reflections.isAnnotatedWith(Origin.class), is(true));
-    assertThat(Reflections.isAnnotatedWith(Origin.class, (Class<Annotation>[]) null), is(true));
-    assertThat(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("intField"), (Class<Annotation>[]) null), is(true));
-    assertThat(Reflections.isAnnotatedWith(Any.class, Deprecated.class), is(false));
-    assertThat(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("intField"), Experimental.class), is(false));
+    assertEquals(Reflections.isAnnotatedWith(null, (Class<Annotation>[]) null), true);
+    assertEquals(Reflections.isAnnotatedWith(Origin.class), true);
+    assertEquals(Reflections.isAnnotatedWith(Origin.class, (Class<Annotation>[]) null), true);
+    assertEquals(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("intField"), (Class<Annotation>[]) null), true);
+    assertEquals(Reflections.isAnnotatedWith(Any.class, Deprecated.class), false);
+    assertEquals(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("intField"), Experimental.class), false);
 
-    assertThat(Reflections.isAnnotatedWith(Origin.class, Deprecated.class), is(true));
-    assertThat(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("textField"), Experimental.class), is(true));
+    assertEquals(Reflections.isAnnotatedWith(Origin.class, Deprecated.class), true);
+    assertEquals(Reflections.isAnnotatedWith(Origin.class.getDeclaredField("textField"), Experimental.class), true);
 
     assertTrue(Reflections.isAnnotatedWith(Origin.class, ReflectionsTestAnnotation.class));
     assertTrue(Reflections.isAnnotatedWith(Any.class, ReflectionsTestAnnotation.class));
     assertTrue(Reflections.isAnnotatedWith(Any.class, ReflectionsTestAnnotation.class, Override.class));
 
-    assertThat(Any.class.isAnnotationPresent(ReflectionsTestAnnotation.class), is(Reflections.isAnnotatedWith(Any.class, ReflectionsTestAnnotation.class)));
+    assertEquals(Any.class.isAnnotationPresent(ReflectionsTestAnnotation.class), Reflections.isAnnotatedWith(Any.class, ReflectionsTestAnnotation.class));
 
-    assertThat(Reflections.isAnnotatedWithAllOf(null, (Class<Annotation>[]) null), is(true));
-    assertThat(Reflections.isAnnotatedWithAllOf(String.class), is(true));
-    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class), is(false));
-    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class, (Class<Annotation>[]) null), is(false));
-    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class.getDeclaredField("intField"), (Class<Annotation>[]) null), is(true));
-    assertThat(Reflections.isAnnotatedWithAllOf(Any.class, Deprecated.class), is(false));
-    assertThat(Reflections.isAnnotatedWithAllOf(Origin.class.getDeclaredField("intField"), Experimental.class), is(false));
+    assertEquals(Reflections.isAnnotatedWithAllOf(null, (Class<Annotation>[]) null), true);
+    assertEquals(Reflections.isAnnotatedWithAllOf(String.class), true);
+    assertEquals(Reflections.isAnnotatedWithAllOf(Origin.class), false);
+    assertEquals(Reflections.isAnnotatedWithAllOf(Origin.class, (Class<Annotation>[]) null), false);
+    assertEquals(Reflections.isAnnotatedWithAllOf(Origin.class.getDeclaredField("intField"), (Class<Annotation>[]) null), true);
+    assertEquals(Reflections.isAnnotatedWithAllOf(Any.class, Deprecated.class), false);
+    assertEquals(Reflections.isAnnotatedWithAllOf(Origin.class.getDeclaredField("intField"), Experimental.class), false);
 
     assertFalse(Reflections.isAnnotatedWithAllOf(Origin.class, Deprecated.class));
     assertTrue(Reflections.isAnnotatedWithAllOf(Origin.class, Deprecated.class, ReflectionsTestAnnotation.class));
