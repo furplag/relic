@@ -69,27 +69,9 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
   </properties>
 
-  <repositories>
-
-    <repository>
-      <id>jp.furplag.sandbox.trebuchet</id>
-      <url>https://raw.github.com/furplag/trebuchet/mvn-repo/</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <checksumPolicy>always</checksumPolicy>
-      </snapshots>
-    </repository>
-
-  </repositories>
+  <repositories />
 
   <dependencies>
-<!--
-    <dependency>
-      <groupId>jp.furplag.sandbox</groupId>
-      <artifactId>trebuchet</artifactId>
-      <version>[3.0,)</version>
-    </dependency>
- -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>

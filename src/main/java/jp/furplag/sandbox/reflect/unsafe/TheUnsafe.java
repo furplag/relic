@@ -34,20 +34,24 @@ import jp.furplag.sandbox.trebuchet.Trebuchet;
  */
 public final class TheUnsafe {
 
-  /** generate the pair of Type and MethodHandle . */
+  /** generate the pair of Type and MethodHandle . *//* @formatter:off */
   private static final Trebuchet.Functions.Tri<Class<?>, Class<?>, UnsafeWeaver.Prefix, ? extends Map.Entry<Class<?>, MethodHandle>> pairGenerator =
     (x, y, z) -> Map.entry(y, Trebuchet.Functions.orNot(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
+  /* @formatter:on */
 
-  /** internal snippet for cast the value type . */
+  /** internal snippet for cast the value type . *//* @formatter:off */
   private static final Trebuchet.Functions.Bi<Class<?>, Object, Object> primitivatorOrigin =
     (t, v) -> String.class.equals(t) ? Objects.toString(v, null) :
       !t.isPrimitive() ? v :
       MethodHandles.lookup().findVirtual(Reflections.getClass(v), UnsafeWeaver.getFormattedMethodName(t, null).toLowerCase(Locale.ROOT) + "Value", MethodType.methodType(t)).invoke(v);
+  /* @formatter:on */
 
-  /** update value using under unsafe access . */
+  /** update value using under unsafe access . *//* @formatter:off */
   private static final Trebuchet.Predicates.Tri<Object, Field, Object> setOrigin =
     ((Trebuchet.Predicates.Tri<Object, Field, Object>) Reflections::isAssignable)
       .and((t, u, v) -> Trebuchet.Functions.orNot(t, u, v, (x, y, z) -> {theUnsafe().setInternal(x, y, z); return Objects.equals(primivatior(y.getType(), z), get(x, y));}));
+  /* @formatter:on */
+
   /** failsafe for fieldOffset . */
   private static final long invalidOffset;
 
@@ -73,23 +77,24 @@ public final class TheUnsafe {
 
   /**
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
+   *
    *//* @formatter:off */
   private TheUnsafe() {
     final Class<?> unsafeClass = Trebuchet.Functions.orNot("sun.misc.Unsafe", Class::forName);
-    theUnsafe = Trebuchet.Functions.orNot(unsafeClass, "theUnsafe", (x, y) -> Reflections.conciliation(x.getDeclaredField(y)).get(null));
+    final MethodType staticFieldType = MethodType.methodType(Object.class, Field.class);
+    final MethodType fieldOffsetType = MethodType.methodType(long.class, Field.class);
 
-    staticFieldBase = Trebuchet.Functions.orNot(unsafeClass, "staticFieldBase", MethodType.methodType(Object.class, Field.class), UnsafeWeaver::getMethodHandle);
-    staticFieldOffset = Trebuchet.Functions.orNot(unsafeClass, "staticFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
-    objectFieldOffset = Trebuchet.Functions.orNot(unsafeClass, "objectFieldOffset", MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
+    theUnsafe = Trebuchet.Functions.orNot(unsafeClass, (x) -> Reflections.conciliation(x.getDeclaredField("theUnsafe")).get(null));
+    staticFieldBase = Trebuchet.Functions.orNot(unsafeClass, "staticFieldBase", staticFieldType, UnsafeWeaver::getMethodHandle);
+    staticFieldOffset = Trebuchet.Functions.orNot(unsafeClass, "staticFieldOffset", fieldOffsetType, UnsafeWeaver::getMethodHandle);
+    objectFieldOffset = Trebuchet.Functions.orNot(unsafeClass, "objectFieldOffset", fieldOffsetType, UnsafeWeaver::getMethodHandle);
 
     gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
     settings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(Class<?>[]::new));
   }/* @formatter:on */
 
   /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {
-    private static final TheUnsafe theUnsafe = new TheUnsafe();
-  }
+  private static final class Origin {/* @formatter:off */private static final TheUnsafe theUnsafe = new TheUnsafe();/* @formatter:on */}
 
   /**
    * construct a container of methods to field access .
@@ -154,9 +159,9 @@ public final class TheUnsafe {
    * @return the object which declaring the field
    * @throws ReflectiveOperationException an access error
    */
-  private Object fieldBase(Object mysterio, Field field) {
+  private Object fieldBase(Object mysterio, Field field) {/* @formatter:off */
     return Trebuchet.Functions.orNot(mysterio, field, (o, f) -> Reflections.isStatic(f) ? staticFieldBase.invoke(theUnsafe, f) : o);
-  }
+    /* @formatter:on */}
 
   /**
    * {@link sun.misc.Unsafe#objectFieldOffset(Field)} and {@link sun.misc.Unsafe#staticFieldOffset(Field)} .
@@ -164,9 +169,9 @@ public final class TheUnsafe {
    * @param field {@link Field}
    * @return offset of the field, or returns {@link invalidOffset} if the field is null
    */
-  private long fieldOffset(Field field) {
+  private long fieldOffset(Field field) {/* @formatter:off */
     return (long) Trebuchet.Functions.orElse(field, (t) -> (Reflections.isStatic(t) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, t), () -> invalidOffset);
-  };
+  /* @formatter:on */}
 
   /**
    * read value using under unsafe access .
@@ -175,12 +180,10 @@ public final class TheUnsafe {
    * @param field {@link Field}
    * @return the value of the field of class ( or the instance )
    */
-  private Object getInternal(Object mysterio, Field field) {
-    // @formatter:off
+  private Object getInternal(Object mysterio, Field field) {/* @formatter:off */
     return !(Reflections.isAssignable(mysterio, field) && (Reflections.isStatic(field) || !(mysterio instanceof Class))) ? null :
       Trebuchet.Functions.orNot(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
-    // @formatter:on
-  }
+  /* @formatter:on */}
 
   /**
    * update value using under unsafe access .
@@ -189,7 +192,7 @@ public final class TheUnsafe {
    * @param field the field to update
    * @param value the value for update
    */
-  private void setInternal(Object mysterio, Field field, Object value) {
+  private void setInternal(Object mysterio, Field field, Object value) {/* @formatter:off */
     Trebuchet.Consumers.orNot(mysterio, field, value, (_mysterio, _field, _value) -> settings.getOrDefault(_field.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(_mysterio, _field), fieldOffset(_field), primivatior(_field.getType(), _value)));
-  }
+  /* @formatter:on */}
 }

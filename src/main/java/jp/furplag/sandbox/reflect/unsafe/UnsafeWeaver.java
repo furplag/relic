@@ -1,17 +1,15 @@
 /**
  * Copyright (C) 2018+ furplag (https://github.com/furplag)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package jp.furplag.sandbox.reflect.unsafe;
@@ -40,10 +38,10 @@ interface UnsafeWeaver {
    * @param type type of field
    * @param prefix {@link Prefix}
    * @return formatted name for unsafe field accessor of &quot;getter&quot; and &quot;setter&quot;
-   */
+   *//* @formatter:off */
   static String getFormattedMethodName(final Class<?> type, final Prefix prefix) {
     return String.join("", Objects.toString(prefix, ""),  StringUtils.capitalize(Objects.toString(type, "").replaceAll("^.*\\.", "").toLowerCase(Locale.ROOT)));
-  }
+  /* @formatter:on */}
 
   /**
    * returns unsafe accessor using {@link MethodHandle} .
@@ -52,21 +50,20 @@ interface UnsafeWeaver {
    * @param methodName the name of method to get
    * @param methodType {@link MethodType}
    * @return {@link MethodHandle}
-   */
+   *//* @formatter:off */
   static MethodHandle getMethodHandle(final Class<?> sunMiscUnsafe, final String methodName, final MethodType methodType) {
     return Trebuchet.Functions.orNot(sunMiscUnsafe, methodName, methodType, (x, y, z) -> MethodHandles.privateLookupIn(x, MethodHandles.lookup()).findVirtual(x, y, z));
-  }
+  }/* @formatter:on */
 
   /**
-   * returns {@link MethodType} for unsafe field accessor of &quot;getter&quot; and &quot;setter&quot; .
+   * returns {@link MethodType} for unsafe field accessor of &quot;getter&quot; and
+   * &quot;setter&quot; .
    *
    * @param type type of field
    * @param prefix {@link Prefix}, get or put
    * @return {@link MethodType}
    */
-  static MethodType getMethodType(final Class<?> type, final Prefix prefix) {
-    return Prefix.get.equals(prefix) ? newGetMethodType(type) : newPutMethodType(type);
-  }
+  static MethodType getMethodType(final Class<?> type, final Prefix prefix) {/* @formatter:off */return Prefix.get.equals(prefix) ? newGetMethodType(type) : newPutMethodType(type);/* @formatter:on */}
 
   /**
    * returns {@link MethodType} for unsafe field accessor of &quot;getter&quot; .
