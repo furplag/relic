@@ -32,6 +32,9 @@ import jp.furplag.sandbox.trebuchet.Trebuchet;
  */
 public final class TheUnsafe {
 
+  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
+  private static final class Origin {/* @formatter:off */private static final TheUnsafe theUnsafe = new TheUnsafe();/* @formatter:on */}
+
   /** generate the pair of Type and MethodHandle . */
   private static final Trebuchet.Functions.Tri<Class<?>, Class<?>, UnsafeWeaver.Prefix, ? extends Map.Entry<Class<?>, MethodHandle>> pairGenerator =
       (x, y, z) -> Map.entry(y, Trebuchet.Functions.orNot(x, UnsafeWeaver.getFormattedMethodName(y, z), UnsafeWeaver.getMethodType(y, z), UnsafeWeaver::getMethodHandle));
@@ -73,29 +76,14 @@ public final class TheUnsafe {
   private TheUnsafe() {
     final Class<?> unsafeClass = Trebuchet.Functions.orNot("sun.misc.Unsafe", Class::forName);
 
-    theUnsafe = Trebuchet.Functions.orNot(unsafeClass, (x) -> Reflections.conciliation(x.getDeclaredField("theUnsafe")).get(null));
-    staticFieldBase = Trebuchet.Functions.orNot(unsafeClass, "staticFieldBase", MethodType.methodType(Object.class, Field.class), UnsafeWeaver::getMethodHandle);
-    staticFieldOffset = fieldOffset(unsafeClass, "staticFieldOffset");
-    objectFieldOffset = fieldOffset(unsafeClass, "objectFieldOffset");
+    theUnsafe = theUnsafe(unsafeClass);
+    staticFieldBase = UnsafeWeaver.getMethodHandle(unsafeClass, "staticFieldBase");
+    staticFieldOffset = UnsafeWeaver.getMethodHandle(unsafeClass, "staticFieldOffset");
+    objectFieldOffset = UnsafeWeaver.getMethodHandle(unsafeClass, "objectFieldOffset");
 
-    gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class);
+    gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, UnsafeWeaver.baseFieldTypes);
     settings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(Class<?>[]::new));
   }/* @formatter:on */
-
-  /** lazy initialization for {@link TheUnsafe#theUnsafe theUnsafe}. */
-  private static final class Origin {/* @formatter:off */private static final TheUnsafe theUnsafe = new TheUnsafe();/* @formatter:on */}
-
-  /**
-   *
-   *
-   *
-   * @param unsafeClass
-   * @param fieldName
-   * @return {@link sun.misc.Unsafe#staticFieldOffset(Field)}, {@link sun.misc.Unsafe#objectFieldOffset(Field)}
-   */
-  private static MethodHandle fieldOffset(final Class<?> unsafeClass, final String fieldName) {
-    return Trebuchet.Functions.orNot(unsafeClass, fieldName, MethodType.methodType(long.class, Field.class), UnsafeWeaver::getMethodHandle);
-  }
 
   /**
    * construct a container of methods to field access .
@@ -150,6 +138,10 @@ public final class TheUnsafe {
    */
   private static TheUnsafe theUnsafe() {
     return Origin.theUnsafe;
+  }
+
+  private static Object theUnsafe(final Class<?> sunMiscUnsafe) {
+    return Trebuchet.Functions.orNot(sunMiscUnsafe, (x) -> Reflections.conciliation(x.getDeclaredField("theUnsafe")).get(null));
   }
 
   /**

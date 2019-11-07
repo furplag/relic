@@ -17,7 +17,9 @@ package jp.furplag.sandbox.reflect.unsafe;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import jp.furplag.sandbox.trebuchet.Trebuchet;
@@ -31,6 +33,15 @@ interface UnsafeWeaver {
 
   /** prefix of method handler . */
   public static enum Prefix /* @formatter:off */ { /** getter . */get, /** setter . */put }/* @formatter:on */
+
+  static final Class<?>[] baseFieldTypes = {boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, Object.class};
+
+  /** {@link MethodType} . */
+  static final Map<String, MethodType> methodTypes = Map.ofEntries(/* @formatter:off */
+      Map.entry("staticFieldBase", MethodType.methodType(Object.class, Field.class))
+    , Map.entry("staticFieldOffset", MethodType.methodType(long.class, Field.class))
+    , Map.entry("objectFieldOffset", MethodType.methodType(long.class, Field.class))
+  /* @formatter:on */);
 
   /**
    * returns formatted name for unsafe field accessor of &quot;getter&quot; and &quot;setter&quot; .
@@ -51,13 +62,25 @@ interface UnsafeWeaver {
    * @param methodType {@link MethodType}
    * @return {@link MethodHandle}
    *//* @formatter:off */
+  static MethodHandle getMethodHandle(final Class<?> sunMiscUnsafe, final String methodName) {
+    return getMethodHandle(sunMiscUnsafe, methodName, methodTypes.get(methodName));
+  }/* @formatter:on */
+
+  /**
+   * returns unsafe accessor using {@link MethodHandle} .
+   *
+   * @param sunMiscUnsafe the class of &quot;sun.misc.Unsafe&quot;
+   * @param methodName the name of method to get
+   * @param methodType {@link MethodType}
+   * @return {@link MethodHandle}
+   *//* @formatter:off */
   static MethodHandle getMethodHandle(final Class<?> sunMiscUnsafe, final String methodName, final MethodType methodType) {
     return Trebuchet.Functions.orNot(sunMiscUnsafe, methodName, methodType, (x, y, z) -> MethodHandles.privateLookupIn(x, MethodHandles.lookup()).findVirtual(x, y, z));
   }/* @formatter:on */
 
   /**
-   * returns {@link MethodType} for unsafe field accessor of &quot;getter&quot; and
-   * &quot;setter&quot; .
+   * returns {@link MethodType} for unsafe field accessor of &quot;getter&quot; and &quot;setter&quot;
+   * .
    *
    * @param type type of field
    * @param prefix {@link Prefix}, get or put
