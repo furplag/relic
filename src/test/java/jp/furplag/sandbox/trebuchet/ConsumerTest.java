@@ -28,7 +28,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import jp.furplag.sandbox.stream.Streamr;
-import jp.furplag.sandbox.trebuchet.Trebuchet.Consumers;
 
 class ConsumerTest {
 
@@ -65,7 +64,7 @@ class ConsumerTest {
   }
 
   @Test
-  void consumer() throws Throwable {
+  void consumer() {
     final String[] actual = {null};
     Consumer<String> consumer = (t) -> actual[0] = t.toUpperCase();
     try {
@@ -82,11 +81,11 @@ class ConsumerTest {
     consumer.accept("hello world .");
     assertEquals("HELLO WORLD .", actual[0]);
 
-    consumer = Consumers.Uni.of((t) -> actual[0] = t.toUpperCase(), null);
+    consumer = Trebuchet.Consumers.Uni.of((t) -> actual[0] = t.toUpperCase(), null);
     consumer.accept(null);
     assertEquals("HELLO WORLD .", actual[0]);
 
-    consumer = Consumers.Uni.of((t) -> actual[0] = t.toUpperCase(), (x, ex) -> {
+    consumer = Trebuchet.Consumers.Uni.of((t) -> actual[0] = t.toUpperCase(), (x, ex) -> {
       actual[0] = ex.getClass().getSimpleName();
     });
     consumer.accept(null);
@@ -109,7 +108,7 @@ class ConsumerTest {
       fail("there must not raise any exceptions .");
     }
     try {
-      consumer = Consumers.Uni.of(consumer.andThen((t) -> {
+      consumer = Trebuchet.Consumers.Uni.of(consumer.andThen((t) -> {
         actual[0] = t.toUpperCase();
       }), null);
       consumer.accept(actual[0]);
@@ -148,7 +147,7 @@ class ConsumerTest {
   }
 
   @Test
-  void biConsumer() throws Throwable {
+  void biConsumer() {
     final String expects[] = {/* @formatter:off */
         "321321321321321321321321321321"
       , "321321321321321321321321321"
@@ -179,7 +178,7 @@ class ConsumerTest {
         .reduce((a, b) -> b.concat(a)).get();
     IntStream.rangeClosed(-10, 10).forEach((i) -> {
       final String actual = "123";
-      final Consumers.Bi<String, Integer> injector = (u, v) -> actuals.add(repeater.apply(u, v));
+      final Trebuchet.Consumers.Bi<String, Integer> injector = (u, v) -> actuals.add(repeater.apply(u, v));
       try {
         injector.accept(actual, i);
       } catch (Exception e) {
@@ -221,7 +220,7 @@ class ConsumerTest {
   }
 
   @Test
-  void triConsumer() throws Throwable {
+  void triConsumer() {
     final String expects[] = {/* @formatter:off */
         "321321321321321321321321321321"
       , "321321321321321321321321321"
@@ -252,7 +251,7 @@ class ConsumerTest {
         .reduce((a, b) -> b.concat(a)).get();
     IntStream.rangeClosed(-10, 10).forEach((i) -> {
       final String actual = "123";
-      final Consumers.Tri<List<String>, String, Integer> injector = (t, u, v) -> t.add(repeater.apply(u, v));
+      final Trebuchet.Consumers.Tri<List<String>, String, Integer> injector = (t, u, v) -> t.add(repeater.apply(u, v));
       try {
         injector.accept(actuals, actual, i);
       } catch (Exception e) {

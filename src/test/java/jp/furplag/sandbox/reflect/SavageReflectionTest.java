@@ -27,10 +27,10 @@ import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 import jp.furplag.sandbox.outerworld.nested.Wrappered;
 
-public class SavageReflectionTest {
+class SavageReflectionTest {
 
   @Test
-  public void testGet() {
+  void testGet() {
     assertNull(SavageReflection.get(null, (String) null));
     assertNull(SavageReflection.get(TheEntity.class, (String) null));
     assertNull(SavageReflection.get(TheEntity.class, (Field) null));
@@ -91,7 +91,7 @@ public class SavageReflectionTest {
   }
 
   @Test
-  public void testSetStatic() throws ReflectiveOperationException {
+  void testSetStatic() throws ReflectiveOperationException {
     assertFalse(SavageReflection.set(null, (String) null, null));
     assertFalse(SavageReflection.set(null, (Field) null, null));
     assertFalse(SavageReflection.set(null, (String) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
@@ -142,7 +142,7 @@ public class SavageReflectionTest {
   }
 
   @Test
-  public void testSet() throws ReflectiveOperationException {
+  void testSet() throws ReflectiveOperationException {
 
     Field thePrimitive = TheEntity.class.getDeclaredField("thePrimitive");
     Field thePrimitiveOfPackage = TheEntity.class.getDeclaredField("thePrimitiveOfPackage");
@@ -195,7 +195,7 @@ public class SavageReflectionTest {
   }
 
   @Test
-  public void testRead() {
+  void testRead() {
     SavageReflection.read(new Overriden()).entrySet().stream().forEach(e -> {
       assertEquals(e.getValue(), SavageReflection.read(new Overriden()).get(e.getKey()));
       assertEquals((Object) null, SavageReflection.read(new Overriden(), e.getKey()).get(e.getKey()));

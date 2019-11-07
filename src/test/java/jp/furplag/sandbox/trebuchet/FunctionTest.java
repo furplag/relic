@@ -24,7 +24,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import jp.furplag.sandbox.stream.Streamr;
-import jp.furplag.sandbox.trebuchet.Trebuchet.Functions;
 
 class FunctionTest {
 
@@ -57,7 +56,7 @@ class FunctionTest {
   }
 
   @Test
-  void function() throws Throwable {
+  void function() {
     final String[] actual = {null};
     Function<String, String> function = String::toUpperCase;
     try {
@@ -80,7 +79,7 @@ class FunctionTest {
     assertEquals("HELLO WORLD .", trebuchet.apply("hello world ."));
     assertEquals("NullPointerException", function.apply(null));
     assertEquals("NullPointerException", trebuchet.apply(null));
-    assertEquals("NullPointerException", Trebuchet.Functions.orElse((String) null, Functions.Uni.of(String::toUpperCase, (t, ex) -> ex.getClass().getSimpleName()), (t, ex) -> null));
+    assertEquals("NullPointerException", Trebuchet.Functions.orElse((String) null, Trebuchet.Functions.Uni.of(String::toUpperCase, (t, ex) -> ex.getClass().getSimpleName()), (t, ex) -> null));
     assertEquals("nullPointerException", Trebuchet.Functions.orElse((String) null, String::toUpperCase, () -> "nullPointerException"));
     assertEquals(Trebuchet.Functions.orNot("hello world .", function::apply), function.apply("hello world ."));
     assertEquals("NullPointerException", Trebuchet.Functions.Uni.of(function::apply, (t, ex) -> ex.getClass().getSimpleName()).apply(null));
@@ -98,7 +97,7 @@ class FunctionTest {
   }
 
   @Test
-  void biFunction() throws Throwable {
+  void biFunction() {
     final String expects[] = {/* @formatter:off */
         "321321321321321321321321321321"
       , "321321321321321321321321321"
@@ -155,7 +154,7 @@ class FunctionTest {
   }
 
   @Test
-  void triFunction() throws Throwable {
+  void triFunction() {
     final String expects[] = {/* @formatter:off */
         "321321321321321321321321321321"
       , "321321321321321321321321321"
