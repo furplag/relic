@@ -83,20 +83,29 @@ public final class TheUnsafe {
     staticFieldOffset = UnsafeWeaver.getMethodHandle(unsafeClass, "staticFieldOffset");
     objectFieldOffset = UnsafeWeaver.getMethodHandle(unsafeClass, "objectFieldOffset");
 
-    gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, UnsafeWeaver.baseFieldTypes);
-    settings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(Class<?>[]::new));
+    gettings = getFieldAccessors(unsafeClass);
+    settings = setFieldAccessors(unsafeClass, gettings.keySet().toArray(Class<?>[]::new));
   }
 
   /**
    * construct a container of methods to field access .
    *
    * @param unsafeClass {@code sun.misc.Unsafe}
-   * @param prefix {@link UnsafeWeaver.Prefix Prefix}
+   * @return a container of methods to field access
+   */
+  private static Map<Class<?>, MethodHandle> getFieldAccessors(final Class<?> unsafeClass) {
+    return Streamr.collect(Streamr.stream(UnsafeWeaver.baseFieldTypes).map((x) -> pairGenerator.apply(unsafeClass, x, UnsafeWeaver.Prefix.get)).filter((x) -> Objects.nonNull(x.getValue())), null, null);
+  }
+
+  /**
+   * construct a container of methods to field access .
+   *
+   * @param unsafeClass {@code sun.misc.Unsafe}
    * @param classes primitives and {@link Object}
    * @return a container of methods to field access
    */
-  private static Map<Class<?>, MethodHandle> fieldAccessors(final Class<?> unsafeClass, final UnsafeWeaver.Prefix prefix, final Class<?>... classes) {
-    return Streamr.collect(Streamr.stream(classes).map((x) -> pairGenerator.apply(unsafeClass, x, prefix)).filter((x) -> Objects.nonNull(x.getValue())), null, null);
+  private static Map<Class<?>, MethodHandle> setFieldAccessors(final Class<?> unsafeClass, final Class<?>... classes) {
+    return Streamr.collect(Streamr.stream(classes).map((x) -> pairGenerator.apply(unsafeClass, x, UnsafeWeaver.Prefix.put)).filter((x) -> Objects.nonNull(x.getValue())), null, null);
   }
 
   /**
