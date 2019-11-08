@@ -1,18 +1,14 @@
 /**
  * Copyright (C) 2018+ furplag (https://github.com/furplag)
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
+
 package jp.furplag.sandbox.tuple;
 
 import java.util.Map;
@@ -34,7 +30,9 @@ public interface Tag<K, V> extends Map.Entry<K, V> {
    * @return the type of the value
    */
   @SuppressWarnings({"unchecked"})
-  default Class<V> getValueType() {/* @formatter:off */return (Class<V>) getValue().getClass();/* @formatter:on */}
+  default Class<V> getValueType() {
+    return (Class<V>) getValue().getClass();
+  }
 
   /**
    * throws {@code UnsupportedOperationException} .
@@ -46,7 +44,7 @@ public interface Tag<K, V> extends Map.Entry<K, V> {
    * @throws UnsupportedOperationException as this operation is not supported
    */
   @Override
-  default V setValue(V value) {/* @formatter:off */throw new UnsupportedOperationException();/* @formatter:on */}
+  default V setValue(V value) {/* @formatter:off */throw new UnsupportedOperationException();}
 
   /**
    * create a new instance of {@link Tag} .
@@ -57,11 +55,11 @@ public interface Tag<K, V> extends Map.Entry<K, V> {
    * @param value
    * @return a new instance of {@link Tag}
    */
-  static <K, V> Tag<K, V> entry(final K key, final V value) {/* @formatter:off */
+  static <K, V> Tag<K, V> entry(final K key, final V value) {
     return new Tag<>() {
       {Objects.requireNonNull(key);}
       @Override public K getKey() {return key;}
       @Override public V getValue() {return value;}
     };
-  /* @formatter:on */}
+  }
 }

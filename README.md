@@ -6,3 +6,31 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/d2f869d3c736a8c155d9/maintainability)](https://codeclimate.com/github/furplag/relic/maintainability)
 
 hope those snippets will help us for development .
+
+## Getting Start
+
+Add the following snippet to any project's pom that depends on your project
+```pom.xml
+<repositories>
+  ...
+  <repository>
+    <id>savage-reflections</id>
+    <url>https://raw.github.com/furplag/relic/mvn-repo/</url>
+    <snapshots>
+      <enabled>true</enabled>
+      <updatePolicy>always</updatePolicy>
+    </snapshots>
+  </repository>
+</repositories>
+...
+<dependencies>
+  ...
+  <dependency>
+    <groupId>jp.furplag.sandbox</groupId>
+    <artifactId>relic</artifactId>
+    <version>[3.0,)</version>
+  </dependency>
+</dependencies>
+```
+## License
+Code is under the [Apache Licence v2](LICENCE).

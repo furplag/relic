@@ -1,15 +1,17 @@
 /**
  * Copyright (C) 2018+ furplag (https://github.com/furplag)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package jp.furplag.sandbox.reflect.unsafe;
@@ -72,9 +74,9 @@ public final class TheUnsafe {
   /**
    * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
    *
-   *//* @formatter:off */
+   */
   private TheUnsafe() {
-    final Class<?> unsafeClass = Trebuchet.Functions.orNot("sun.misc.Unsafe", Class::forName);
+    final Class<?> unsafeClass = theUnsafeClass();
 
     theUnsafe = theUnsafe(unsafeClass);
     staticFieldBase = UnsafeWeaver.getMethodHandle(unsafeClass, "staticFieldBase");
@@ -83,7 +85,7 @@ public final class TheUnsafe {
 
     gettings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.get, UnsafeWeaver.baseFieldTypes);
     settings = fieldAccessors(unsafeClass, UnsafeWeaver.Prefix.put, gettings.keySet().toArray(Class<?>[]::new));
-  }/* @formatter:on */
+  }
 
   /**
    * construct a container of methods to field access .
@@ -140,33 +142,45 @@ public final class TheUnsafe {
     return Origin.theUnsafe;
   }
 
+  /**
+   * {@link TheUnsafe} .
+   *
+   * @return {@code sun.misc.Unsafe}
+   */
   private static Object theUnsafe(final Class<?> sunMiscUnsafe) {
     return Trebuchet.Functions.orNot(sunMiscUnsafe, (x) -> Reflections.conciliation(x.getDeclaredField("theUnsafe")).get(null));
   }
 
   /**
-   * returns {@link sun.misc.Unsafe#staticFieldBase(Field)} if the field is member of class, or
-   * returns {@code classOrInstance} if the field is member of instance .
+   * {@link TheUnsafe} .
+   *
+   * @return {@code sun.misc.Unsafe}
+   */
+  private static Class<?> theUnsafeClass() {
+    return Trebuchet.Functions.orNot("sun.misc.Unsafe", Class::forName);
+  }
+
+  /**
+   * returns {@link sun.misc.Unsafe#staticFieldBase(Field)} if the field is member of class, or returns {@code classOrInstance} if the field is member of instance .
    *
    * @param mysterio {@link Class} or the instance
    * @param field {@link Field}
    * @return the object which declaring the field
    * @throws ReflectiveOperationException an access error
    */
-  private Object fieldBase(Object mysterio, Field field) {/* @formatter:off */
+  private Object fieldBase(Object mysterio, Field field) {
     return Trebuchet.Functions.orNot(mysterio, field, (o, f) -> Reflections.isStatic(f) ? staticFieldBase.invoke(theUnsafe, f) : o);
-    /* @formatter:on */}
+  }
 
   /**
-   * {@link sun.misc.Unsafe#objectFieldOffset(Field)} and
-   * {@link sun.misc.Unsafe#staticFieldOffset(Field)} .
+   * {@link sun.misc.Unsafe#objectFieldOffset(Field)} and {@link sun.misc.Unsafe#staticFieldOffset(Field)} .
    *
    * @param field {@link Field}
    * @return offset of the field, or returns {@link invalidOffset} if the field is null
    */
-  private long fieldOffset(Field field) {/* @formatter:off */
+  private long fieldOffset(Field field) {
     return (long) Trebuchet.Functions.orElse(field, (t) -> (Reflections.isStatic(t) ? staticFieldOffset : objectFieldOffset).invoke(theUnsafe, t), () -> invalidOffset);
-  /* @formatter:on */}
+  }
 
   /**
    * read value using under unsafe access .
@@ -175,10 +189,10 @@ public final class TheUnsafe {
    * @param field {@link Field}
    * @return the value of the field of class ( or the instance )
    */
-  private Object getInternal(Object mysterio, Field field) {/* @formatter:off */
-    return !(Reflections.isAssignable(mysterio, field) && (Reflections.isStatic(field) || !(mysterio instanceof Class))) ? null :
-      Trebuchet.Functions.orNot(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
-  /* @formatter:on */}
+  private Object getInternal(Object mysterio, Field field) {
+    return !(Reflections.isAssignable(mysterio, field) && (Reflections.isStatic(field) || !(mysterio instanceof Class))) ? null
+        : Trebuchet.Functions.orNot(mysterio, field, (o, f) -> gettings.getOrDefault(f.getType(), gettings.get(Object.class)).invoke(theUnsafe, fieldBase(o, f), fieldOffset(f)));
+  }
 
   /**
    * update value using under unsafe access .
@@ -187,7 +201,7 @@ public final class TheUnsafe {
    * @param field the field to update
    * @param value the value for update
    */
-  private void setInternal(Object mysterio, Field field, Object value) {/* @formatter:off */
+  private void setInternal(Object mysterio, Field field, Object value) {
     Trebuchet.Consumers.orNot(mysterio, field, value, (_mysterio, _field, _value) -> settings.getOrDefault(_field.getType(), settings.get(Object.class)).invoke(theUnsafe, fieldBase(_mysterio, _field), fieldOffset(_field), primivatior(_field.getType(), _value)));
-  /* @formatter:on */}
+  }
 }

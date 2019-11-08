@@ -1,15 +1,17 @@
 /**
  * Copyright (C) 2018+ furplag (https://github.com/furplag)
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package jp.furplag.sandbox.reflect;
@@ -48,17 +50,14 @@ public interface Reflections {
    * @return {@code accessibleObject}
    */
   static <T extends AccessibleObject> T conciliation(final T accessibleObject) {
-    return Streamr.stream(accessibleObject).peek(AccessibleObject::trySetAccessible).findAny()
-        .orElse(accessibleObject);
+    return Streamr.stream(accessibleObject).peek(AccessibleObject::trySetAccessible).findAny().orElse(accessibleObject);
   }
 
   /**
-   * shorthand for {@link #getClass(Object)}.{@link Class#getSuperclass()
-   * getSuperclass()}.{@link Class#getSuperclass() getSuperclass()} ...
+   * shorthand for {@link #getClass(Object)}.{@link Class#getSuperclass() getSuperclass()}.{@link Class#getSuperclass() getSuperclass()} ...
    *
    * @param mysterio {@link Class} or an instance of any {@link Object}. maybe null
-   * @return the stream contains {@link Class} which ordering in like "[me, father, grandfather
-   *         ...]" .
+   * @return the stream contains {@link Class} which ordering in like "[me, father, grandfather ...]" .
    */
   static Stream<Class<?>> familyze(final Object mysterio) {
     final List<Class<?>> classes = new ArrayList<>();
@@ -74,17 +73,16 @@ public interface Reflections {
   /**
    * Returns annotations that are present on this element .
    * <p>
-   * If there are no annotations <em>present</em> on this element, the return value is
-   * {@link Collections#emptySet()} .
+   * If there are no annotations <em>present</em> on this element, the return value is {@link Collections#emptySet()} .
    * </p>
    *
    * @param <E> {@link AnnotatedElement}
    * @param annotatedElement any of {@link AnnotatedElement}, maybe null
    * @return annotations that are present on this element
-   *//* @formatter:off */
+   */
   private static <E extends AnnotatedElement> Set<Class<?>> getAnnotations(final E annotatedElement) {
     return Trebuchet.Functions.orElse(annotatedElement, (e) -> Streamr.collect(Streamr.stream(e.getAnnotations()).map(Annotation::annotationType), HashSet::new), Collections::emptySet);
-  }/* @formatter:on */
+  }
 
   /**
    * this unnecessary code snippet exists only for {@link Object#getClass()} .
@@ -92,8 +90,9 @@ public interface Reflections {
    * @param mysterio {@link Class} or an instance of any {@link Object}. maybe null
    * @return {@link java.lang.Class}, or null if {@code mysterio} is null
    */
-  static Class<?> getClass(final Object mysterio) {/* @formatter:off */
-    return mysterio == null ? null : (mysterio instanceof Class) ? ((Class<?>) mysterio) : mysterio.getClass();/* @formatter:on */}
+  static Class<?> getClass(final Object mysterio) {
+    return mysterio == null ? null : (mysterio instanceof Class) ? ((Class<?>) mysterio) : mysterio.getClass();
+  }
 
   /**
    * {@link Class#getDeclaredField(String)} with deep finder .
@@ -102,9 +101,9 @@ public interface Reflections {
    * @param fieldName the name of field
    * @return {@link Field}, or null if the field not found
    */
-  static Field getField(final Object mysterio, final String fieldName) {/* @formatter:off */
+  static Field getField(final Object mysterio, final String fieldName) {
     return Streamr.Filter.filtering(getFields(mysterio), (f) -> f.getName().equals(fieldName)).findFirst().orElse(null);
-  /* @formatter:on */}
+  }
 
   /**
    * {@link Class#getDeclaredFields()} with deep finder .
@@ -112,9 +111,9 @@ public interface Reflections {
    * @param mysterio {@link Class} or an instance of any {@link Object}. maybe null
    * @return all fields declared in class of the object or super class
    */
-  static Field[] getFields(final Object mysterio) {/* @formatter:off */
+  static Field[] getFields(final Object mysterio) {
     return familyze(mysterio).map(Class::getDeclaredFields).flatMap(Arrays::stream).map(Reflections::conciliation).toArray(Field[]::new);
-  /* @formatter:on */}
+  }
 
   /**
    * test if the element is annotated with any of specified {@link Annotation annotation (s) } .
@@ -122,13 +121,12 @@ public interface Reflections {
    * @param <E> {@link AnnotatedElement}
    * @param annotatedElement any of {@link AnnotatedElement}, maybe null
    * @param annotations {@link Annotation}, maybe empty
-   * @return true if the element is annotated with any of specified {@link Annotation annotation (s)
-   *         }
+   * @return true if the element is annotated with any of specified {@link Annotation annotation (s) }
    */
-  @SafeVarargs/* @formatter:off */
+  @SafeVarargs
   static <E extends AnnotatedElement> boolean isAnnotatedWith(final E annotatedElement, final Class<? extends Annotation>... annotations) {
     return Trebuchet.Functions.orNot(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> f.isEmpty() || f.stream().anyMatch(e::contains));
-  /* @formatter:on */}
+  }
 
   /**
    * test if the element is annotated with all of specified {@link Annotation annotation (s) } .
@@ -136,13 +134,12 @@ public interface Reflections {
    * @param <E> {@link AnnotatedElement}
    * @param annotatedElement any of {@link AnnotatedElement}, maybe null
    * @param annotations {@link Annotation}, maybe empty
-   * @return true if the element is annotated with all of specified {@link Annotation annotation (s)
-   *         }
+   * @return true if the element is annotated with all of specified {@link Annotation annotation (s) }
    */
-  @SafeVarargs/* @formatter:off */
+  @SafeVarargs
   static <E extends AnnotatedElement> boolean isAnnotatedWithAllOf(final E annotatedElement, final Class<? extends Annotation>... annotations) {
     return Trebuchet.Functions.orNot(getAnnotations(annotatedElement), Streamr.stream(annotations).collect(Collectors.toSet()), (e, f) -> e.containsAll(f) && f.containsAll(e));
-  /* @formatter:on */}
+  }
 
   /**
    * {@link #isAssignable(Field, Object)} using this method if the value type is standard object .
@@ -150,12 +147,12 @@ public interface Reflections {
    * @param typeOfFiled type of the field
    * @param typeOfValue type of the value
    * @return true if the value is able to set the field, or returns false if that is not able to
-   *//* @formatter:off */
+   */
   static boolean isAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
     final BiPredicate<Class<?>, Class<?>> isConvertible = (f, v) -> String.class.equals(f) || (ClassUtils.isAssignable(v, f)) || Streamr.stream(ClassUtils.primitivesToWrappers(f, v)).allMatch(Number.class::isAssignableFrom);
 
     return Trebuchet.Predicates.orNot(typeOfFiled, typeOfValue, (t, u) -> Trebuchet.Predicates.Bi.not(Reflections::notAssignable).and(isConvertible).test(t, u));
-  /* @formatter:on */}
+  }
 
   /**
    * test if the value is able to set the field .
@@ -173,12 +170,11 @@ public interface Reflections {
    *
    * @param mysterio {@link Class} or the Instance
    * @param field {@link Field}
-   * @return true if the field is declared in class of the object or super class, or returns false
-   *         if that is not
+   * @return true if the field is declared in class of the object or super class, or returns false if that is not
    */
-  static boolean isAssignable(final Object mysterio, final Field field) {/* @formatter:off */
+  static boolean isAssignable(final Object mysterio, final Field field) {
     return Trebuchet.Predicates.orNot(mysterio, field, (o, f) -> f.getDeclaringClass().isAssignableFrom(getClass(o)));
-  /* @formatter:on */}
+  }
 
   /**
    * test if the value is able to set the field of the object .
@@ -186,8 +182,7 @@ public interface Reflections {
    * @param mysterio {@link Class} or the Instance
    * @param field {@link Field}
    * @param value the value
-   * @return true if the value is able to set the field of the object, or returns false if that is
-   *         not able to
+   * @return true if the value is able to set the field of the object, or returns false if that is not able to
    */
   static boolean isAssignable(final Object mysterio, final Field field, final Object value) {
     return isAssignable(mysterio, field) && isAssignable(field, value);
@@ -197,8 +192,7 @@ public interface Reflections {
    * shorthand for {@link Modifier#isStatic(int)} .
    *
    * @param field {@link Field}
-   * @return the result of {@link Modifier#isStatic(int)
-   *         Modifier#isStatic}({@link Field#getModifiers() modifier}) .
+   * @return the result of {@link Modifier#isStatic(int) Modifier#isStatic}({@link Field#getModifiers() modifier}) .
    */
   static boolean isStatic(final Field field) {
     return Trebuchet.Predicates.orNot(field, (f) -> Modifier.isStatic(f.getModifiers()));
@@ -210,10 +204,8 @@ public interface Reflections {
    * @param typeOfFiled type of the field
    * @param typeOfValue type of the value
    * @return true if the value is not able to set the field, or returns false if that is able to
-   *//* @formatter:off */
+   */
   private static boolean notAssignable(final Class<?> typeOfFiled, final Class<?> typeOfValue) {
-    return typeOfFiled == null ||
-      (typeOfFiled.isPrimitive() && typeOfValue == null) ||
-      (Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled)) && Character.class.equals(ClassUtils.primitiveToWrapper(typeOfValue)));
-  }/* @formatter:on */
+    return typeOfFiled == null || (typeOfFiled.isPrimitive() && typeOfValue == null) || (Number.class.isAssignableFrom(ClassUtils.primitiveToWrapper(typeOfFiled)) && Character.class.equals(ClassUtils.primitiveToWrapper(typeOfValue)));
+  }
 }
