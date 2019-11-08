@@ -84,7 +84,7 @@ public final class TheUnsafe {
     objectFieldOffset = UnsafeWeaver.getMethodHandle(unsafeClass, "objectFieldOffset");
 
     gettings = getFieldAccessors(unsafeClass);
-    settings = setFieldAccessors(unsafeClass, gettings.keySet().toArray(Class<?>[]::new));
+    settings = setFieldAccessors(unsafeClass, gettings);
   }
 
   /**
@@ -104,8 +104,8 @@ public final class TheUnsafe {
    * @param classes primitives and {@link Object}
    * @return a container of methods to field access
    */
-  private static Map<Class<?>, MethodHandle> setFieldAccessors(final Class<?> unsafeClass, final Class<?>... classes) {
-    return Streamr.collect(Streamr.stream(classes).map((x) -> pairGenerator.apply(unsafeClass, x, UnsafeWeaver.Prefix.put)).filter((x) -> Objects.nonNull(x.getValue())), null, null);
+  private static Map<Class<?>, MethodHandle> setFieldAccessors(final Class<?> unsafeClass, final Map<Class<?>, MethodHandle> gettings) {
+    return Streamr.collect(Streamr.stream(gettings.keySet()).map((x) -> pairGenerator.apply(unsafeClass, x, UnsafeWeaver.Prefix.put)).filter((x) -> Objects.nonNull(x.getValue())), null, null);
   }
 
   /**
