@@ -42,4 +42,4 @@ shorthands to use stream API .
 functional interfaces which against some problems when handling exceptions in lambda expression .
 
 ## License
-Code is under the [Apache Licence v2](LICENCE).
+Code is under the [Apache License v2](LICENSE).
