@@ -28,7 +28,7 @@ Add the following snippet to any project's pom that depends on your project
   <dependency>
     <groupId>jp.furplag.sandbox</groupId>
     <artifactId>relic</artifactId>
-    <version>[3.0,)</version>
+    <version>[4.0,)</version>
   </dependency>
 </dependencies>
 ```
@@ -40,6 +40,9 @@ enable to unsafe access to the Object .
 shorthands to use stream API .
 ### Trebchet
 functional interfaces which against some problems when handling exceptions in lambda expression .
+### Deamtiet
+converting between each instant values represented by some of (different) time scale,
+e.g.) epoch millis, unix date, julian date and something .
 
 ## License
 Code is under the [Apache License v2](LICENSE).
