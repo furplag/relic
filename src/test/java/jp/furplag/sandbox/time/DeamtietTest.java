@@ -61,6 +61,7 @@ class DeamtietTest {
     assertEquals(LocalDateTime.parse("1970-01-01T00:00"), Deamtiet.Julian.of(Deamtiet.epochAsJulianDate).toLocalDateTime(ZoneId.of("UTC")));
     assertEquals(LocalDateTime.parse("1970-01-01T00:00"), Deamtiet.JulianDayNumber.of(((long) Deamtiet.epochAsJulianDate) + 1).toLocalDateTime(ZoneId.of("UTC")));
     assertEquals(LocalDateTime.parse("1858-11-17T00:00"), Deamtiet.ModifiedJulian.of(0d).toLocalDateTime(ZoneId.of("UTC")));
+    assertEquals(0, Deamtiet.ModifiedJulian.ofEpochMilli(Instant.parse("1858-11-17T00:00:00Z").toEpochMilli()));
 
     assertEquals(ZonedDateTime.now().toInstant().truncatedTo(ChronoUnit.SECONDS).toEpochMilli(), Deamtiet.Millis.of(null).to(Deamtiet.Julian).toInstant().truncatedTo(ChronoUnit.SECONDS).toEpochMilli());
 
