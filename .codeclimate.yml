@@ -1,2 +1,7 @@
-exclude_paths:
+version: 2
+exclude_patterns:
   - src/test/**/*
+checks:
+  method-count:
+    config:
+      threshold: 30
