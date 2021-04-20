@@ -14,7 +14,7 @@ Add the following snippet to any project's pom that depends on your project
 <repositories>
   ...
   <repository>
-    <id>savage-reflections</id>
+    <id>relic</id>
     <url>https://raw.github.com/furplag/relic/mvn-repo/</url>
     <snapshots>
       <enabled>true</enabled>
