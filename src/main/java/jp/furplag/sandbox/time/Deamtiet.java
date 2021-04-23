@@ -163,7 +163,8 @@ public interface Deamtiet<N extends Number> {
   static Deamtiet<Double> Julian = new Julian() {};
 
   /** an instant represented by astronomical julian day number . */
-  static final Deamtiet<Long> JulianDayNumber = new Deamtiet<>() {
+  static final Deamtiet<Long> JulianDayNumber = new JulianDayNumber_() {};
+  static abstract class JulianDayNumber_ implements Deamtiet<Long> {
 
     /** {@inheritDoc} */
     @Override
