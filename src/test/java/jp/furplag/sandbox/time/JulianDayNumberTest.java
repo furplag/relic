@@ -15,39 +15,53 @@
  */
 package jp.furplag.sandbox.time;
 
-import static jp.furplag.sandbox.time.Deamtiet.Julian;
-import static jp.furplag.sandbox.time.Deamtiet.JulianDayNumber;
-import static jp.furplag.sandbox.time.Deamtiet.Millis;
-import static jp.furplag.sandbox.time.Deamtiet.ModifiedJulian;
+import static jp.furplag.sandbox.time.Deamtiet.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.JulianFields;
+import java.util.Objects;
+import java.util.stream.LongStream;
 import org.junit.jupiter.api.Test;
 
 class JulianDayNumberTest {
 
   @Test
   void test() {
-    assertEquals(Millis.to(JulianDayNumber, null), JulianDayNumber.ofEpochMilli(null));
-    assertEquals(Millis.to(JulianDayNumber, null), JulianDayNumber.ofJulian(null));
-    assertEquals(Millis.to(JulianDayNumber, null), JulianDayNumber.ofInstant(null));
 
-    assertEquals(Millis.to(JulianDayNumber, System.currentTimeMillis()), JulianDayNumber.ofEpochMilli(System.currentTimeMillis()));
-    assertEquals(Millis.to(JulianDayNumber, System.currentTimeMillis()), JulianDayNumber.ofJulian(Millis.to(Julian, null)));
-    assertEquals(Millis.to(JulianDayNumber, System.currentTimeMillis()), JulianDayNumber.ofInstant(Instant.now()));
+    LongStream.rangeClosed(0, 100_000).forEach((l) -> {
+      final Instant instant = Instant.parse("1996-01-23T12:34:56.789Z").plus(l, ChronoUnit.DAYS);
 
-    assertEquals((long) (Deamtiet.epochAsJulianDate + .5d), Deamtiet.JulianDayNumber.ofEpochMilli(0L));
-    assertEquals((long) (Deamtiet.epochAsJulianDate + .5d), Deamtiet.JulianDayNumber.ofInstant(Instant.parse("1970-01-01T00:00:00.000Z")));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofEpochDay(instant.toEpochMilli() / Deamtiet.millisOfDay)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofEpochMilli(instant.toEpochMilli())).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofEpochSecond(instant.toEpochMilli() / 1000L)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofJulian(Julian.ofInstant(instant))).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
 
-    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.toInstant(null));
-    assertEquals(Instant.parse("-4713-11-24T00:00:00.000Z"), JulianDayNumber.toInstant(0L));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofEpochDay(instant.toEpochMilli() / Deamtiet.millisOfDay), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofEpochMilli(instant.toEpochMilli()), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofEpochSecond(instant.toEpochMilli() / 1000L), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofInstant(instant), Objects.toString(l));
 
-    assertEquals(LocalDate.now().atStartOfDay(), LocalDateTime.ofInstant(Instant.ofEpochMilli(JulianDayNumber.to(Millis, null)), ZoneId.of("UTC")));
-    assertEquals(LocalDate.now().atStartOfDay(), LocalDateTime.ofInstant(Julian.toInstant(JulianDayNumber.to(Julian, null)), ZoneId.of("UTC")));
-    assertEquals(LocalDate.now().atStartOfDay(), LocalDateTime.ofInstant(JulianDayNumber.toInstant(JulianDayNumber.to(JulianDayNumber, null)), ZoneId.of("UTC")));
-    assertEquals(LocalDate.now().atStartOfDay(), LocalDateTime.ofInstant(ModifiedJulian.toInstant(JulianDayNumber.to(ModifiedJulian, null)), ZoneId.of("UTC")));
+      assertEquals(LocalDateTime.ofInstant(instant.truncatedTo(ChronoUnit.DAYS), ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).toLocalDateTime(ZoneOffset.UTC), Objects.toString(l));
+
+      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(Millis).toInstant(), Objects.toString(l));
+      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(Julian).toInstant(), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(JulianDayNumber).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(ModifiedJulian).toInstant(), Objects.toString(l));
+    });
+
+    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochDay(0L)).toInstant());
+    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochMilli(0L)).toInstant());
+    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochSecond(0L)).toInstant());
+
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochDay(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochMilli(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochSecond(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofJulian(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
   }
 }

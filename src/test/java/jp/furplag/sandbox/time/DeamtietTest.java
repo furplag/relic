@@ -16,62 +16,102 @@
 package jp.furplag.sandbox.time;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.Test;
 
 class DeamtietTest {
 
   @Test
-  void requireNonNull() {
+  void paintItGreen() {
+    abstract class Invalid implements Deamtiet<Integer> {/* @formatter:off */
+      @Override
+      public Deamtiet.Entity<Integer> of(Integer instantValue) {
+        return new Deamtiet.Entity<Integer>(null, null) {};
+      };
+      @Override public Integer ofEpochMilli(Long epochMilli) { return null; }
+      @Override public Integer ofInstant(Instant instant) { return null; }
+      @Override public Integer ofJulian(Double julianDate) { return null; }
+      @Override public Instant toInstant(Integer instantValue) { return null; }
+    /* @formatter:on */};
+    abstract class InvalidII extends Invalid {
+      @Override
+      public Deamtiet.Entity<Integer> of(Integer instantValue) {
+        return new Deamtiet.Entity<Integer>(null, Instant.now()) {};
+      };
+    };
+    abstract class InvalidIII extends Invalid {
+      @Override
+      public Deamtiet.Entity<Integer> of(Integer instantValue) {
+        return new Deamtiet.Entity<Integer>(this, null) {};
+      };
+    };
+
     try {
-      Deamtiet.of(null, null);
-    } catch (Throwable ex) {
-      assertEquals(NullPointerException.class, ex.getClass());
+      new Invalid(){}.of(1).toInstant();
+      fail("there must raise NullPointerException .");
+    } catch (Exception ex) {
+      assertTrue(ex instanceof NullPointerException);
     }
+
     try {
-      Deamtiet.of(null, System.currentTimeMillis());
-    } catch (Throwable ex) {
-      assertEquals(NullPointerException.class, ex.getClass());
+      new InvalidII(){}.of(1).toInstant();
+      fail("there must raise NullPointerException .");
+    } catch (Exception ex) {
+      assertTrue(ex instanceof NullPointerException);
+    }
+
+    try {
+      new InvalidIII(){}.of(1).toInstant();
+      fail("there must raise NullPointerException .");
+    } catch (Exception ex) {
+      assertTrue(ex instanceof NullPointerException);
     }
   }
 
   @Test
-  void test() {
-    assertEquals(Deamtiet.of(Deamtiet.Millis, null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
-    assertEquals(Deamtiet.of(Deamtiet.Julian, null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
-    assertEquals(Deamtiet.of(Deamtiet.JulianDayNumber, null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.JulianDayNumber.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
-    assertEquals(Deamtiet.of(Deamtiet.ModifiedJulian, null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+  void nulls() {
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), Deamtiet.JulianDayNumber.of(null).toInstant());
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.SECONDS), Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
 
-    assertEquals(System.currentTimeMillis(), Deamtiet.Millis.of(null).getValue(), 100d);
-    assertEquals(System.currentTimeMillis(), Deamtiet.Julian.of(null).to(Deamtiet.Millis).getValue(), 100d);
-    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(), Deamtiet.JulianDayNumber.of(null).to(Deamtiet.Millis).getValue());
-    assertEquals(System.currentTimeMillis(), Deamtiet.ModifiedJulian.of(null).to(Deamtiet.Millis).getValue(), 100d);
+    assertEquals(Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.DAYS), Deamtiet.JulianDayNumber.of(null).toInstant());
+    assertEquals(Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
 
-    assertEquals(LocalDate.parse("1970-01-01"), Deamtiet.Millis.of(0L).toLocalDate(null));
-    assertEquals(LocalDate.parse("1970-01-01"), Deamtiet.Julian.of(Deamtiet.epochAsJulianDate).toLocalDate(null));
-    assertEquals(LocalDate.parse("1970-01-01"), Deamtiet.JulianDayNumber.of(((long) Deamtiet.epochAsJulianDate) + 1).toLocalDate(null));
-    assertEquals(LocalDate.parse("1858-11-17"), Deamtiet.ModifiedJulian.of(0d).toLocalDate(null));
+    assertEquals(Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.DAYS), Deamtiet.JulianDayNumber.of(null).toInstant());
+    assertEquals(Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
 
-    assertEquals(LocalDateTime.parse("1970-01-01T00:00"), Deamtiet.Millis.of(0L).toLocalDateTime(ZoneId.of("UTC")));
-    assertEquals(LocalDateTime.parse("1970-01-01T00:00"), Deamtiet.Julian.of(Deamtiet.epochAsJulianDate).toLocalDateTime(ZoneId.of("UTC")));
-    assertEquals(LocalDateTime.parse("1970-01-01T00:00"), Deamtiet.JulianDayNumber.of(((long) Deamtiet.epochAsJulianDate) + 1).toLocalDateTime(ZoneId.of("UTC")));
-    assertEquals(LocalDateTime.parse("1858-11-17T00:00"), Deamtiet.ModifiedJulian.of(0d).toLocalDateTime(ZoneId.of("UTC")));
-    assertEquals(0, Deamtiet.ModifiedJulian.ofEpochMilli(Instant.parse("1858-11-17T00:00:00Z").toEpochMilli()));
+    assertEquals(Deamtiet.JulianDayNumber.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Deamtiet.JulianDayNumber.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Deamtiet.JulianDayNumber.of(null).toInstant().truncatedTo(ChronoUnit.DAYS), Deamtiet.JulianDayNumber.of(null).toInstant());
+    assertEquals(Deamtiet.JulianDayNumber.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.DAYS));
 
-    assertEquals(ZonedDateTime.now().toInstant().truncatedTo(ChronoUnit.SECONDS).toEpochMilli(), Deamtiet.Millis.of(null).to(Deamtiet.Julian).toInstant().truncatedTo(ChronoUnit.SECONDS).toEpochMilli());
+    assertEquals(Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+    assertEquals(Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.DAYS), Deamtiet.JulianDayNumber.of(null).toInstant());
+    assertEquals(Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS), Deamtiet.ModifiedJulian.of(null).toInstant().truncatedTo(ChronoUnit.SECONDS));
+  }
 
-    assertEquals(Instant.ofEpochSecond(0).truncatedTo(ChronoUnit.SECONDS), Deamtiet.Millis.of(Deamtiet.Millis.ofEpochSecond(0L)).toInstant());
-    assertEquals(Instant.ofEpochSecond(System.currentTimeMillis() / 1000), Deamtiet.Millis.of(Deamtiet.Millis.ofEpochSecond(null)).toInstant());
-    assertEquals(Instant.ofEpochSecond(System.currentTimeMillis() / 1000).truncatedTo(ChronoUnit.DAYS), Deamtiet.Millis.of(Deamtiet.Millis.ofEpochDay(null)).toInstant());
-    assertEquals(Instant.ofEpochSecond(100000000).truncatedTo(ChronoUnit.SECONDS),  Deamtiet.Millis.of(Deamtiet.Millis.ofEpochSecond(100000000L)).toInstant());
-    assertEquals(Instant.ofEpochMilli(0).plus(10000, ChronoUnit.DAYS),  Deamtiet.Millis.of(Deamtiet.Millis.ofEpochDay(10000L)).toInstant());
+  @Test
+  void defaults() {
+    assertEquals(Instant.EPOCH, Deamtiet.Millis.of(0L).toInstant());
 
-    assertEquals(100000000, Deamtiet.Millis.of(Deamtiet.Millis.ofInstant(Instant.parse("1973-03-03T09:46:40Z"))).toEpochSecond());
-    assertEquals(10000, Deamtiet.Millis.of(Deamtiet.Millis.ofInstant(Instant.parse("1997-05-19T00:00:00Z"))).toEpochDay());
+    assertEquals(Instant.EPOCH, Deamtiet.Julian.of(Deamtiet.epochAsJulianDate).toInstant());
+    assertEquals(Instant.ofEpochMilli(Deamtiet.julianEpochAsMillis), Deamtiet.Julian.of(0d).toInstant());
+
+    assertEquals(Deamtiet.Julian.of(null).toInstant().truncatedTo(ChronoUnit.DAYS), Deamtiet.JulianDayNumber.of(null).toInstant());
+
+    assertEquals(Instant.EPOCH, Deamtiet.JulianDayNumber.of((long) (Deamtiet.epochAsJulianDate + .5d)).toInstant());
+    assertEquals(Instant.ofEpochMilli(Deamtiet.julianEpochAsMillis).truncatedTo(ChronoUnit.DAYS), Deamtiet.JulianDayNumber.of(0L).toInstant());
+
+    assertEquals(Instant.EPOCH, Deamtiet.ModifiedJulian.of(Deamtiet.epochAsJulianDate - Deamtiet.modifiedJulianEpochAsJulianDate).toInstant());
+    assertEquals(Instant.parse("1858-11-17T00:00:00Z"), Deamtiet.ModifiedJulian.of(0d).toInstant());
   }
 }
