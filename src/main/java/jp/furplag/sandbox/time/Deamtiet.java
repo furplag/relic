@@ -22,11 +22,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
+import jp.furplag.sandbox.time.internal.Julian;
 import jp.furplag.sandbox.time.internal.Millis;
 import jp.furplag.sandbox.time.internal.ModifiedJulian;
 import jp.furplag.sandbox.trebuchet.Trebuchet;
@@ -154,51 +151,16 @@ public interface Deamtiet<N extends Number> {
   public static final long julianEpochAsMillis = -210_866_760_000_000L;
 
   /** the millis of one day. */
-  public static final long millisOfDay = 864_000_00L;
+  public static final long millisOfDay = 86_400_000L;
 
   /** the epoch modified julian date of 1858-11-17T00:00:00.000Z. */
   public static final double modifiedJulianEpochAsJulianDate = 2_400_000.5d;
 
+  /**  */
+  static final double milliAsJulian = 1d / millisOfDay;
+
   /** an instant represented by astronomical julian day . */
-  static Deamtiet<Double> Julian = new Deamtiet<>() {
-
-    /** {@inheritDoc} */
-    @Override
-    public Double ofEpochSecond(Long epochSecond) {
-      return ofInstant(Trebuchet.Functions.orNot(epochSecond, (_epochSecond) -> Instant.ofEpochMilli(_epochSecond * 1000L)));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Double ofEpochMilli(Long epochMilli) {
-      return Stream.of(Optional.ofNullable(epochMilli).orElseGet(System::currentTimeMillis))
-        .mapToDouble((l) -> l * 1d / millisOfDay)
-        .mapToObj((d) -> Map.entry(d, d % (1d / millisOfDay)))
-        .mapToDouble((m) -> m.getKey() - m.getValue() + (m.getValue() < (.5d / millisOfDay) ? 0 : (1d / millisOfDay)))
-        .flatMap((d) -> DoubleStream.of(d, epochAsJulianDate))
-        .sum();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Double ofInstant(Instant instant) {
-      return ofEpochMilli(Trebuchet.Functions.orNot(instant, Instant::toEpochMilli));
-    }
-    /** {@inheritDoc} */
-    @Override
-    public Double ofJulian(Double julianDate) {
-      return Objects.requireNonNullElse(julianDate, ofEpochMilli(null));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Instant toInstant(Double instantValue) {
-      return Instant.ofEpochMilli(Trebuchet.Functions.orElse(instantValue, (_julianDate) -> Stream.of(Objects.requireNonNull(_julianDate))
-        .map((d) -> Map.entry(d - epochAsJulianDate, (d - epochAsJulianDate) % (1d / millisOfDay)))
-        .mapToLong((m) -> Math.round((m.getKey() - m.getValue() + (m.getValue() < (.5d / millisOfDay) ? 0 : (1d / millisOfDay))) / (1d / millisOfDay)))
-        .findAny().getAsLong(), System::currentTimeMillis));
-    }
-  };
+  static Deamtiet<Double> Julian = new Julian() {};
 
   /** an instant represented by astronomical julian day number . */
   static final Deamtiet<Long> JulianDayNumber = new Deamtiet<>() {
