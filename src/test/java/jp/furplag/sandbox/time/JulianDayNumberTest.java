@@ -15,7 +15,10 @@
  */
 package jp.furplag.sandbox.time;
 
-import static jp.furplag.sandbox.time.Deamtiet.*;
+import static jp.furplag.sandbox.time.Deamtiet.julian;
+import static jp.furplag.sandbox.time.Deamtiet.julianDayNumber;
+import static jp.furplag.sandbox.time.Deamtiet.millis;
+import static jp.furplag.sandbox.time.Deamtiet.modifiedJulian;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -35,33 +38,33 @@ class JulianDayNumberTest {
     LongStream.rangeClosed(0, 100_000).forEach((l) -> {
       final Instant instant = Instant.parse("1996-01-23T12:34:56.789Z").plus(l, ChronoUnit.DAYS);
 
-      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofEpochDay(instant.toEpochMilli() / Deamtiet.millisOfDay)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
-      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofEpochMilli(instant.toEpochMilli())).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
-      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofEpochSecond(instant.toEpochMilli() / 1000L)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
-      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
-      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofJulian(Julian.ofInstant(instant))).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), julianDayNumber.of(julianDayNumber.ofEpochDay(instant.toEpochMilli() / Deamtiet.millisOfDay)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), julianDayNumber.of(julianDayNumber.ofEpochMilli(instant.toEpochMilli())).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), julianDayNumber.of(julianDayNumber.ofEpochSecond(instant.toEpochMilli() / 1000L)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), julianDayNumber.of(julianDayNumber.ofInstant(instant)).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), julianDayNumber.of(julianDayNumber.ofJulian(julian.ofInstant(instant))).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
 
-      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofEpochDay(instant.toEpochMilli() / Deamtiet.millisOfDay), Objects.toString(l));
-      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofEpochMilli(instant.toEpochMilli()), Objects.toString(l));
-      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofEpochSecond(instant.toEpochMilli() / 1000L), Objects.toString(l));
-      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), JulianDayNumber.ofInstant(instant), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), julianDayNumber.ofEpochDay(instant.toEpochMilli() / Deamtiet.millisOfDay), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), julianDayNumber.ofEpochMilli(instant.toEpochMilli()), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), julianDayNumber.ofEpochSecond(instant.toEpochMilli() / 1000L), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant, ZoneOffset.UTC).getLong(JulianFields.JULIAN_DAY), julianDayNumber.ofInstant(instant), Objects.toString(l));
 
-      assertEquals(LocalDateTime.ofInstant(instant.truncatedTo(ChronoUnit.DAYS), ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).toLocalDateTime(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(LocalDateTime.ofInstant(instant.truncatedTo(ChronoUnit.DAYS), ZoneOffset.UTC), julianDayNumber.of(julianDayNumber.ofInstant(instant)).toLocalDateTime(ZoneOffset.UTC), Objects.toString(l));
 
-      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(Millis).toInstant(), Objects.toString(l));
-      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(Julian).toInstant(), Objects.toString(l));
-      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(JulianDayNumber).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
-      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(instant)).to(ModifiedJulian).toInstant(), Objects.toString(l));
+      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofInstant(instant)).to(millis).toInstant(), Objects.toString(l));
+      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofInstant(instant)).to(julian).toInstant(), Objects.toString(l));
+      assertEquals(LocalDate.ofInstant(instant, ZoneOffset.UTC), julianDayNumber.of(julianDayNumber.ofInstant(instant)).to(julianDayNumber).toLocalDate(ZoneOffset.UTC), Objects.toString(l));
+      assertEquals(instant.truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofInstant(instant)).to(modifiedJulian).toInstant(), Objects.toString(l));
     });
 
-    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochDay(0L)).toInstant());
-    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochMilli(0L)).toInstant());
-    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochSecond(0L)).toInstant());
+    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofEpochDay(0L)).toInstant());
+    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofEpochMilli(0L)).toInstant());
+    assertEquals(Instant.EPOCH.truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofEpochSecond(0L)).toInstant());
 
-    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochDay(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
-    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochMilli(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
-    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofEpochSecond(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
-    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofInstant(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
-    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), JulianDayNumber.of(JulianDayNumber.ofJulian(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofEpochDay(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofEpochMilli(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofEpochSecond(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofInstant(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
+    assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), julianDayNumber.of(julianDayNumber.ofJulian(null)).toInstant().truncatedTo(ChronoUnit.DAYS));
   }
 }
