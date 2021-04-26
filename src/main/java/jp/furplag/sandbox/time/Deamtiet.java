@@ -19,8 +19,14 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
@@ -51,28 +57,19 @@ public interface Deamtiet<N extends Number> {
      * @param deamtiet {@link Deamtiet}, may not be null
      * @param instant an instantaneous point, may not be null
      */
-    private Entity(Deamtiet<N> deamtiet, Instant instant) {
+    Entity(Deamtiet<N> deamtiet, Instant instant) {
       this.deamtiet = Objects.requireNonNull(deamtiet);
       this.instant = Objects.requireNonNull(instant);
     }
 
     /**
-     * returns the value of an instantaneous point represented by the time scale of this {@code deamtiet} .
-     *
-     * @return an instantaneous point represented by the time scale of this {@code deamtiet}
-     */
-    public N getValue() {
-      return deamtiet.ofInstant(instant);
-    }
-
-    /**
      * method-chaining .
      *
-     * @param <ANOTHER> type of the return value of an instantaneous point
+     * @param <Another> type of the return value of an instantaneous point
      * @param another a {@link Deamtiet} to change the type of return value, may not be null
      * @return another type of {@link Deamtiet.Entity}
      */
-    public <ANOTHER extends Number> Entity<ANOTHER> to(Deamtiet<ANOTHER> another) {
+    public <Another extends Number> Entity<Another> to(Deamtiet<Another> another) {
       return new Entity<>(another, instant) {};
     }
 
@@ -82,7 +79,7 @@ public interface Deamtiet<N extends Number> {
      * @return the number of days from 1970-01-01T00:00:00Z
      */
     public long toEpochDay() {
-      return deamtiet.toEpochDay(getValue());
+      return toLocalDate(ZoneOffset.UTC).getLong(ChronoField.EPOCH_DAY);
     }
 
     /**
@@ -91,7 +88,7 @@ public interface Deamtiet<N extends Number> {
      * @return the number of seconds from 1970-01-01T00:00:00Z
      */
     public long toEpochSecond() {
-      return deamtiet.toEpochSecond(getValue());
+      return toInstant().truncatedTo(ChronoUnit.SECONDS).toEpochMilli() / 1000L;
     }
 
     /**
@@ -100,7 +97,7 @@ public interface Deamtiet<N extends Number> {
      * @return an instantaneous point
      */
     public Instant toInstant() {
-      return instant;
+      return deamtiet.toInstant(value());
     }
 
     /**
@@ -122,48 +119,47 @@ public interface Deamtiet<N extends Number> {
     public LocalDateTime toLocalDateTime(ZoneId zone) {
       return LocalDateTime.ofInstant(instant, Objects.requireNonNullElseGet(zone, ZoneId::systemDefault));
     }
+
+    /**
+     * returns the value of an instantaneous point represented by the time scale of this .
+     *
+     * @return an instantaneous point represented by the time scale of this
+     */
+    public N value() {
+      return deamtiet.ofInstant(instant);
+    }
   }
 
-  /** the days of julian year. */
-  public static final double daysOfYearOfJulian = 365.25d;
+  /**
+   * an instant represented by astronomical julian day .
+   *
+   * @author furplag
+   *
+   */
+  static abstract class Julian implements Deamtiet<Double> {
 
-  /** astronomical julian date of 1970-01-01T00:00:00.000Z. */
-  public static final double epochAsJulianDate = 2_440_587.5d;
-
-  /** astronomical julian date of 1582-10-15T00:00:00.000Z. */
-  public static final double gregorianEpochAsJulianDate = 2299160.5;
-
-  /** the epoch millis from 1582-10-15T00:00:00.000Z. */
-  public static final long gregorianEpochAsMillis = -12_219_292_800_000L;
-
-  /** delta of the days of a month in the lunar. */
-  public static final double incrementOfSynodicMonth = 2.162E-9d;
-
-  /** astronomical julian date of 2001-01-01T12:00:00.000Z. */
-  public static final double j2000 = 2_451_545.0d;
-
-  /** the epoch millis from -4713-11-24T12:00:00.000Z. */
-  public static final long julianEpochAsMillis = -210_866_760_000_000L;
-
-  /** the millis of one day. */
-  public static final long millisOfDay = 864_000_00L;
-
-  /** the epoch modified julian date of 1858-11-17T00:00:00.000Z. */
-  public static final double modifiedJulianEpochAsJulianDate = 2_400_000.5d;
-
-  /** an instant represented by astronomical julian day . */
-  static final Deamtiet<Double> Julian = new Deamtiet<>() {
+    private final static double milliAsJulian = 1d / 86_400_000d;
 
     /** {@inheritDoc} */
     @Override
-    public Double ofEpochMilli(Long epochMilli) {
-      return Objects.requireNonNullElseGet(epochMilli, System::currentTimeMillis) / ((double) millisOfDay) + epochAsJulianDate;
+    public Double ofEpochSecond(Long epochSecond) {
+      return ofInstant(Trebuchet.Functions.orNot(epochSecond, (_epochSecond) -> Instant.ofEpochMilli(_epochSecond * 1000L)));
     }
 
     /** {@inheritDoc} */
     @Override
+    public Double ofEpochMilli(Long epochMilli) {/* @formatter:off */
+      return Stream.of(Optional.ofNullable(epochMilli).orElseGet(System::currentTimeMillis))
+        .map((l) -> Map.entry(l * milliAsJulian, (l * milliAsJulian) % milliAsJulian))
+        .mapToDouble((m) -> m.getKey() - m.getValue() + (m.getValue() * 2 < milliAsJulian ? 0 : milliAsJulian))
+        .flatMap((d) -> DoubleStream.of(d, epochAsJulianDate))
+        .sum();
+    /* @formatter:on */}
+
+    /** {@inheritDoc} */
+    @Override
     public Double ofInstant(Instant instant) {
-      return ofEpochMilli(Objects.requireNonNullElseGet(instant, Instant::now).toEpochMilli());
+      return ofEpochMilli(Trebuchet.Functions.orNot(instant, Instant::toEpochMilli));
     }
 
     /** {@inheritDoc} */
@@ -174,47 +170,54 @@ public interface Deamtiet<N extends Number> {
 
     /** {@inheritDoc} */
     @Override
-    public <R extends Number> R to(Deamtiet<R> another, Double julianDate) {
-      return Objects.requireNonNull(another).ofInstant(toInstant(julianDate));
-    }
+    public Instant toInstant(Double instantValue) {/* @formatter:off */
+      return Instant.ofEpochMilli(Trebuchet.Functions.orElse(instantValue, (_julianDate) -> Stream.of(Objects.requireNonNull(_julianDate))
+        .map((d) -> Map.entry(d - epochAsJulianDate, (d - epochAsJulianDate) % milliAsJulian))
+        .mapToLong((m) -> Math.round((m.getKey() - m.getValue() + (m.getValue() * 2 < milliAsJulian ? 0 : milliAsJulian)) / milliAsJulian))
+        .findAny().getAsLong(), System::currentTimeMillis));
+    /* @formatter:on */}
+  }
 
-    /** {@inheritDoc} */
-    @Override
-    public Instant toInstant(Double instantValue) {
-      return Instant.ofEpochMilli((long) ((Objects.requireNonNullElse(instantValue, ofJulian(null)) - epochAsJulianDate) * millisOfDay));
-    }
-  };
-
-  /** an instant represented by astronomical julian day number . */
-  static final Deamtiet<Long> JulianDayNumber = new Deamtiet<>() {
+  /**
+   * an instant represented by astronomical julian day number .
+   *
+   * @author furplag
+   *
+   */
+  static abstract class JulianDayNumber implements Deamtiet<Long> {
 
     /** {@inheritDoc} */
     @Override
     public Long ofEpochMilli(Long epochMilli) {
-      return (long) (Julian.ofEpochMilli(epochMilli) + .5d);
+      return (long) (julian.ofEpochMilli(epochMilli) + .5d);
     }
 
     /** {@inheritDoc} */
     @Override
     public Long ofInstant(Instant instant) {
-      return (long) (Julian.ofInstant(instant) + .5d);
+      return (long) (julian.ofInstant(instant) + .5d);
     }
 
     /** {@inheritDoc} */
     @Override
     public Long ofJulian(Double julianDate) {
-      return (long) (Julian.ofJulian(julianDate) + .5d);
+      return (long) (julian.ofJulian(julianDate) + .5d);
     }
 
     /** {@inheritDoc} */
     @Override
     public Instant toInstant(Long instantValue) {
-      return Trebuchet.Functions.orElse(instantValue, (_instantValue) -> Instant.ofEpochMilli(Millis.ofJulian((double) ofJulian((double) _instantValue))), () -> Instant.now()).truncatedTo(ChronoUnit.DAYS);
+      return julian.toInstant(ofJulian(Trebuchet.Functions.orNot(instantValue, Long::doubleValue)).doubleValue()).truncatedTo(ChronoUnit.DAYS);
     }
-  };
+  }
 
-  /** an instant represented by epoch millis . */
-  static final Deamtiet<Long> Millis = new Deamtiet<>() {
+  /**
+   * an instantaneous point represented by epoch millis .
+   *
+   * @author furplag
+   *
+   */
+  static abstract class Millis implements Deamtiet<Long> {
 
     /** {@inheritDoc} */
     @Override
@@ -231,7 +234,7 @@ public interface Deamtiet<N extends Number> {
     /** {@inheritDoc} */
     @Override
     public Long ofJulian(Double julianDate) {
-      return (long) ((Objects.requireNonNullElse(julianDate, Julian.ofJulian(null)) - epochAsJulianDate) * millisOfDay);
+      return julian.toInstant(julianDate).toEpochMilli();
     }
 
     /** {@inheritDoc} */
@@ -239,47 +242,64 @@ public interface Deamtiet<N extends Number> {
     public Instant toInstant(Long instantValue) {
       return Instant.ofEpochMilli(ofEpochMilli(instantValue));
     }
-  };
-
-  /** an instant represented by modified julian day . */
-  static final Deamtiet<Double> ModifiedJulian = new Deamtiet<>() {
-
-    /** {@inheritDoc} */
-    @Override
-    public Double ofEpochMilli(Long epochMilli) {
-      return Julian.ofEpochMilli(epochMilli) - modifiedJulianEpochAsJulianDate;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Double ofInstant(Instant instant) {
-      return Julian.ofInstant(instant) - modifiedJulianEpochAsJulianDate;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Double ofJulian(Double julianDate) {
-      return Julian.ofJulian(julianDate) - modifiedJulianEpochAsJulianDate;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Instant toInstant(Double instantValue) {
-      return Instant.ofEpochMilli(Millis.ofJulian((Objects.requireNonNullElse(instantValue, ofJulian(null)) + modifiedJulianEpochAsJulianDate)));
-    }
-  };
+  }
 
   /**
-   * returns a simple wrapper of {@link Deamtiet this} .
+   * an instant represented by modified julian day .
    *
-   * @param <N> type of the return value of an instantaneous point
-   * @param deamtiet {@link Deamtiet}, may not be null
-   * @param instantValue an instant value represented by the time scale of {@code deamtiet}, use current timestamp if null
-   * @return {@link Deamtiet.Entity}
+   * @author furplag
+   *
    */
-  static <N extends Number> Entity<N> of(Deamtiet<N> deamtiet, N instantValue) {
-    return new Entity<>(deamtiet, deamtiet.toInstant(instantValue)) {};
-  }
+  static final class modifiedJulian implements Deamtiet<Double> {/* @formatter:off */
+    /** {@inheritDoc} */@Override public Double ofEpochMilli(Long epochMilli) { return julian.ofEpochMilli(epochMilli) - modifiedJulianEpochAsJulianDate; }
+
+    /** {@inheritDoc} */@Override public Double ofInstant(Instant instant) { return julian.ofInstant(instant) - modifiedJulianEpochAsJulianDate; }
+
+    /** {@inheritDoc} */@Override public Double ofJulian(Double julianDate) { return julian.ofJulian(julianDate) - modifiedJulianEpochAsJulianDate; }
+
+    /** {@inheritDoc} */@Override public Instant toInstant(Double instantValue) {
+      return julian.toInstant(Trebuchet.Functions.orNot(instantValue, (_instantValue) -> _instantValue + modifiedJulianEpochAsJulianDate));
+    }
+  /* @formatter:on */}
+
+  /** the days of julian year. */
+  public static final double daysOfYearOfJulian = 365.25d;
+
+  /** astronomical julian date of 1970-01-01T00:00:00.000Z. */
+  public static final double epochAsJulianDate = 2_440_587.5d;
+
+  /** astronomical julian date of 1582-10-15T00:00:00.000Z. */
+  public static final double gregorianEpochAsJulianDate = 2_299_160.5d;
+
+  /** the epoch millis from 1582-10-15T00:00:00.000Z. */
+  public static final long gregorianEpochAsMillis = -12_219_292_800_000L;
+
+  /** delta of the days of a month in the lunar. */
+  public static final double incrementOfSynodicMonth = 2.162E-9d;
+
+  /** astronomical julian date of 2001-01-01T12:00:00.000Z. */
+  public static final double j2000 = 2_451_545.0d;
+
+  /** the epoch millis from -4713-11-24T12:00:00.000Z. */
+  public static final long julianEpochAsMillis = -210_866_760_000_000L;
+
+  /** the millis of one day. */
+  public static final long millisOfDay = 86_400_000L;
+
+  /** the epoch modified julian date of 1858-11-17T00:00:00.000Z. */
+  public static final double modifiedJulianEpochAsJulianDate = 2_400_000.5d;
+
+  /** an instant represented by astronomical julian day . */
+  static Deamtiet<Double> julian = new Julian() {};
+
+  /** an instant represented by astronomical julian day number . */
+  static final Deamtiet<Long> julianDayNumber = new JulianDayNumber() {};
+
+  /** an instant represented by epoch millis . */
+  static final Deamtiet<Long> millis = new Millis() {};
+
+  /** an instant represented by modified julian day . */
+  static final Deamtiet<Double> modifiedJulian = new modifiedJulian();
 
   /**
    * returns a simple wrapper of {@link Deamtiet this} .
@@ -288,7 +308,7 @@ public interface Deamtiet<N extends Number> {
    * @return {@link Deamtiet.Entity}
    */
   default Entity<N> of(N instantValue) {
-    return new Entity<>(this, this.toInstant(instantValue)) {};
+    return new Entity<>(this, toInstant(instantValue)) {};
   }
 
   /**
@@ -316,7 +336,7 @@ public interface Deamtiet<N extends Number> {
    * @return an instant value represented by the time scale of this class
    */
   default N ofEpochSecond(Long epochSecond) {
-    return ofInstant(Trebuchet.Functions.orElse(epochSecond, Instant::ofEpochSecond, () -> Instant.now().truncatedTo(ChronoUnit.SECONDS)));
+    return ofInstant(Trebuchet.Functions.orElse(epochSecond, (s) -> Instant.ofEpochSecond(Objects.requireNonNull(s)), () ->Instant.now().truncatedTo(ChronoUnit.SECONDS)));
   }
 
   /**
@@ -334,38 +354,6 @@ public interface Deamtiet<N extends Number> {
    * @return an instant value represented by the time scale of this class
    */
   N ofJulian(Double julianDate);
-
-  /**
-   * returns the value which converted as a type of specified {@link Deamtiet} .
-   *
-   * @param <R> the type of return value
-   * @param another {@link Deamtiet} to convert, may not be null
-   * @param instantValue an instantaneous point represented by the time scale of {@code this}, use current timestamp if null
-   * @return the value which converted as a type of specified {@link Deamtiet}
-   */
-  default <R extends Number> R to(Deamtiet<R> another, N instantValue) {
-    return Objects.requireNonNull(another).ofInstant(toInstant(instantValue));
-  }
-
-  /**
-   * returns the number of days from 1970-01-01T00:00:00Z .
-   *
-   * @param instantValue an instantaneous point represented by the time scale of {@code this}, use current timestamp if null
-   * @return the number of days from 1970-01-01T00:00:00Z
-   */
-  default long toEpochDay(N instantValue) {
-    return toInstant(instantValue).truncatedTo(ChronoUnit.DAYS).toEpochMilli() / millisOfDay;
-  }
-
-  /**
-   * returns the number of seconds from 1970-01-01T00:00:00Z .
-   *
-   * @param instantValue an instantaneous point represented by the time scale of {@code this}, use current timestamp if null
-   * @return the number of seconds from 1970-01-01T00:00:00Z
-   */
-  default long toEpochSecond(N instantValue) {
-    return toInstant(instantValue).truncatedTo(ChronoUnit.SECONDS).toEpochMilli() / 1000L;
-  }
 
   /**
    * returns the value which converted as a type of {@link Instant} .
