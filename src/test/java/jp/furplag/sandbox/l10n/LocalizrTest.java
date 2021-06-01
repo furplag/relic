@@ -15,12 +15,10 @@
  */
 package jp.furplag.sandbox.l10n;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
@@ -36,10 +34,10 @@ public class LocalizrTest {
     assertFalse(Arrays.stream(Optional.ofNullable(Locale.getAvailableLocales()).orElse(new Locale[] {}))
       .flatMap((l) -> Stream.of(
           l.toString()
+        , l.toString().toLowerCase()
         , Arrays.stream(l.toString().split("_")).filter(StringUtils::isNotBlank).collect(Collectors.joining("_"))
         , Arrays.stream(l.toString().split("_")).filter(StringUtils::isNotBlank).map(String::toLowerCase).collect(Collectors.joining("_"))
-        , Stream.of(l.getLanguage(), l.getCountry(), l.getVariant()).filter(StringUtils::isNotBlank).collect(Collectors.joining("_"))
-        , Stream.of(l.getLanguage(), l.getCountry(), l.getVariant()).filter(StringUtils::isNotBlank).map(String::toLowerCase).collect(Collectors.joining("_"))
+        , l.getDisplayName(Locale.ROOT)
       )).map(Localizr::getLocale).anyMatch(Objects::isNull));
 
     assertEquals(Locale.getDefault(), Localizr.getLocale(null));
@@ -53,7 +51,7 @@ public class LocalizrTest {
   @Test
   void testTimeZones() {/* @formatter:off */
     assertFalse(Stream.concat(Arrays.stream(TimeZone.getAvailableIDs()), ZoneId.getAvailableZoneIds().stream())
-      .flatMap((tz) -> Stream.of(tz, tz.toLowerCase()))
+      .flatMap((tz) -> Stream.of(tz, tz.toLowerCase(), TimeZone.getTimeZone(tz).getDisplayName(Locale.ROOT)))
       .map(Localizr::getTimeZone).anyMatch(Objects::isNull));
 
     assertEquals(TimeZone.getDefault(), Localizr.getTimeZone(null));

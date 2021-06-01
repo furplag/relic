@@ -39,20 +39,20 @@ public final class Localizr {
   private Localizr() {; /* Localizer instances should NOT be constructed in standard programming . */}
 
   /** available Locales . */
-  private static final Map<String, Locale> locales = Collections.unmodifiableMap(Arrays.stream(Locale.getAvailableLocales()).map((l) -> Map.entry(l.toString(), l)).flatMap((e) -> Stream.of(
+  private static final Map<String, Locale> locales = Collections.unmodifiableMap(
+    Arrays.stream(Locale.getAvailableLocales()).map((l) -> Map.entry(l.toString(), l)).flatMap((e) -> Stream.of(
       e
     , Map.entry(e.getKey().toLowerCase(), e.getValue())
     , Map.entry(Arrays.stream(e.getKey().split("_")).filter(StringUtils::isNotBlank).collect(Collectors.joining("_")), e.getValue())
     , Map.entry(Arrays.stream(e.getKey().split("_")).filter(StringUtils::isNotBlank).map(String::toLowerCase).collect(Collectors.joining("_")), e.getValue())
-    , Map.entry(Stream.of(e.getValue().getLanguage(), e.getValue().getCountry(), e.getValue().getVariant()).filter(StringUtils::isNotBlank).collect(Collectors.joining("_")), e.getValue())
-    , Map.entry(Stream.of(e.getValue().getLanguage(), e.getValue().getCountry(), e.getValue().getVariant()).filter(StringUtils::isNotBlank).map(String::toLowerCase).collect(Collectors.joining("_")), e.getValue())
+    , Map.entry(e.getValue().getDisplayName(Locale.ROOT), e.getValue())
   )).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new)));
 
   /** available TimeZones . */
   private static final Map<String, TimeZone> timeZones = Collections.unmodifiableMap(
     Stream.concat(Arrays.stream(TimeZone.getAvailableIDs()), ZoneId.getAvailableZoneIds().stream())
       .map((tz) -> Map.entry(tz, TimeZone.getTimeZone(tz)))
-      .flatMap((e) -> Stream.of(e, Map.entry(e.getKey().toLowerCase(), e.getValue())))
+      .flatMap((e) -> Stream.of(e, Map.entry(e.getKey().toLowerCase(), e.getValue()), Map.entry(e.getValue().getDisplayName(Locale.ROOT), e.getValue())))
       .filter((e) -> Objects.nonNull(e.getValue()))
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new))
   );
