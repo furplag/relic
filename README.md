@@ -41,8 +41,9 @@ shorthands to use stream API .
 ### Trebchet
 functional interfaces which against some problems when handling exceptions in lambda expression .
 ### Deamtiet
-converting between each instant values represented by some of (different) time scale,  
+converting between each instant values represented by some of (different) time scale,
 e.g.) epoch millis, unix date, julian date and something .
-
+### Localizr
+shorthands of Locale and Timezone .
 ## License
 Code is under the [Apache License v2](LICENSE).

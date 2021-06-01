@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** snippet of {@link Locale} and {@link TimeZone} . */
+/** snippet of Locale and TimeZone . */
 package jp.furplag.sandbox.l10n;

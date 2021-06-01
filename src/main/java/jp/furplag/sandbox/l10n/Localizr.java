@@ -36,7 +36,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public final class Localizr {
 
-  private Localizr() {; /* Localizer instances should NOT be constructed in standard programming . */}
+  private Localizr() {; /* Localizr instances should NOT be constructed in standard programming . */}
 
   /** available Locales . */
   private static final Map<String, Locale> locales = Collections.unmodifiableMap(
