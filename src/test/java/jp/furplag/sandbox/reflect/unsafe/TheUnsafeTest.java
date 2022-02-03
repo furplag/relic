@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2018+ furplag (https://github.com/furplag)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package jp.furplag.sandbox.reflect.unsafe;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +29,7 @@ import jp.furplag.sandbox.outerworld.TheEntity;
 import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 
+@SuppressWarnings({ "deprecation", "removal" })
 class TheUnsafeTest {
 
   private static class TestSecurityManager extends SecurityManager {

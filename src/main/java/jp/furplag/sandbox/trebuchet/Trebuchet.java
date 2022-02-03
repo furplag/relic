@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2018+ furplag (https://github.com/furplag)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package jp.furplag.sandbox.trebuchet;
 
 import java.util.Comparator;
@@ -82,7 +81,7 @@ public interface Trebuchet {
        * @return {@link BiConsumer}
        * @throws NullPointerException if {@code consumer} is null
        */
-      @SuppressWarnings({"unchecked"})
+      @SuppressWarnings({ "unchecked" })
       static <T, U, EX extends Throwable> Bi<T, U> of(final BiConsumer<? super T, ? super U> consumer, final Tri<? super T, ? super U, ? super EX> fallen) {
         /* @formatter:off */
         return (t, u) -> {try {consumer.accept(t, u);} catch (Throwable e) {De.fault(fallen).accept(t, u, (EX) e);}};
@@ -151,7 +150,7 @@ public interface Trebuchet {
        * @return {@link Tri}
        * @throws NullPointerException if consumer is null
        */
-      @SuppressWarnings({"unchecked"})
+      @SuppressWarnings({ "unchecked" })
       static <T, U, V, EX extends Throwable> Tri<T, U, V> of(final Tri<? super T, ? super U, ? super V> consumer, final Consumer<? super EX> fallen) {
         /* @formatter:off */
         return (t, u, v) -> {try {consumer.accept(t, u, v);} catch (Throwable e) {De.fault(fallen).accept((EX) e);}};
@@ -241,7 +240,7 @@ public interface Trebuchet {
        * @return {@link Consumer}
        * @throws NullPointerException if consumer is null
        */
-      @SuppressWarnings({"unchecked"})/* @formatter:off */
+      @SuppressWarnings({ "unchecked" })/* @formatter:off */
       static <T, EX extends Throwable> Uni<T> of(final Consumer<? super T> consumer, final BiConsumer<? super T, ? super EX> fallen) {
         /* @formatter:off */
         return (t) -> {try {consumer.accept(t);} catch (Throwable e) {De.fault(fallen).accept(t, (EX) e);}};
@@ -372,17 +371,17 @@ public interface Trebuchet {
 
   /** shorthands for {@link Objects#requireNonNullElse(Object, Object)} . */
   static interface De {/* @formatter:off */
-    @SuppressWarnings({"unchecked"}) private static <T, U> BiConsumer<T, U> fault(final BiConsumer<? super T, ? super U> consumer) {return (BiConsumer<T, U>) Objects.requireNonNullElse(consumer, (t, u) -> {});}
-    @SuppressWarnings({"unchecked"}) private static <T, U, R> BiFunction<T, U, R> fault(final BiFunction<? super T, ? super U, ? extends R> function) {return (BiFunction<T, U, R>) Objects.requireNonNullElse(function, (t, u) -> null);}
-    @SuppressWarnings({"unchecked"}) private static <T, U> BiPredicate<T, U> fault(final BiPredicate<? super T, ? super U> predicate) {return (BiPredicate<T, U>) Objects.requireNonNullElse(predicate, (t, u) -> false);}
-    @SuppressWarnings({"unchecked"}) private static <T> Comparator<T> fault(final Comparator<? super T> comparator) {return (Comparator<T>) Objects.requireNonNullElse(comparator, new Comparator<>() {@Override public int compare(Object o1, Object o2) {return 0;}});}
-    @SuppressWarnings({"unchecked"}) private static <T> Consumer<T> fault(final Consumer<? super T> consumer) {return (Consumer<T>) Objects.requireNonNullElse(consumer, (t) -> {});}
-    @SuppressWarnings({"unchecked"}) private static <T, U, V> Consumers.Tri<T, U, V> fault(final Consumers.Tri<? super T, ? super U, ? super V> consumer) {return (Consumers.Tri<T, U, V>) Objects.requireNonNullElse(consumer, (t, u, v) -> {});}
-    @SuppressWarnings({"unchecked"}) private static <T, R> Function<T, R> fault(final Function<? super T, ? extends R> function) {return (Function<T, R>) Objects.requireNonNullElse(function, (t) -> null);}
-    @SuppressWarnings({"unchecked"}) private static <T, U, V, R> Functions.Tri<T, U, V, R> fault(final Functions.Tri<? super T, ? super U, ? super V, ? extends R> function) {return (Functions.Tri<T, U, V, R>) Objects.requireNonNullElse(function, (t, u, v) -> null);}
-    @SuppressWarnings({"unchecked"}) private static <T> Predicate<T> fault(final Predicate<? super T> predicate) {return (Predicate<T>) Objects.requireNonNullElse(predicate, (t) -> false);}
-    @SuppressWarnings({"unchecked"}) private static <T, U, V> Predicates.Tri<T, U, V> fault(final Predicates.Tri<? super T, ? super U, ? super V> predicate) {return (Predicates.Tri<T, U, V>) Objects.requireNonNullElse(predicate, (t, u, v) -> false);}
-    @SuppressWarnings({"unchecked"}) private static <R> Supplier<R> fault(final Supplier<? extends R> supplier) {return (Supplier<R>) Objects.requireNonNullElse(supplier, () -> null);}
+    @SuppressWarnings({ "unchecked" }) private static <T, U> BiConsumer<T, U> fault(final BiConsumer<? super T, ? super U> consumer) {return (BiConsumer<T, U>) Objects.requireNonNullElse(consumer, (t, u) -> {});}
+    @SuppressWarnings({ "unchecked" }) private static <T, U, R> BiFunction<T, U, R> fault(final BiFunction<? super T, ? super U, ? extends R> function) {return (BiFunction<T, U, R>) Objects.requireNonNullElse(function, (t, u) -> null);}
+    @SuppressWarnings({ "unchecked" }) private static <T, U> BiPredicate<T, U> fault(final BiPredicate<? super T, ? super U> predicate) {return (BiPredicate<T, U>) Objects.requireNonNullElse(predicate, (t, u) -> false);}
+    @SuppressWarnings({ "unchecked" }) private static <T> Comparator<T> fault(final Comparator<? super T> comparator) {return (Comparator<T>) Objects.requireNonNullElse(comparator, new Comparator<>() {@Override public int compare(Object o1, Object o2) {return 0;}});}
+    @SuppressWarnings({ "unchecked" }) private static <T> Consumer<T> fault(final Consumer<? super T> consumer) {return (Consumer<T>) Objects.requireNonNullElse(consumer, (t) -> {});}
+    @SuppressWarnings({ "unchecked" }) private static <T, U, V> Consumers.Tri<T, U, V> fault(final Consumers.Tri<? super T, ? super U, ? super V> consumer) {return (Consumers.Tri<T, U, V>) Objects.requireNonNullElse(consumer, (t, u, v) -> {});}
+    @SuppressWarnings({ "unchecked" }) private static <T, R> Function<T, R> fault(final Function<? super T, ? extends R> function) {return (Function<T, R>) Objects.requireNonNullElse(function, (t) -> null);}
+    @SuppressWarnings({ "unchecked" }) private static <T, U, V, R> Functions.Tri<T, U, V, R> fault(final Functions.Tri<? super T, ? super U, ? super V, ? extends R> function) {return (Functions.Tri<T, U, V, R>) Objects.requireNonNullElse(function, (t, u, v) -> null);}
+    @SuppressWarnings({ "unchecked" }) private static <T> Predicate<T> fault(final Predicate<? super T> predicate) {return (Predicate<T>) Objects.requireNonNullElse(predicate, (t) -> false);}
+    @SuppressWarnings({ "unchecked" }) private static <T, U, V> Predicates.Tri<T, U, V> fault(final Predicates.Tri<? super T, ? super U, ? super V> predicate) {return (Predicates.Tri<T, U, V>) Objects.requireNonNullElse(predicate, (t, u, v) -> false);}
+    @SuppressWarnings({ "unchecked" }) private static <R> Supplier<R> fault(final Supplier<? extends R> supplier) {return (Supplier<R>) Objects.requireNonNullElse(supplier, () -> null);}
   /* @formatter:on */}
 
   /**
@@ -432,7 +431,7 @@ public interface Trebuchet {
        * @return {@link BiFunction}
        * @throws NullPointerException if function is null
        */
-      @SuppressWarnings({"unchecked"})
+      @SuppressWarnings({ "unchecked" })
       static <T, U, R, EX extends Throwable> Bi<T, U, R> of(final BiFunction<? super T, ? super U, ? extends R> function, final Tri<? super T, ? super U, ? super EX, ? extends R> fallen) {
         /* @formatter:off */
         return (t, u) -> {try {return function.apply(t, u);} catch (Throwable e) {return De.fault(fallen).apply(t, u, (EX) e);}};
@@ -505,7 +504,7 @@ public interface Trebuchet {
        * @return {@link Tri}
        * @throws NullPointerException if function is null
        */
-      @SuppressWarnings({"unchecked"})
+      @SuppressWarnings({ "unchecked" })
       static <T, U, V, R, EX extends Throwable> Tri<T, U, V, R> of(final Tri<? super T, ? super U, ? super V, ? extends R> function, final Function<? super EX, ? extends R> fallen) {
         /* @formatter:off */
         return (t, u, v) -> {try {return function.apply(t, u, v);} catch (Throwable e) {return De.fault(fallen).apply((EX) e);}};
@@ -599,7 +598,7 @@ public interface Trebuchet {
        * @return {@link Function}
        * @throws NullPointerException if function is null
        */
-      @SuppressWarnings({"unchecked"})
+      @SuppressWarnings({ "unchecked" })
       static <T, R, EX extends Throwable> Uni<T, R> of(final Function<? super T, ? extends R> function, final BiFunction<? super T, ? super EX, ? extends R> fallen) {
         /* @formatter:off */
         return (t) -> {try {return function.apply(t);} catch (Throwable e) {return De.fault(fallen).apply(t, (EX) e);}};
@@ -995,7 +994,7 @@ public interface Trebuchet {
        * @return a predicate that negates the results of the supplied predicate
        * @throws NullPointerException if target is null
        */
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings({ "unchecked" })
       static <T, U> Bi<T, U> not(final BiPredicate<? super T, ? super U> target) {
         return (Bi<T, U>) of(target).negate();
       }
@@ -1083,7 +1082,7 @@ public interface Trebuchet {
        * @return a predicate that negates the results of the supplied predicate
        * @throws NullPointerException if target is null
        */
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings({ "unchecked" })
       static <T, U, V> Tri<T, U, V> not(final Tri<? super T, ? super U, ? super V> target) {
         return (Tri<T, U, V>) target.negate();
       }
@@ -1205,7 +1204,7 @@ public interface Trebuchet {
        *
        * @return a predicate that negates the results of the supplied predicate
        */
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings({ "unchecked" })
       static <T> Uni<T> not(final Predicate<? super T> target) {
         return (Uni<T>) of(Objects.requireNonNullElse(target, (x) -> true)).negate();
       }
@@ -1327,7 +1326,7 @@ public interface Trebuchet {
      * @param fallen {@link Bi}, or the function that always return false if this is null
      * @return the result of predicate.test(t, u, v) if done it normally, or fallen.test(t, EX) if error occurred
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked" })
     static <T, EX extends Throwable> boolean orElse(final T t, final Uni<? super T> predicate, final Bi<? super T, ? super EX> fallen) {
       return Functions.orElse(t, predicate::test, De.fault((BiPredicate<T, EX>) fallen)::test);
     }
@@ -1383,7 +1382,7 @@ public interface Trebuchet {
    * @throws EX anything thrown
    * @see <a href= "https://projectlombok.org/features/SneakyThrows">lombok.Lombok#sneakyThrow(Throwable)</a>
    */
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings({ "unchecked" })
   static <EX extends Throwable> void sneakyThrow(final Throwable ex) throws EX {
     throw (EX) Objects.requireNonNullElse(ex, new IllegalArgumentException("hmm, no way call me with null ."));
   }
