@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
+import jp.furplag.sandbox.stream.Streamr;
 
 /**
  * for text linting .
@@ -72,29 +72,32 @@ public abstract class Regexr implements RegexrOrigin, Serializable, Comparable<R
     SpaceLintr = new RegexrRecursive("[\\p{javaWhitespace}&&[^\\n]]{2,}", "\u0020", 100);
     LinefeedLintr = new RegexrRecursive("\\s+\\n|\\n\\s+", "\n", 1_000);
     Trimr = new RegexrStandard("^[\\p{javaWhitespace}]+|[\\p{javaWhitespace}]+$", "", 10_000);
-    final UnaryOperator<String> preNormalize = (t) -> RegexrOrigin.replaceAll(t
-        , new RegexrStandard("[\u2010-\u2012]", "\u002D", 1)
-        , new RegexrStandard("\u0020?[\u3099\u309B]", "\uFF9E", 2)
-        , new RegexrStandard("\u0020?[\u309A\u309C]", "\uFF9F", 3)
-      );
-    final UnaryOperator<String> postNormalize = (t) -> RegexrOrigin.replaceAll(t
+    CjkNormalizr = new Regexr("([\u3000-\u30FF\uFF00-\uFFEF&&[^\uFF5E\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]]+)", "$1", 100_000) {
+      final UnaryOperator<String> preNormalize = (t) -> RegexrOrigin.replaceAll(t
+          , new RegexrStandard("[\u2010-\u2012]", "\u002D", 1)
+          , new RegexrStandard("\u0020?[\u3099\u309B]", "\uFF9E", 2)
+          , new RegexrStandard("\u0020?[\u309A\u309C]", "\uFF9F", 3)
+        );
+      final BiFunction<String, Pattern, String> normalize = (t, u) -> {
+        final String[] _result = { t };
+        u.matcher(_result[0]).results().forEach((r) -> {
+          final String _r = r.group();
+          _result[0] = _result[0].replace(_r, Normalizer.normalize(_r, Form.NFKC));
+        });
+        return _result[0];
+      };
+      final UnaryOperator<String> postNormalize = (t) -> RegexrOrigin.replaceAll(t
         , new RegexrStandard("\u0020?([\u3099])", "\u309B", 1)
         , new RegexrStandard("\u0020?([\u309A])", "\u309C", 2)
       );
-    CjkNormalizr = new Regexr("([\u3000-\u30FF\uFF00-\uFFEF&&[^\uFF5E\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]]+)", "$1", 100_000) {
 
       @Override
       public String replaceAll(String string) {/* @formatter:off */
-        return RegexrOrigin.isEmpty(string) ? string : Stream.of(string)
+        return Streamr.stream(string)
           .map(preNormalize)
-          .map((t) -> {
-            final String[] _result = { t };
-            pattern.matcher(_result[0]).results().forEach((r) -> {
-              final String _r = r.group();
-              _result[0] = _result[0].replace(_r, Normalizer.normalize(_r, Form.NFKC));
-            });
-            return _result[0];
-          }).map(postNormalize).findFirst().orElse(null);
+          .map((t) -> normalize.apply(t, pattern))
+          .map(postNormalize)
+          .findFirst().orElse(null);
         // @formatter:on
       }
     };
