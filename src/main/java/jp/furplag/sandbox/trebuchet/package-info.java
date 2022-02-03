@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2018+ furplag (https://github.com/furplag)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** code snippets against some problems when handling exceptions in lambda expression . */
+/** code snippet against some problems when handling exceptions in lambda expression . */
 package jp.furplag.sandbox.trebuchet;
