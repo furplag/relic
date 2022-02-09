@@ -28,12 +28,13 @@ Add the following snippet to any project's pom that depends on your project
   <dependency>
     <groupId>jp.furplag.sandbox</groupId>
     <artifactId>relic</artifactId>
-    <version>[4.1,)</version>
+    <version>5.0.0</version>
   </dependency>
 </dependencies>
 ```
 
 ## Feauture
+
 ### Reflections
 enable to unsafe access to the Object .
 ### Streamr
