@@ -60,7 +60,6 @@ interface UnsafeWeaver {
    *
    * @param sunMiscUnsafe the class of &quot;sun.misc.Unsafe&quot;
    * @param methodName the name of method to get
-   * @param methodType {@link MethodType}
    * @return {@link MethodHandle}
    */
   static MethodHandle getMethodHandle(final Class<?> sunMiscUnsafe, final String methodName) {
