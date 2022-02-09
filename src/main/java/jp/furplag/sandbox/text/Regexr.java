@@ -327,8 +327,4 @@ public interface Regexr extends Serializable, Comparable<Regexr> {
    * @return the sort order
    */
   int getOrder();
-
-  public static void main(String[] args) {
-    System.out.println(removeCtrls.getPattern().matcher(null));
-  }
 }
