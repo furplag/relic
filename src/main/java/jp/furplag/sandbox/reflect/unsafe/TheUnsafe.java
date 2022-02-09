@@ -71,7 +71,7 @@ public final class TheUnsafe {
   private final MethodHandle objectFieldOffset;
 
   /**
-   * {@link jp.furplag.reflect.unsafe.TheUnsafe} .
+   * internal entity of {@link sun.misc.Unsafe} .
    *
    */
   private TheUnsafe() {
@@ -100,7 +100,7 @@ public final class TheUnsafe {
    * construct a container of methods to field access .
    *
    * @param unsafeClass {@code sun.misc.Unsafe}
-   * @param classes primitives and {@link Object}
+   * @param gettings primitives and {@link Object}
    * @return a container of methods to field access
    */
   private static Map<Class<?>, MethodHandle> setFieldAccessors(final Class<?> unsafeClass, final Map<Class<?>, MethodHandle> gettings) {
