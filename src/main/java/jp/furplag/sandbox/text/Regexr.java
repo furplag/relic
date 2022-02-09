@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.UnaryOperator;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,26 +76,31 @@ public interface Regexr extends Serializable, Comparable<Regexr> {
    */
   static final Regexr normalizeCjk = new Regexr.Origin("([\u3000-\u30FF\uFF00-\uFFEF&&[^\uFF5E\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]]+)", "$1", 100_000) {
 
+    private final UnaryOperator<String> _preNormalize = (t) -> Regexr.replaceAll(t
+      , new Regexr.Origin("[\u2010-\u2012]", "\u002D", 1) {}
+      , new Regexr.Origin("\u0020?[\u3099\u309B]", "\uFF9E", 2) {}
+      , new Regexr.Origin("\u0020?[\u309A\u309C]", "\uFF9F", 3) {}
+    );
+    private final UnaryOperator<String> _normalize = (t) -> {
+      final AtomicReference<String> result = new AtomicReference<>(t);
+      pattern.matcher(result.get()).results().forEach((r) -> {
+        final String _r = r.group();
+        result.set(result.get().replace(_r, Normalizer.normalize(_r, Form.NFKC)));
+      });
+
+      return result.get();
+    };
+    private final UnaryOperator<String> _postNormalize = (t) -> Regexr.replaceAll(t
+      , new Regexr.Origin("\u0020?([\u3099])", "\u309B", 1) {}
+      , new Regexr.Origin("\u0020?([\u309A])", "\u309C", 2) {}
+    );
+
     /** {@inheritDoc} */
     @Override
     public String replaceAll(final String text) {/* @formatter:off */
-      return Objects.toString(text, "").isEmpty() ? text : Streamr.stream(text).map((t) -> Regexr.replaceAll(t
-          , new Regexr.Origin("[\u2010-\u2012]", "\u002D", 1) {}
-          , new Regexr.Origin("\u0020?[\u3099\u309B]", "\uFF9E", 2) {}
-          , new Regexr.Origin("\u0020?[\u309A\u309C]", "\uFF9F", 3) {}
-        )).map((t) -> {
-          final AtomicReference<String> result = new AtomicReference<>(t);
-          pattern.matcher(result.get()).results().forEach((r) -> {
-            final String _r = r.group();
-            result.set(result.get().replace(_r, Normalizer.normalize(_r, Form.NFKC)));
-          });
-
-          return result.get();
-        }).map((t) -> Regexr.replaceAll(t
-          , new Regexr.Origin("\u0020?([\u3099])", "\u309B", 1) {}
-          , new Regexr.Origin("\u0020?([\u309A])", "\u309C", 2) {}
-        ))
-      .findFirst().orElse(null);
+      return Objects.toString(text, "").isEmpty() ? text : Streamr.stream(text)
+        .map(_preNormalize).map(_normalize).map(_postNormalize)
+        .findFirst().orElse(null);
     /* @formatter:on */}
   };
 
@@ -151,11 +157,10 @@ public interface Regexr extends Serializable, Comparable<Regexr> {
    * @return the string constructed by replacing each matching subsequence by the replacement string
    */
   static String replaceAll(final String text, final Regexr... regexrs) {
-    if (Objects.toString(text, "").isEmpty()) { return text; }
-    final AtomicReference<String> result = new AtomicReference<String>(text);
-    Streamr.stream(regexrs).sorted().forEach((t) -> result.set(t.replaceAll(result.get())));
+    final String[] result = { text };
+    Streamr.stream(regexrs).sorted().forEach((t) -> result[0] = t.replaceAll(result[0]));
 
-    return result.get();
+    return result[0];
   }
 
   /**
@@ -247,12 +252,12 @@ public interface Regexr extends Serializable, Comparable<Regexr> {
      */
     @Override
     public String replaceAll(final String text) {
-      final AtomicReference<String> result = new AtomicReference<>(text);
-      while (!Objects.toString(result.get(), "").isEmpty() && !getReplacement().equals(result.get()) && matches(result.get())) {
-        result.set(super.replaceAll(result.get()));
+      final String[] result = { text };
+      while (!getReplacement().equals(result[0]) && matches(result[0])) {
+        result[0] = super.replaceAll(result[0]);
       }
 
-      return result.get();
+      return result[0];
     }
   }
 
@@ -322,4 +327,8 @@ public interface Regexr extends Serializable, Comparable<Regexr> {
    * @return the sort order
    */
   int getOrder();
+
+  public static void main(String[] args) {
+    System.out.println(removeCtrls.getPattern().matcher(null));
+  }
 }
