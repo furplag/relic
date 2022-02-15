@@ -24,9 +24,9 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
+
 import jp.furplag.sandbox.trebuchet.Trebuchet;
 
 /**
@@ -140,6 +140,46 @@ public interface Deamtiet<N extends Number> {
 
     private final static double milliAsJulian = 1d / 86_400_000d;
 
+    /**
+     * a part of {@link #toInstant(Double)} .
+     *
+     * @param juliandate a julian day
+     * @return an entry represented by the pair of date-part of julian: time-part of julian
+     */
+    private static Map.Entry<Double, Double> _dejulianWrapper(final double juliandate) {
+      return Map.entry(juliandate - epochAsJulianDate, (juliandate - epochAsJulianDate) % milliAsJulian);
+    }
+
+    /**
+     * a part of {@link #ofEpochMilli(Long)} .
+     *
+     * @param epochMilli epoch millis
+     * @return an entry represented by the pair of date-part of julian: time-part of julian
+     */
+    private static Map.Entry<Double, Double> _julianWrapper(final long epochMilli) {
+      return Map.entry(epochMilli * milliAsJulian, (epochMilli * milliAsJulian) % milliAsJulian);
+    }
+
+    /**
+     * a part of {@link #toInstant(Double)} .
+     *
+     * @param julian an entry represented by the pair of date-part of julian: time-part of julian
+     * @return epoch millis
+     */
+    private static long _toEpochMilli(final Map.Entry<Double, Double> julian) {
+      return Math.round((julian.getKey() - julian.getValue() + (julian.getValue() * 2 < milliAsJulian ? 0 : milliAsJulian)) / milliAsJulian);
+    }
+
+    /**
+    * a part of {@link #ofEpochMilli(Long)} .
+     *
+     * @param julian an entry represented by the pair of date-part of julian: time-part of julian
+     * @return julian day
+     */
+    private static double _toJulian(final Map.Entry<Double, Double> julian) {
+      return julian.getKey() - julian.getValue() + (julian.getValue() * 2 < milliAsJulian ? 0 : milliAsJulian);
+    }
+
     /** {@inheritDoc} */
     @Override
     public Double ofEpochSecond(Long epochSecond) {
@@ -149,9 +189,8 @@ public interface Deamtiet<N extends Number> {
     /** {@inheritDoc} */
     @Override
     public Double ofEpochMilli(Long epochMilli) {/* @formatter:off */
-      return Stream.of(Optional.ofNullable(epochMilli).orElseGet(System::currentTimeMillis))
-        .map((l) -> Map.entry(l * milliAsJulian, (l * milliAsJulian) % milliAsJulian))
-        .mapToDouble((m) -> m.getKey() - m.getValue() + (m.getValue() * 2 < milliAsJulian ? 0 : milliAsJulian))
+      return Stream.of(Objects.requireNonNullElseGet(epochMilli, System::currentTimeMillis))
+        .map(Julian::_julianWrapper).mapToDouble(Julian::_toJulian)
         .flatMap((d) -> DoubleStream.of(d, epochAsJulianDate))
         .sum();
     /* @formatter:on */}
@@ -172,8 +211,7 @@ public interface Deamtiet<N extends Number> {
     @Override
     public Instant toInstant(Double instantValue) {/* @formatter:off */
       return Instant.ofEpochMilli(Trebuchet.Functions.orElse(instantValue, (_julianDate) -> Stream.of(Objects.requireNonNull(_julianDate))
-        .map((d) -> Map.entry(d - epochAsJulianDate, (d - epochAsJulianDate) % milliAsJulian))
-        .mapToLong((m) -> Math.round((m.getKey() - m.getValue() + (m.getValue() * 2 < milliAsJulian ? 0 : milliAsJulian)) / milliAsJulian))
+        .map(Julian::_dejulianWrapper).mapToLong(Julian::_toEpochMilli)
         .findAny().getAsLong(), System::currentTimeMillis));
     /* @formatter:on */}
   }
