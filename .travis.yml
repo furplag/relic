@@ -5,14 +5,11 @@ language: java
 
 jdk:
   - oraclejdk11
+  - oraclejdk14
   - oraclejdk17
   - openjdk11
-  - openjdk12
-  - openjdk13
-  - openjdk14
-  - openjdk15
-  - openjdk16
   - openjdk17
+  - openjdk18
 
 before_install:
   - mvn license:format --quiet -B
