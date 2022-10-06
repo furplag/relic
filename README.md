@@ -28,7 +28,7 @@ Add the following snippet to any project's pom that depends on your project
   <dependency>
     <groupId>jp.furplag.sandbox</groupId>
     <artifactId>relic</artifactId>
-    <version>5.0.0</version>
+    <version>5.0.2</version>
   </dependency>
 </dependencies>
 ```
