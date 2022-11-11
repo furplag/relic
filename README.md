@@ -1,5 +1,6 @@
 # relic
-[![Build Status](https://app.travis-ci.com/furplag/relic.svg?branch=master)](https://app.travis-ci.com/furplag/relic)
+[![Build Status](https://github.com/furplag/relic/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/furplag/relic/actions/workflows/maven.yml)
+[![CodeQL Status](https://github.com/furplag/relic/actions/workflows/codeql.yml/badge.svg?branch=master&event=push)](https://github.com/furplag/relic/actions/workflows/codeql.yml)
 [![Coverage Status](https://coveralls.io/repos/github/furplag/relic/badge.svg?branch=master)](https://coveralls.io/github/furplag/relic?branch=master)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/8ef45ed49f824454ac3c51e279c64be6)](https://www.codacy.com/gh/furplag/relic/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=furplag/relic&amp;utm_campaign=Badge_Grade)
 [![codebeat badge](https://codebeat.co/badges/6646361b-98a5-4b8e-ba2b-b7795169b23a)](https://codebeat.co/projects/github-com-furplag-relic-master)
