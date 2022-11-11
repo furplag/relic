@@ -32,43 +32,15 @@ import jp.furplag.sandbox.outerworld.nested.Overriden;
 @SuppressWarnings({ "deprecation", "removal" })
 class TheUnsafeTest {
 
-  private static class TestSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPackageAccess(String pkg) {
-      if ("sun.misc".equals(pkg)) {
-        throw new SecurityException();
-      }
-      super.checkPackageAccess(pkg);
-    }
-
-    @Override
-    public void checkPermission(Permission perm) {
-      return;
-    }
-  }
-
-  private static void secure() {
-    System.setSecurityManager(new TestSecurityManager());
-  }
-
-  private static void insecure() {
-    System.setSecurityManager(null);
-  }
-
   @Test
   void test() throws Throwable {
     MethodHandle theUnsafe = null;
     theUnsafe = MethodHandles.privateLookupIn(TheUnsafe.class, MethodHandles.lookup()).findStatic(TheUnsafe.class, "theUnsafe", MethodType.methodType(TheUnsafe.class));
     try {
-      secure();
       assertTrue(theUnsafe.invoke() instanceof TheUnsafe);
     } catch (ExceptionInInitializerError e) {
       fail(e.getMessage());
-    } finally {
-      insecure();
     }
-    assertTrue(theUnsafe.invoke() instanceof TheUnsafe);
     assertEquals(theUnsafe.invoke(), theUnsafe.invoke());
   }
 
