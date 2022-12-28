@@ -29,7 +29,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import jp.furplag.sandbox.stream.Streamr;
 import jp.furplag.sandbox.trebuchet.Trebuchet;
 import lombok.EqualsAndHashCode;

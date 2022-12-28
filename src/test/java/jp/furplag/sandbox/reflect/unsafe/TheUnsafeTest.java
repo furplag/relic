@@ -16,26 +16,28 @@
 package jp.furplag.sandbox.reflect.unsafe;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-import java.security.Permission;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.Test;
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.TheEntity;
 import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
+import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({ "deprecation", "removal" })
+@SuppressWarnings({"deprecation", "removal"})
 class TheUnsafeTest {
 
   @Test
   void test() throws Throwable {
     MethodHandle theUnsafe = null;
-    theUnsafe = MethodHandles.privateLookupIn(TheUnsafe.class, MethodHandles.lookup()).findStatic(TheUnsafe.class, "theUnsafe", MethodType.methodType(TheUnsafe.class));
+    theUnsafe =
+        MethodHandles.privateLookupIn(TheUnsafe.class, MethodHandles.lookup())
+            .findStatic(TheUnsafe.class, "theUnsafe", MethodType.methodType(TheUnsafe.class));
     try {
       assertTrue(theUnsafe.invoke() instanceof TheUnsafe);
     } catch (ExceptionInInitializerError e) {
@@ -50,10 +52,13 @@ class TheUnsafeTest {
     assertEquals((Object) null, TheUnsafe.get(TheEntity.class, null));
     assertEquals((Object) null, TheUnsafe.get(new TheEntity(), null));
 
-    Field PUBLIC_STATIC_FINAL_STRING = TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING");
+    Field PUBLIC_STATIC_FINAL_STRING =
+        TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING");
     Field PACKAGE_STATIC_FINAL_LONG = TheEntity.class.getDeclaredField("PACKAGE_STATIC_FINAL_LONG");
-    Field PROTECTED_STATIC_FINAL_DOUBLE = TheEntity.class.getDeclaredField("PROTECTED_STATIC_FINAL_DOUBLE");
-    Field PRIVATE_STATIC_FINAL_STRING = TheEntity.class.getDeclaredField("PRIVATE_STATIC_FINAL_STRING");
+    Field PROTECTED_STATIC_FINAL_DOUBLE =
+        TheEntity.class.getDeclaredField("PROTECTED_STATIC_FINAL_DOUBLE");
+    Field PRIVATE_STATIC_FINAL_STRING =
+        TheEntity.class.getDeclaredField("PRIVATE_STATIC_FINAL_STRING");
     Field NULL = TheEntity.class.getDeclaredField("NULL");
     Field thePrimitive = TheEntity.class.getDeclaredField("thePrimitive");
     Field thePrimitiveOfPackage = TheEntity.class.getDeclaredField("thePrimitiveOfPackage");
@@ -70,7 +75,9 @@ class TheUnsafeTest {
     assertEquals((Object) null, TheUnsafe.get(null, thePrimitiveOfClan));
     assertEquals((Object) null, TheUnsafe.get(null, message));
 
-    assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(TheEntity.class, PUBLIC_STATIC_FINAL_STRING));
+    assertEquals(
+        TheEntity.PUBLIC_STATIC_FINAL_STRING,
+        TheUnsafe.get(TheEntity.class, PUBLIC_STATIC_FINAL_STRING));
     assertEquals(123456L, TheUnsafe.get(TheEntity.class, PACKAGE_STATIC_FINAL_LONG));
     assertEquals(.123456d, TheUnsafe.get(TheEntity.class, PROTECTED_STATIC_FINAL_DOUBLE));
     assertEquals("a static String.", TheUnsafe.get(TheEntity.class, PRIVATE_STATIC_FINAL_STRING));
@@ -80,7 +87,9 @@ class TheUnsafeTest {
     assertEquals((Object) null, TheUnsafe.get(TheEntity.class, thePrimitiveOfClan));
     assertEquals((Object) null, TheUnsafe.get(TheEntity.class, message));
 
-    assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(Duplicate.class, PUBLIC_STATIC_FINAL_STRING));
+    assertEquals(
+        TheEntity.PUBLIC_STATIC_FINAL_STRING,
+        TheUnsafe.get(Duplicate.class, PUBLIC_STATIC_FINAL_STRING));
     assertEquals(123456L, TheUnsafe.get(Duplicate.class, PACKAGE_STATIC_FINAL_LONG));
     assertEquals(.123456d, TheUnsafe.get(Duplicate.class, PROTECTED_STATIC_FINAL_DOUBLE));
     assertEquals("a static String.", TheUnsafe.get(Duplicate.class, PRIVATE_STATIC_FINAL_STRING));
@@ -90,7 +99,9 @@ class TheUnsafeTest {
     assertEquals((Object) null, TheUnsafe.get(Duplicate.class, thePrimitiveOfClan));
     assertEquals((Object) null, TheUnsafe.get(Duplicate.class, message));
 
-    assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(Overriden.class, PUBLIC_STATIC_FINAL_STRING));
+    assertEquals(
+        TheEntity.PUBLIC_STATIC_FINAL_STRING,
+        TheUnsafe.get(Overriden.class, PUBLIC_STATIC_FINAL_STRING));
     assertEquals(123456L, TheUnsafe.get(Overriden.class, PACKAGE_STATIC_FINAL_LONG));
     assertEquals(.123456d, TheUnsafe.get(Overriden.class, PROTECTED_STATIC_FINAL_DOUBLE));
     assertEquals("a static String.", TheUnsafe.get(Overriden.class, PRIVATE_STATIC_FINAL_STRING));
@@ -101,7 +112,8 @@ class TheUnsafeTest {
     assertEquals((Object) null, TheUnsafe.get(Overriden.class, message));
 
     TheEntity theEntity = new TheEntity();
-    assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, PUBLIC_STATIC_FINAL_STRING));
+    assertEquals(
+        TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, PUBLIC_STATIC_FINAL_STRING));
     assertEquals(123456L, TheUnsafe.get(theEntity, PACKAGE_STATIC_FINAL_LONG));
     assertEquals(.123456d, TheUnsafe.get(theEntity, PROTECTED_STATIC_FINAL_DOUBLE));
     assertEquals("a static String.", TheUnsafe.get(theEntity, PRIVATE_STATIC_FINAL_STRING));
@@ -112,7 +124,8 @@ class TheUnsafeTest {
     assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, message));
 
     theEntity = new Duplicate();
-    assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, PUBLIC_STATIC_FINAL_STRING));
+    assertEquals(
+        TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, PUBLIC_STATIC_FINAL_STRING));
     assertEquals(123456L, TheUnsafe.get(theEntity, PACKAGE_STATIC_FINAL_LONG));
     assertEquals(.123456d, TheUnsafe.get(theEntity, PROTECTED_STATIC_FINAL_DOUBLE));
     assertEquals("a static String.", TheUnsafe.get(theEntity, PRIVATE_STATIC_FINAL_STRING));
@@ -123,7 +136,8 @@ class TheUnsafeTest {
     assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, message));
 
     theEntity = new Overriden();
-    assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, PUBLIC_STATIC_FINAL_STRING));
+    assertEquals(
+        TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, PUBLIC_STATIC_FINAL_STRING));
     assertEquals(123456L, TheUnsafe.get(theEntity, PACKAGE_STATIC_FINAL_LONG));
     assertEquals(.123456d, TheUnsafe.get(theEntity, PROTECTED_STATIC_FINAL_DOUBLE));
     assertEquals("a static String.", TheUnsafe.get(theEntity, PRIVATE_STATIC_FINAL_STRING));
@@ -133,17 +147,21 @@ class TheUnsafeTest {
     assertEquals(0f, TheUnsafe.get(theEntity, thePrimitiveOfClan));
     assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, TheUnsafe.get(theEntity, message));
 
-    Field thePrimitiveOfPackageOverriden = Overriden.class.getDeclaredField("thePrimitiveOfPackage");
+    Field thePrimitiveOfPackageOverriden =
+        Overriden.class.getDeclaredField("thePrimitiveOfPackage");
     assertEquals(true, TheUnsafe.get(new Overriden(), thePrimitiveOfPackageOverriden));
   }
 
   @Test
   void testSetStatic() throws ReflectiveOperationException {
 
-    Field PUBLIC_STATIC_FINAL_STRING = TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING");
+    Field PUBLIC_STATIC_FINAL_STRING =
+        TheEntity.class.getDeclaredField("PUBLIC_STATIC_FINAL_STRING");
     Field PACKAGE_STATIC_FINAL_LONG = TheEntity.class.getDeclaredField("PACKAGE_STATIC_FINAL_LONG");
-    Field PROTECTED_STATIC_FINAL_DOUBLE = TheEntity.class.getDeclaredField("PROTECTED_STATIC_FINAL_DOUBLE");
-    Field PRIVATE_STATIC_FINAL_STRING = TheEntity.class.getDeclaredField("PRIVATE_STATIC_FINAL_STRING");
+    Field PROTECTED_STATIC_FINAL_DOUBLE =
+        TheEntity.class.getDeclaredField("PROTECTED_STATIC_FINAL_DOUBLE");
+    Field PRIVATE_STATIC_FINAL_STRING =
+        TheEntity.class.getDeclaredField("PRIVATE_STATIC_FINAL_STRING");
     Field NULL = TheEntity.class.getDeclaredField("NULL");
 
     try {
@@ -177,7 +195,9 @@ class TheUnsafeTest {
 
     assertEquals((Object) null, TheUnsafe.get(TheEntity.class, NULL));
     TheUnsafe.set(TheEntity.class, NULL, new TheEntity());
-    assertEquals(new TheEntity().thePrimitive, ((TheEntity) TheUnsafe.get(TheEntity.class, NULL)).thePrimitive);
+    assertEquals(
+        new TheEntity().thePrimitive,
+        ((TheEntity) TheUnsafe.get(TheEntity.class, NULL)).thePrimitive);
     TheUnsafe.set(TheEntity.class, NULL, null);
   }
 
@@ -188,7 +208,8 @@ class TheUnsafeTest {
     Field thePrimitiveOfPackage = TheEntity.class.getDeclaredField("thePrimitiveOfPackage");
     Field thePrimitiveOfClan = TheEntity.class.getDeclaredField("thePrimitiveOfClan");
     Field message = TheEntity.class.getDeclaredField("message");
-    Field thePrimitiveOfPackageOverriden = Overriden.class.getDeclaredField("thePrimitiveOfPackage");
+    Field thePrimitiveOfPackageOverriden =
+        Overriden.class.getDeclaredField("thePrimitiveOfPackage");
 
     try {
       TheUnsafe.set(null, null, null);
@@ -282,7 +303,6 @@ class TheUnsafeTest {
     assertEquals((byte) 4, theObject.getTheByte());
   }
 
-
   @Test
   void testSetToChar() throws ReflectiveOperationException {
     TheObject theObject = new TheObject();
@@ -306,7 +326,15 @@ class TheUnsafeTest {
     assertEquals('祝', theObject.getTheChar());
     TheUnsafe.set(theObject, theChar, theObject.getTheString());
     assertEquals('祝', theObject.getTheChar());
-    TheUnsafe.set(theObject, theChar, "呪".codePoints().mapToObj(cp -> new String(new int[] {cp}, 0, 1)).map(s -> s.charAt(0)).findAny().orElse('祝'));
+    TheUnsafe.set(
+        theObject,
+        theChar,
+        "呪"
+            .codePoints()
+            .mapToObj(cp -> new String(new int[] {cp}, 0, 1))
+            .map(s -> s.charAt(0))
+            .findAny()
+            .orElse('祝'));
     assertEquals('呪', theObject.getTheChar());
   }
 

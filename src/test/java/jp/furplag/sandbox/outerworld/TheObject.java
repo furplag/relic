@@ -27,6 +27,7 @@ public class TheObject {
   private static final Integer THE_INTEGER_STATIC;
   private static final Long THE_LONG_STATIC;
   private static final Short THE_SHORT_STATIC;
+
   static {
     THE_BOOLEAN_STATIC = null;
     THE_BYTE_STATIC = null;

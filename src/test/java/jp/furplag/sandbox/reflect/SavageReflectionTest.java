@@ -16,15 +16,16 @@
 package jp.furplag.sandbox.reflect;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
-import org.junit.jupiter.api.Test;
 import jp.furplag.sandbox.outerworld.Duplicate;
 import jp.furplag.sandbox.outerworld.TheEntity;
 import jp.furplag.sandbox.outerworld.TheExtendedObject;
 import jp.furplag.sandbox.outerworld.TheObject;
 import jp.furplag.sandbox.outerworld.nested.Overriden;
 import jp.furplag.sandbox.outerworld.nested.Wrappered;
+import org.junit.jupiter.api.Test;
 
 class SavageReflectionTest {
 
@@ -34,11 +35,16 @@ class SavageReflectionTest {
     assertNull(SavageReflection.get(TheEntity.class, (String) null));
     assertNull(SavageReflection.get(TheEntity.class, (Field) null));
     assertNull(SavageReflection.get(TheEntity.class, TheEntity.PUBLIC_STATIC_FINAL_STRING));
-    assertNull(SavageReflection.get(TheEntity.class, Reflections.getField(Overriden.class, "theBoolean")));
+    assertNull(
+        SavageReflection.get(TheEntity.class, Reflections.getField(Overriden.class, "theBoolean")));
     assertNull(SavageReflection.get(null, "PUBLIC_STATIC_FINAL_STRING"));
-    assertEquals(TheEntity.PUBLIC_STATIC_FINAL_STRING, SavageReflection.get(TheEntity.class, "PUBLIC_STATIC_FINAL_STRING"));
-    assertEquals("a static String.", SavageReflection.get(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING"));
-    assertEquals("a static String.", SavageReflection.get(Duplicate.class, "PRIVATE_STATIC_FINAL_STRING"));
+    assertEquals(
+        TheEntity.PUBLIC_STATIC_FINAL_STRING,
+        SavageReflection.get(TheEntity.class, "PUBLIC_STATIC_FINAL_STRING"));
+    assertEquals(
+        "a static String.", SavageReflection.get(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING"));
+    assertEquals(
+        "a static String.", SavageReflection.get(Duplicate.class, "PRIVATE_STATIC_FINAL_STRING"));
 
     assertNull(SavageReflection.get(TheObject.class, "notExists"));
     assertNull(SavageReflection.get(TheObject.class, "theBoolean"));
@@ -61,32 +67,88 @@ class SavageReflectionTest {
     assertEquals(theObject.getTheShort(), SavageReflection.get(theObject, "theShort"));
 
     theObject = new TheExtendedObject();
-    assertEquals(TheExtendedObject.getTheBooleanStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_BOOLEAN_STATIC")));
-    assertEquals(TheExtendedObject.getTheByteStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_BYTE_STATIC")));
-    assertEquals(TheExtendedObject.getTheCharacterStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_CHARACTER_STATIC")));
-    assertEquals(TheExtendedObject.getTheDoubleStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_DOUBLE_STATIC")));
-    assertEquals(TheExtendedObject.getTheFloatStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_FLOAT_STATIC")));
-    assertEquals(TheExtendedObject.getTheIntegerStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_INTEGER_STATIC")));
-    assertEquals(TheExtendedObject.getTheLongStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_LONG_STATIC")));
-    assertEquals(TheExtendedObject.getTheShortStatic(), SavageReflection.get(TheExtendedObject.class, Reflections.getField(theObject, "THE_SHORT_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheBooleanStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_BOOLEAN_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheByteStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_BYTE_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheCharacterStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_CHARACTER_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheDoubleStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_DOUBLE_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheFloatStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_FLOAT_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheIntegerStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_INTEGER_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheLongStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_LONG_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheShortStatic(),
+        SavageReflection.get(
+            TheExtendedObject.class, Reflections.getField(theObject, "THE_SHORT_STATIC")));
 
-    assertEquals(TheExtendedObject.getTheBooleanStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_BOOLEAN_STATIC")));
-    assertEquals(TheExtendedObject.getTheByteStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_BYTE_STATIC")));
-    assertEquals(TheExtendedObject.getTheCharacterStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_CHARACTER_STATIC")));
-    assertEquals(TheExtendedObject.getTheDoubleStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_DOUBLE_STATIC")));
-    assertEquals(TheExtendedObject.getTheFloatStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_FLOAT_STATIC")));
-    assertEquals(TheExtendedObject.getTheIntegerStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_INTEGER_STATIC")));
-    assertEquals(TheExtendedObject.getTheLongStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_LONG_STATIC")));
-    assertEquals(TheExtendedObject.getTheShortStatic(), SavageReflection.get(theObject, Reflections.getField(theObject, "THE_SHORT_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheBooleanStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_BOOLEAN_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheByteStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_BYTE_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheCharacterStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_CHARACTER_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheDoubleStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_DOUBLE_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheFloatStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_FLOAT_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheIntegerStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_INTEGER_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheLongStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_LONG_STATIC")));
+    assertEquals(
+        TheExtendedObject.getTheShortStatic(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "THE_SHORT_STATIC")));
 
-    assertEquals(theObject.isTheBoolean(), SavageReflection.get(theObject, Reflections.getField(theObject, "theBoolean")));
-    assertEquals(theObject.getTheByte(), SavageReflection.get(theObject, Reflections.getField(theObject, "theByte")));
-    assertEquals(theObject.getTheChar(), SavageReflection.get(theObject, Reflections.getField(theObject, "theChar")));
-    assertEquals(theObject.getTheDouble(), SavageReflection.get(theObject, Reflections.getField(theObject, "theDouble")));
-    assertEquals(theObject.getTheFloat(), SavageReflection.get(theObject, Reflections.getField(theObject, "theFloat")));
-    assertEquals(theObject.getTheInt(), SavageReflection.get(theObject, Reflections.getField(theObject, "theInt")));
-    assertEquals(theObject.getTheLong(), SavageReflection.get(theObject, Reflections.getField(theObject, "theLong")));
-    assertEquals(theObject.getTheShort(), SavageReflection.get(theObject, Reflections.getField(theObject, "theShort")));
+    assertEquals(
+        theObject.isTheBoolean(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theBoolean")));
+    assertEquals(
+        theObject.getTheByte(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theByte")));
+    assertEquals(
+        theObject.getTheChar(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theChar")));
+    assertEquals(
+        theObject.getTheDouble(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theDouble")));
+    assertEquals(
+        theObject.getTheFloat(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theFloat")));
+    assertEquals(
+        theObject.getTheInt(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theInt")));
+    assertEquals(
+        theObject.getTheLong(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theLong")));
+    assertEquals(
+        theObject.getTheShort(),
+        SavageReflection.get(theObject, Reflections.getField(theObject, "theShort")));
   }
 
   @Test
@@ -95,19 +157,35 @@ class SavageReflectionTest {
     assertFalse(SavageReflection.set(null, (Field) null, null));
     assertFalse(SavageReflection.set(null, (String) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
     assertFalse(SavageReflection.set(null, (Field) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
-    assertFalse(SavageReflection.set(TheEntity.class, (String) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
-    assertFalse(SavageReflection.set(TheEntity.class, (Field) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
-    assertFalse(SavageReflection.set(TheEntity.class, TheEntity.PUBLIC_STATIC_FINAL_STRING, TheEntity.PUBLIC_STATIC_FINAL_STRING));
-    assertFalse(SavageReflection.set(TheEntity.class, "NOT_EXISTS", TheEntity.PUBLIC_STATIC_FINAL_STRING));
+    assertFalse(
+        SavageReflection.set(TheEntity.class, (String) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
+    assertFalse(
+        SavageReflection.set(TheEntity.class, (Field) null, TheEntity.PUBLIC_STATIC_FINAL_STRING));
+    assertFalse(
+        SavageReflection.set(
+            TheEntity.class,
+            TheEntity.PUBLIC_STATIC_FINAL_STRING,
+            TheEntity.PUBLIC_STATIC_FINAL_STRING));
+    assertFalse(
+        SavageReflection.set(TheEntity.class, "NOT_EXISTS", TheEntity.PUBLIC_STATIC_FINAL_STRING));
 
     assertTrue(SavageReflection.set(new TheEntity(), "PUBLIC_STATIC_FINAL_STRING", 123));
     assertEquals("123", TheEntity.PUBLIC_STATIC_FINAL_STRING);
-    assertTrue(SavageReflection.set(new TheEntity(), "PUBLIC_STATIC_FINAL_STRING", "a static String."));
+    assertTrue(
+        SavageReflection.set(new TheEntity(), "PUBLIC_STATIC_FINAL_STRING", "a static String."));
     assertEquals("a static String.", TheEntity.PUBLIC_STATIC_FINAL_STRING);
 
-    assertTrue(SavageReflection.set(new TheEntity(), "PUBLIC_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
+    assertTrue(
+        SavageReflection.set(
+            new TheEntity(),
+            "PUBLIC_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
     assertEquals("a static String. But I modified.", TheEntity.PUBLIC_STATIC_FINAL_STRING);
-    assertTrue(SavageReflection.set(new TheEntity(), "PUBLIC_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
+    assertTrue(
+        SavageReflection.set(
+            new TheEntity(),
+            "PUBLIC_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
     assertEquals("a static String.", TheEntity.PUBLIC_STATIC_FINAL_STRING);
 
     assertTrue(SavageReflection.set(new TheEntity(), "PACKAGE_STATIC_FINAL_LONG", 123L));
@@ -118,13 +196,31 @@ class SavageReflectionTest {
     assertEquals(123.456, SavageReflection.get(new TheEntity(), "PROTECTED_STATIC_FINAL_DOUBLE"));
     assertTrue(SavageReflection.set(new TheEntity(), "PROTECTED_STATIC_FINAL_DOUBLE", .123456));
 
-    assertTrue(SavageReflection.set(new TheEntity(), "PRIVATE_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
-    assertEquals("a static String. But I modified.", SavageReflection.get(new TheEntity(), "PRIVATE_STATIC_FINAL_STRING"));
-    assertTrue(SavageReflection.set(new TheEntity(), "PRIVATE_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
+    assertTrue(
+        SavageReflection.set(
+            new TheEntity(),
+            "PRIVATE_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
+    assertEquals(
+        "a static String. But I modified.",
+        SavageReflection.get(new TheEntity(), "PRIVATE_STATIC_FINAL_STRING"));
+    assertTrue(
+        SavageReflection.set(
+            new TheEntity(),
+            "PRIVATE_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
 
-    assertTrue(SavageReflection.set(TheEntity.class, "PUBLIC_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
+    assertTrue(
+        SavageReflection.set(
+            TheEntity.class,
+            "PUBLIC_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
     assertEquals("a static String. But I modified.", TheEntity.PUBLIC_STATIC_FINAL_STRING);
-    assertTrue(SavageReflection.set(TheEntity.class, "PUBLIC_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
+    assertTrue(
+        SavageReflection.set(
+            TheEntity.class,
+            "PUBLIC_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
     assertEquals("a static String.", TheEntity.PUBLIC_STATIC_FINAL_STRING);
 
     assertTrue(SavageReflection.set(TheEntity.class, "PACKAGE_STATIC_FINAL_LONG", 123L));
@@ -135,9 +231,19 @@ class SavageReflectionTest {
     assertEquals(123.456, SavageReflection.get(TheEntity.class, "PROTECTED_STATIC_FINAL_DOUBLE"));
     assertTrue(SavageReflection.set(TheEntity.class, "PROTECTED_STATIC_FINAL_DOUBLE", .123456));
 
-    assertTrue(SavageReflection.set(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
-    assertEquals("a static String. But I modified.", SavageReflection.get(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING"));
-    assertTrue(SavageReflection.set(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING", TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
+    assertTrue(
+        SavageReflection.set(
+            TheEntity.class,
+            "PRIVATE_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING + " But I modified."));
+    assertEquals(
+        "a static String. But I modified.",
+        SavageReflection.get(TheEntity.class, "PRIVATE_STATIC_FINAL_STRING"));
+    assertTrue(
+        SavageReflection.set(
+            TheEntity.class,
+            "PRIVATE_STATIC_FINAL_STRING",
+            TheEntity.PUBLIC_STATIC_FINAL_STRING.replace(" But I modified.", "")));
   }
 
   @Test
@@ -147,7 +253,8 @@ class SavageReflectionTest {
     Field thePrimitiveOfPackage = TheEntity.class.getDeclaredField("thePrimitiveOfPackage");
     Field thePrimitiveOfClan = TheEntity.class.getDeclaredField("thePrimitiveOfClan");
     Field message = TheEntity.class.getDeclaredField("message");
-    Field thePrimitiveOfPackageOverriden = Overriden.class.getDeclaredField("thePrimitiveOfPackage");
+    Field thePrimitiveOfPackageOverriden =
+        Overriden.class.getDeclaredField("thePrimitiveOfPackage");
 
     try {
       SavageReflection.set(null, (Field) null, null);
@@ -195,31 +302,54 @@ class SavageReflectionTest {
 
   @Test
   void testRead() {
-    SavageReflection.read(new Overriden()).entrySet().stream().forEach(e -> {
-      assertEquals(e.getValue(), SavageReflection.read(new Overriden()).get(e.getKey()));
-      assertEquals((Object) null, SavageReflection.read(new Overriden(), e.getKey()).get(e.getKey()));
-      assertNotEquals(e.getValue(), SavageReflection.read(new Wrappered()).get(e.getKey()));
-    });
+    SavageReflection.read(new Overriden()).entrySet().stream()
+        .forEach(
+            e -> {
+              assertEquals(e.getValue(), SavageReflection.read(new Overriden()).get(e.getKey()));
+              assertEquals(
+                  (Object) null,
+                  SavageReflection.read(new Overriden(), e.getKey()).get(e.getKey()));
+              assertNotEquals(e.getValue(), SavageReflection.read(new Wrappered()).get(e.getKey()));
+            });
     assertEquals(new LinkedHashMap<>(), SavageReflection.read(null));
 
-    assertEquals("a static String.", SavageReflection.read(Overriden.class).get("PUBLIC_STATIC_FINAL_STRING"));
+    assertEquals(
+        "a static String.",
+        SavageReflection.read(Overriden.class).get("PUBLIC_STATIC_FINAL_STRING"));
     assertEquals(123456L, SavageReflection.read(Overriden.class).get("PACKAGE_STATIC_FINAL_LONG"));
-    assertEquals(.123456, SavageReflection.read(Overriden.class).get("PROTECTED_STATIC_FINAL_DOUBLE"));
-    assertEquals("a static String.", SavageReflection.read(Overriden.class).get("PRIVATE_STATIC_FINAL_STRING"));
+    assertEquals(
+        .123456, SavageReflection.read(Overriden.class).get("PROTECTED_STATIC_FINAL_DOUBLE"));
+    assertEquals(
+        "a static String.",
+        SavageReflection.read(Overriden.class).get("PRIVATE_STATIC_FINAL_STRING"));
     assertEquals((Object) null, SavageReflection.read(Overriden.class).get("NULL"));
     assertFalse(SavageReflection.read(Overriden.class).containsKey("message"));
 
-    assertEquals(SavageReflection.read(new Overriden()).containsKey("PUBLIC_STATIC_FINAL_STRING"), false);
-    assertEquals(SavageReflection.read(new Overriden()).containsKey("PACKAGE_STATIC_FINAL_LONG"), false);
-    assertEquals(SavageReflection.read(new Overriden()).containsKey("PROTECTED_STATIC_FINAL_DOUBLE"), false);
-    assertEquals(SavageReflection.read(new Overriden()).containsKey("PRIVATE_STATIC_FINAL_STRING"), false);
+    assertEquals(
+        SavageReflection.read(new Overriden()).containsKey("PUBLIC_STATIC_FINAL_STRING"), false);
+    assertEquals(
+        SavageReflection.read(new Overriden()).containsKey("PACKAGE_STATIC_FINAL_LONG"), false);
+    assertEquals(
+        SavageReflection.read(new Overriden()).containsKey("PROTECTED_STATIC_FINAL_DOUBLE"), false);
+    assertEquals(
+        SavageReflection.read(new Overriden()).containsKey("PRIVATE_STATIC_FINAL_STRING"), false);
     assertEquals(SavageReflection.read(new Overriden()).containsKey("NULL"), false);
 
-    assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), (String) null));
-    assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), (String[]) null));
-    assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), new String[] { null }));
-    assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), new String[] { null, null }));
-    assertEquals(SavageReflection.read(new Overriden()), SavageReflection.read(new Overriden(), "notExists"));
+    assertEquals(
+        SavageReflection.read(new Overriden()),
+        SavageReflection.read(new Overriden(), (String) null));
+    assertEquals(
+        SavageReflection.read(new Overriden()),
+        SavageReflection.read(new Overriden(), (String[]) null));
+    assertEquals(
+        SavageReflection.read(new Overriden()),
+        SavageReflection.read(new Overriden(), new String[] {null}));
+    assertEquals(
+        SavageReflection.read(new Overriden()),
+        SavageReflection.read(new Overriden(), new String[] {null, null}));
+    assertEquals(
+        SavageReflection.read(new Overriden()),
+        SavageReflection.read(new Overriden(), "notExists"));
     assertEquals(false, SavageReflection.read(new Overriden(), "message").containsKey("message"));
 
     assertEquals("a static String.", SavageReflection.read(new TheEntity()).get("message"));

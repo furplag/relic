@@ -29,9 +29,9 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.ClassUtils;
 import jp.furplag.sandbox.stream.Streamr;
 import jp.furplag.sandbox.trebuchet.Trebuchet;
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  * code snippet for accessing object .

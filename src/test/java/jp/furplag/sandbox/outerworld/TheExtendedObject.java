@@ -22,8 +22,10 @@ public class TheExtendedObject extends TheObject {
   private static final Double THE_DOUBLE_STATIC = 12.3d;
   private static final Float THE_FLOAT_STATIC = 123.4f;
   private static final Integer THE_INTEGER_STATIC = (int) (THE_BYTE_STATIC + THE_BYTE_STATIC);
-  private static final Long THE_LONG_STATIC = (long) (THE_BYTE_STATIC + THE_BYTE_STATIC + THE_BYTE_STATIC);
-  private static final Short THE_SHORT_STATIC = (short) (THE_BYTE_STATIC + THE_BYTE_STATIC + THE_BYTE_STATIC + THE_BYTE_STATIC);
+  private static final Long THE_LONG_STATIC =
+      (long) (THE_BYTE_STATIC + THE_BYTE_STATIC + THE_BYTE_STATIC);
+  private static final Short THE_SHORT_STATIC =
+      (short) (THE_BYTE_STATIC + THE_BYTE_STATIC + THE_BYTE_STATIC + THE_BYTE_STATIC);
 
   public static Boolean getTheBooleanStatic() {
     return THE_BOOLEAN_STATIC;

@@ -24,10 +24,8 @@ import java.lang.Character.UnicodeBlock;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
-
-import org.junit.jupiter.api.Test;
-
 import jp.furplag.sandbox.reflect.SavageReflection;
+import org.junit.jupiter.api.Test;
 
 public class CommonizrTest {
 

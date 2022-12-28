@@ -16,7 +16,6 @@
 package jp.furplag.sandbox.outerworld.nested;
 
 import java.util.Objects;
-
 import jp.furplag.sandbox.outerworld.Duplicate;
 
 public class Overriden extends Duplicate {
@@ -40,7 +39,6 @@ public class Overriden extends Duplicate {
         .append("message=")
         .append(Objects.toString(message))
         .append("}")
-        .toString()
-    ;
+        .toString();
   }
 }

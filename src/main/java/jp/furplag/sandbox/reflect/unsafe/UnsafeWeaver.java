@@ -22,8 +22,8 @@ import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import org.apache.commons.lang3.StringUtils;
 import jp.furplag.sandbox.trebuchet.Trebuchet;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * handle class member whether protected ( or invisible ) using {@code sun.misc.Unsafe} .

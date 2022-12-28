@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import jp.furplag.sandbox.stream.Streamr;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -46,10 +45,10 @@ public abstract class Commonizr {
   private static final Normalizr cjkNormalizr = new Normalizr('！' - '!') {
 
     /** exclude characters from translate. */
-    private final Map<Integer, Integer> exclusives = Streamr.stream(new Integer[][]{/* @formatter:off */
+    private final Map<Integer, Integer> exclusives = Streamr.stream(
+      new Integer[][] {/* @formatter:off */
       {0xFF65, 0x00B7}, {0xFFE0, 0x00A2}, {0xFFE1, 0x00A3}, {0xFFE2, 0x00AC}, {0xFFE3, 0x00AF}, {0xFFE4, 0x00A6}, {0xFFE5, 0x20A9}, {0xFFE6, 0x00A5}, {0xFFE8, 0x2502}
-    /* @formatter:on */})
-    .collect(Collectors.toUnmodifiableMap((k) -> k[1], (v) -> v[0], (a, b) -> b));
+    /* @formatter:on */}).collect(Collectors.toUnmodifiableMap((k) -> k[1], (v) -> v[0], (a, b) -> b));
 
     /** {@inheritDoc} */
     @Override
@@ -98,11 +97,11 @@ public abstract class Commonizr {
 
       /** {@inheritDoc} */
       @Override
-      String normalize(final String text) {
+      String normalize(final String text) {/* @formatter:off */
         return Objects.isNull(text) ? text : normalizeCjk(text).codePoints()
           .mapToObj((i) -> Regexr.newString(translate(i)))
           .collect(Collectors.joining());
-      }
+      /* @formatter:on */}
 
       /** {@inheritDoc} */
       @Override

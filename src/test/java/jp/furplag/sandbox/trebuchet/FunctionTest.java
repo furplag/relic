@@ -18,12 +18,13 @@ package jp.furplag.sandbox.trebuchet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
-import org.junit.jupiter.api.Test;
 import jp.furplag.sandbox.stream.Streamr;
+import org.junit.jupiter.api.Test;
 
 class FunctionTest {
 

@@ -18,6 +18,7 @@ package jp.furplag.sandbox.trebuchet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;

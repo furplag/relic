@@ -35,10 +35,8 @@ import java.util.function.IntPredicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import org.junit.jupiter.api.Test;
-
 import jp.furplag.sandbox.reflect.SavageReflection;
+import org.junit.jupiter.api.Test;
 
 public class RegexrTest {
 
