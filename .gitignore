@@ -9,6 +9,7 @@
 # Eclipse
 .classpath
 .settings
+.factoryPath
 
 # Idea
 .idea
