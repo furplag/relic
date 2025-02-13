@@ -40,7 +40,7 @@ Add the following snippet to any project's pom that depends on your project
 enable to unsafe access to the Object .
 ### Streamr
 shorthands to use stream API .
-### Trebchet
+### Trebuchet
 functional interfaces which against some problems when handling exceptions in lambda expression .
 ### Deamtiet
 converting between each instant values represented by some of (different) time scale,
