@@ -228,7 +228,7 @@ class ReflectionsTest {
     assertEquals(test.invoke(null, (Class<?>) null, (Class<?>) null), false);
     Class<?>[] primitives =
         ((Map<Class<?>, Class<?>>)
-                FieldUtils.getDeclaredField(ClassUtils.class, "primitiveWrapperMap", true)
+                FieldUtils.getDeclaredField(ClassUtils.class, "PRIMITIVE_WRAPPER_MAP", true)
                     .get(null))
             .keySet()
             .toArray(new Class<?>[] {});
