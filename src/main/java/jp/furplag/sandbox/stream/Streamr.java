@@ -327,7 +327,8 @@ public interface Streamr {
   @SuppressWarnings("unchecked")
   @SafeVarargs
   static <T> Stream<T> stream(final T... elements) {
-    return elements == null || elements.length < 1 ? Stream.empty() : isStream(elements) ? isStreamArray(elements) ? streamInternal(elements) : stream((Stream<T>) elements[0]) : excludeNull(Arrays.stream(elements));
+    if (elements == null || elements.length < 1) { return Stream.empty(); }
+    return isStream(elements) ? isStreamArray(elements) ? streamInternal(elements) : stream((Stream<T>) elements[0]) : excludeNull(Arrays.stream(elements));
   }
 
   /**

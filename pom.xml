@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.furplag.sandbox</groupId>
   <artifactId>relic</artifactId>
-  <version>5.2.0</version>
+  <version>5.2.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <inceptionYear>2018</inceptionYear>
   <name>${project.artifactId}</name>
@@ -72,6 +72,7 @@
 
     <commons-lang3.version>3.18.0</commons-lang3.version>
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
+    <junit.platform.version>1.13.3</junit.platform.version>
     <lombok.version>1.18.38</lombok.version>
     <jaxb-api.version>2.3.1</jaxb-api.version>
 
@@ -119,6 +120,12 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>${junit.platform.version}</version>
       <scope>test</scope>
     </dependency>
 
