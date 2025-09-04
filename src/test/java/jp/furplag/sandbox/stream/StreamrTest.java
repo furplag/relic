@@ -82,6 +82,10 @@ class StreamrTest {
 
     assertArrayEquals(new Integer[] {}, Streamr.stream(Stream.ofNullable((Integer) null)).toArray(Integer[]::new));
     assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Stream.of(1, 2, 3)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(Stream.of(1, 2, 3), null).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(null, Stream.of(1, 2, 3)).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream((Object) Stream.of(1, 2, 3), null).toArray(Integer[]::new));
+    assertArrayEquals(new Integer[] { 1, 2, 3 }, Streamr.stream(null, (Object) Stream.of(1, 2, 3)).toArray(Integer[]::new));
     assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, Streamr.stream(Stream.of(1, 2, 3), Stream.of(4, 5, 6)).toArray(Integer[]::new));
     assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, Streamr.stream(Stream.of(1, 2, 3), null, Stream.of(4, 5, 6)).toArray(Integer[]::new));
     assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5, 6 }, Streamr.stream(Stream.of(1, 2, 3), null, Stream.of(4, null, 5, null, 6)).toArray(Integer[]::new));

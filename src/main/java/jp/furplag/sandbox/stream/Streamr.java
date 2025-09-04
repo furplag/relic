@@ -269,18 +269,6 @@ public interface Streamr {
   }
 
   /**
-   * detect the parameter is array of {@link Stream} .
-   *
-   * @param <T> the type of the stream elements
-   * @param elements an array of T, maybe null
-   * @return true if the type of elements is an array of {@link Stream}
-   */
-  @SafeVarargs
-  private static <T> boolean isStreamArray(final T... elements) {
-    return isStream(elements) && Trebuchet.Predicates.orNot(elements, (t) -> excludeNull(Arrays.stream(t)).count() > 1);
-  }
-
-  /**
    * do less coding in case of {@link Collection#stream()} .
    *
    * @param <T> the type of stream elements
@@ -324,11 +312,9 @@ public interface Streamr {
    * @param elements an array of T, maybe null
    * @return the stream which excluded null
    */
-  @SuppressWarnings("unchecked")
   @SafeVarargs
   static <T> Stream<T> stream(final T... elements) {
-    if (elements == null || elements.length < 1) { return Stream.empty(); }
-    return isStream(elements) ? isStreamArray(elements) ? streamInternal(elements) : stream((Stream<T>) elements[0]) : excludeNull(Arrays.stream(elements));
+    return elements == null || elements.length < 1 ? Stream.empty() : isStream(elements) ? streamInternal(elements) : excludeNull(Arrays.stream(elements));
   }
 
   /**
