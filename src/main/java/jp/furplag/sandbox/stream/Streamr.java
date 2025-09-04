@@ -315,14 +315,19 @@ public interface Streamr {
   }
 
   /**
-   * do less coding in case of {@link Arrays#stream(Object[])} .
-   * <p>
-   * <strong>notice</strong>: do not do that, <em>"Arrays.stream(new int[]{1, 2, 3})"</em> .
-   * </p>
+   * Creates a null-safe Stream from a varargs array, treating nested Stream elements specially.
    *
-   * @param <T> the type of the stream elements
-   * @param elements an array of T, maybe null
-   * @return the stream which excluded null
+   * <p>If {@code elements} is null or empty this returns {@link Stream#empty()}. If the provided
+   * varargs contain Stream instances, they are handled as follows: a single Stream element is
+   * returned (with nulls excluded); multiple Stream elements are concatenated into one Stream.
+   * Otherwise the method returns a Stream of the supplied elements with any null elements filtered out.</p>
+   *
+   * <p>Note: this method does not support primitive arrays (e.g. {@code new int[]{...}}) — use the
+   * appropriate boxed types or {@code Arrays.stream(int[])} instead.</p>
+   *
+   * @param <T> the stream element type
+   * @param elements an array of elements or Streams (may be null)
+   * @return a Stream of non-null elements; empty if input is null or contains no non-null elements
    */
   @SuppressWarnings("unchecked")
   @SafeVarargs
